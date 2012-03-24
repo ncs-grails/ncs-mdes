@@ -24,6 +24,6 @@ class BirthPlacePlanCl1 {
 	static mapping = {
 		table 'birth_place_plan_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

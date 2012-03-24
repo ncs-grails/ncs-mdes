@@ -24,6 +24,6 @@ class IntLengthRankCl2 {
 	static mapping = {
 		table 'int_length_rank_cl2'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

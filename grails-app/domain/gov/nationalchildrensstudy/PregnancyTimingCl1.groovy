@@ -24,6 +24,6 @@ class PregnancyTimingCl1 {
 	static mapping = {
 		table 'pregnancy_timing_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

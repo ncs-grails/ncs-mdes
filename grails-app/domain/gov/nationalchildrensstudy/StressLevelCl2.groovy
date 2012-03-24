@@ -24,6 +24,6 @@ class StressLevelCl2 {
 	static mapping = {
 		table 'stress_level_cl2'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

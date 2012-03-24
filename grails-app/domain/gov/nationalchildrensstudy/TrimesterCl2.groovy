@@ -24,6 +24,6 @@ class TrimesterCl2 {
 	static mapping = {
 		table 'trimester_cl2'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

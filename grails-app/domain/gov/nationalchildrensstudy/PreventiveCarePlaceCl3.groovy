@@ -24,6 +24,6 @@ class PreventiveCarePlaceCl3 {
 	static mapping = {
 		table 'preventive_care_place_cl3'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

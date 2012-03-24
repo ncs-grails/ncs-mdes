@@ -24,6 +24,6 @@ class LikelihoodCl1 {
 	static mapping = {
 		table 'likelihood_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

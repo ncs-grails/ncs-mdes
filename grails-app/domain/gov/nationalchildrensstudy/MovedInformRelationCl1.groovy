@@ -24,6 +24,6 @@ class MovedInformRelationCl1 {
 	static mapping = {
 		table 'moved_inform_relation_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

@@ -24,6 +24,6 @@ class PpgStatusCl2 {
 	static mapping = {
 		table 'ppg_status_cl2'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

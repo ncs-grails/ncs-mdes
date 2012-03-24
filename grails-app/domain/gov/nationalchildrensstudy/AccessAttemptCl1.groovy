@@ -24,6 +24,6 @@ class AccessAttemptCl1 {
 	static mapping = {
 		table 'access_attempt_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

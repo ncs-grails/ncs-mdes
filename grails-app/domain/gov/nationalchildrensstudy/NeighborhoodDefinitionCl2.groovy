@@ -24,6 +24,6 @@ class NeighborhoodDefinitionCl2 {
 	static mapping = {
 		table 'neighborhood_definition_cl2'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

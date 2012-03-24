@@ -24,6 +24,6 @@ class TimePeriodCl1 {
 	static mapping = {
 		table 'time_period_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

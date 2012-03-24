@@ -24,6 +24,6 @@ class EventDspstnCatCl1 {
 	static mapping = {
 		table 'event_dspstn_cat_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

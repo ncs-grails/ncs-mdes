@@ -24,6 +24,6 @@ class DuConfirmCl2 {
 	static mapping = {
 		table 'du_confirm_cl2'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

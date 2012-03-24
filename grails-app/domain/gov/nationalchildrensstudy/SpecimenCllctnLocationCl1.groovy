@@ -24,6 +24,6 @@ class SpecimenCllctnLocationCl1 {
 	static mapping = {
 		table 'specimen_cllctn_location_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

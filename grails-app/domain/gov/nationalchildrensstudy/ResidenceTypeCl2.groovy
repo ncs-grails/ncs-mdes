@@ -24,6 +24,6 @@ class ResidenceTypeCl2 {
 	static mapping = {
 		table 'residence_type_cl2'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

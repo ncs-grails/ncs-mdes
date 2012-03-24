@@ -24,6 +24,6 @@ class TrueLevelCl1 {
 	static mapping = {
 		table 'true_level_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

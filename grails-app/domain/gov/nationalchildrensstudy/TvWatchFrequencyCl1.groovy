@@ -24,6 +24,6 @@ class TvWatchFrequencyCl1 {
 	static mapping = {
 		table 'tv_watch_frequency_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

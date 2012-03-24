@@ -24,6 +24,6 @@ class BackgroundChckLvlCl1 {
 	static mapping = {
 		table 'background_chck_lvl_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

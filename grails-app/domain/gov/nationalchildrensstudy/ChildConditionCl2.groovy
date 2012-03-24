@@ -24,6 +24,6 @@ class ChildConditionCl2 {
 	static mapping = {
 		table 'child_condition_cl2'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

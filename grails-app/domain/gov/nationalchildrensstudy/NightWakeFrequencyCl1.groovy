@@ -24,6 +24,6 @@ class NightWakeFrequencyCl1 {
 	static mapping = {
 		table 'night_wake_frequency_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

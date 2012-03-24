@@ -24,6 +24,6 @@ class WebUseFrequencyCl1 {
 	static mapping = {
 		table 'web_use_frequency_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

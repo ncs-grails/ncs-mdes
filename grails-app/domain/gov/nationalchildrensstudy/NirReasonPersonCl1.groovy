@@ -24,6 +24,6 @@ class NirReasonPersonCl1 {
 	static mapping = {
 		table 'nir_reason_person_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

@@ -24,6 +24,6 @@ class InformationSourceCl7 {
 	static mapping = {
 		table 'information_source_cl7'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

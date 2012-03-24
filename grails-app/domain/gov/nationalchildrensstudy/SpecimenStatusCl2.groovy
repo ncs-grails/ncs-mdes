@@ -24,6 +24,6 @@ class SpecimenStatusCl2 {
 	static mapping = {
 		table 'specimen_status_cl2'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

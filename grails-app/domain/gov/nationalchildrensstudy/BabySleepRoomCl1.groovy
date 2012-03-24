@@ -24,6 +24,6 @@ class BabySleepRoomCl1 {
 	static mapping = {
 		table 'baby_sleep_room_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

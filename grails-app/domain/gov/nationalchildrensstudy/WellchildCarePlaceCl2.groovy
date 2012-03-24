@@ -24,6 +24,6 @@ class WellchildCarePlaceCl2 {
 	static mapping = {
 		table 'wellchild_care_place_cl2'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

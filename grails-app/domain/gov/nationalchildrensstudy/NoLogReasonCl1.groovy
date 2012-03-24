@@ -24,6 +24,6 @@ class NoLogReasonCl1 {
 	static mapping = {
 		table 'no_log_reason_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

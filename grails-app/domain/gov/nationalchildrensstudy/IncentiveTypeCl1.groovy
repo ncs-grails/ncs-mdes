@@ -24,6 +24,6 @@ class IncentiveTypeCl1 {
 	static mapping = {
 		table 'incentive_type_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

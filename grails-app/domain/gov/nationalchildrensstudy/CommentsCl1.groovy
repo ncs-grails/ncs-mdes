@@ -24,6 +24,6 @@ class CommentsCl1 {
 	static mapping = {
 		table 'comments_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

@@ -659,7 +659,7 @@ class BirthVisitLi {
 		instrumentVersion column:'instrument_version'
 		instrumentRepeatKey column:'instrument_repeat_key'
 		timeStamp1 column:'time_stamp_1'
-		release column:'release'
+		release column:'release_'
 		multiple column:'multiple'
 		multipleNum column:'multiple_num'
 		childDob column:'child_dob'

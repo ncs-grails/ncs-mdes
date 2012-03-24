@@ -24,6 +24,6 @@ class SubsampleTypeCl2 {
 	static mapping = {
 		table 'subsample_type_cl2'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

@@ -24,6 +24,6 @@ class DuNirReasonCl1 {
 	static mapping = {
 		table 'du_nir_reason_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

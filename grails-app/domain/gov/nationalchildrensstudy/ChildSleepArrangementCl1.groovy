@@ -24,6 +24,6 @@ class ChildSleepArrangementCl1 {
 	static mapping = {
 		table 'child_sleep_arrangement_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

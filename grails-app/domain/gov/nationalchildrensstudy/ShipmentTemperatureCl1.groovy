@@ -24,6 +24,6 @@ class ShipmentTemperatureCl1 {
 	static mapping = {
 		table 'shipment_temperature_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

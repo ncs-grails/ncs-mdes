@@ -24,6 +24,6 @@ class SleepPositionCl1 {
 	static mapping = {
 		table 'sleep_position_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

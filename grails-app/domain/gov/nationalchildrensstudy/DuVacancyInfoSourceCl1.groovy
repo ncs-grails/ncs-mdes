@@ -24,6 +24,6 @@ class DuVacancyInfoSourceCl1 {
 	static mapping = {
 		table 'du_vacancy_info_source_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

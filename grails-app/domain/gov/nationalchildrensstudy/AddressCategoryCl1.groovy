@@ -24,6 +24,6 @@ class AddressCategoryCl1 {
 	static mapping = {
 		table 'address_category_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

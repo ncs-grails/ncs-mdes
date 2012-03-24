@@ -24,6 +24,6 @@ class RegularityLevelCl12 {
 	static mapping = {
 		table 'regularity_level_cl12'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

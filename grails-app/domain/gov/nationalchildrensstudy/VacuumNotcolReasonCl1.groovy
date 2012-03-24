@@ -24,6 +24,6 @@ class VacuumNotcolReasonCl1 {
 	static mapping = {
 		table 'vacuum_notcol_reason_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

@@ -24,6 +24,6 @@ class NeighborTalkQuantityCl2 {
 	static mapping = {
 		table 'neighbor_talk_quantity_cl2'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

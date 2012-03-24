@@ -24,6 +24,6 @@ class NoAccessDescrCl1 {
 	static mapping = {
 		table 'no_access_descr_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

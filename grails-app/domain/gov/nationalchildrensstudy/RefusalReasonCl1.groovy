@@ -24,6 +24,6 @@ class RefusalReasonCl1 {
 	static mapping = {
 		table 'refusal_reason_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

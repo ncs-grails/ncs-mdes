@@ -24,6 +24,6 @@ class RaceCl2 {
 	static mapping = {
 		table 'race_cl2'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

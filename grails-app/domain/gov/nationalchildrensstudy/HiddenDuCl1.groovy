@@ -24,6 +24,6 @@ class HiddenDuCl1 {
 	static mapping = {
 		table 'hidden_du_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

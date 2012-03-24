@@ -24,6 +24,6 @@ class CordContainerCl1 {
 	static mapping = {
 		table 'cord_container_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

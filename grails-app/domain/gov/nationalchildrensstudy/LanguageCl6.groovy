@@ -24,6 +24,6 @@ class LanguageCl6 {
 	static mapping = {
 		table 'language_cl6'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

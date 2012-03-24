@@ -544,7 +544,7 @@ class TwelveMthMotherDetail {
 		thinkof column:'thinkof'
 		holdFun column:'hold_fun'
 		giveFun column:'give_fun'
-		read column:'read'
+		read column:'read_'
 		readFreq column:'read_freq'
 		watchTv column:'watch_tv'
 		tvFreq column:'tv_freq'

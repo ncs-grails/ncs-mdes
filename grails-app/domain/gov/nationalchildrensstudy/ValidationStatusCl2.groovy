@@ -24,6 +24,6 @@ class ValidationStatusCl2 {
 	static mapping = {
 		table 'validation_status_cl2'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

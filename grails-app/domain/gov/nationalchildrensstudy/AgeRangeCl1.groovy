@@ -24,6 +24,6 @@ class AgeRangeCl1 {
 	static mapping = {
 		table 'age_range_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

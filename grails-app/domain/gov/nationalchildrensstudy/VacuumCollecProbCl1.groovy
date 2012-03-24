@@ -24,6 +24,6 @@ class VacuumCollecProbCl1 {
 	static mapping = {
 		table 'vacuum_collec_prob_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

@@ -24,6 +24,6 @@ class PracticeSizeRangeCl1 {
 	static mapping = {
 		table 'practice_size_range_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

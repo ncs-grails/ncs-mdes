@@ -24,6 +24,6 @@ class DrugDoseUnitCl1 {
 	static mapping = {
 		table 'drug_dose_unit_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

@@ -24,6 +24,6 @@ class NameSuffixCl1 {
 	static mapping = {
 		table 'name_suffix_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

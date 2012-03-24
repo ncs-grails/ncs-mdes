@@ -24,6 +24,6 @@ class ImportanceLevelCl2 {
 	static mapping = {
 		table 'importance_level_cl2'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

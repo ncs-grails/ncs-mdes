@@ -24,6 +24,6 @@ class RouteOfRxAdminCl1 {
 	static mapping = {
 		table 'route_of_rx_admin_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

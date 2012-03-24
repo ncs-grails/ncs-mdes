@@ -24,6 +24,6 @@ class BloodDrawProbCl3 {
 	static mapping = {
 		table 'blood_draw_prob_cl3'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

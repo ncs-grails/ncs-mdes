@@ -24,6 +24,6 @@ class WaterCllctnReasonCl1 {
 	static mapping = {
 		table 'water_cllctn_reason_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

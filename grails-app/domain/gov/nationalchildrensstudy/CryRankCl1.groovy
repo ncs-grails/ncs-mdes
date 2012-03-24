@@ -24,6 +24,6 @@ class CryRankCl1 {
 	static mapping = {
 		table 'cry_rank_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

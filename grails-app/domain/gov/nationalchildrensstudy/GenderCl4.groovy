@@ -24,6 +24,6 @@ class GenderCl4 {
 	static mapping = {
 		table 'gender_cl4'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

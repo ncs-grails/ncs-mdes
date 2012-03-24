@@ -24,6 +24,6 @@ class NirInformRelationCl2 {
 	static mapping = {
 		table 'nir_inform_relation_cl2'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

@@ -24,6 +24,6 @@ class HouseholdEligibilityCl2 {
 	static mapping = {
 		table 'household_eligibility_cl2'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

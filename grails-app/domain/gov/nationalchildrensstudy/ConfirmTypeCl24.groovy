@@ -24,6 +24,6 @@ class ConfirmTypeCl24 {
 	static mapping = {
 		table 'confirm_type_cl24'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

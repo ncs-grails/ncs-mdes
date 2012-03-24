@@ -24,6 +24,6 @@ class ImprovementRankCl1 {
 	static mapping = {
 		table 'improvement_rank_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

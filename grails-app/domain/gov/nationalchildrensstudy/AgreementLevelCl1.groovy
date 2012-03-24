@@ -24,6 +24,6 @@ class AgreementLevelCl1 {
 	static mapping = {
 		table 'agreement_level_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

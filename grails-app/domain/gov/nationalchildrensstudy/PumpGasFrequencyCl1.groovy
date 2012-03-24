@@ -24,6 +24,6 @@ class PumpGasFrequencyCl1 {
 	static mapping = {
 		table 'pump_gas_frequency_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

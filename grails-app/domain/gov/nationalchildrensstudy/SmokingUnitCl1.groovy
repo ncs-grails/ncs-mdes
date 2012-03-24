@@ -24,6 +24,6 @@ class SmokingUnitCl1 {
 	static mapping = {
 		table 'smoking_unit_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

@@ -24,6 +24,6 @@ class TimeUnitCl8 {
 	static mapping = {
 		table 'time_unit_cl8'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

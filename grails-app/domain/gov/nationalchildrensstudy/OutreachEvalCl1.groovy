@@ -24,6 +24,6 @@ class OutreachEvalCl1 {
 	static mapping = {
 		table 'outreach_eval_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

@@ -24,6 +24,6 @@ class CommuteTypeCl1 {
 	static mapping = {
 		table 'commute_type_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

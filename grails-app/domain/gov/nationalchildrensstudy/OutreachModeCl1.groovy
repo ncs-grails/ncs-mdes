@@ -24,6 +24,6 @@ class OutreachModeCl1 {
 	static mapping = {
 		table 'outreach_mode_cl1'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

@@ -24,6 +24,6 @@ class OpinionTypeCl5 {
 	static mapping = {
 		table 'opinion_type_cl5'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }

@@ -24,6 +24,6 @@ class ConsentWithdrawReasonCl2 {
 	static mapping = {
 		table 'consent_withdraw_reason_cl2'
 		masterClass column: 'master_cl'
-		description column: 'desc'
+		description column: 'description'
 	}
 }
