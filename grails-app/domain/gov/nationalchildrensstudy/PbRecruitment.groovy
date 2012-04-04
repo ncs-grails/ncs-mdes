@@ -1,5 +1,8 @@
 package gov.nationalchildrensstudy
 
+import javax.xml.stream.XMLStreamException
+import javax.xml.stream.XMLStreamReader
+
 /** Generated from Grails XSD plugin */
 class PbRecruitment {
 
@@ -90,8 +93,310 @@ class PbRecruitment {
 	Integer providerNcsPartic
 	String providerNcsOth
 	String transactionType
+	public static final boolean DOMAIN_CLASS_FROM_XSD = true
+	public static final String XSD_TABLE_NAME = "pb_recruitment"
+
+	public PbRecruitment(XMLStreamReader reader, boolean strict) {
+		if (reader.startElement) {
+			if (reader.localName() == XSD_TABLE_NAME) {
+				// We're in the table, load the first column
+				if ( reader.hasNext() ) { reader.next() }
+
+				while ( reader.hasNext() ) {
+					if ( reader.endElement ) {
+						if (reader.localName() == XSD_TABLE_NAME) {
+							break
+						}
+					} else if ( reader.startElement ) {
+						String elementName = reader.localName()
+						String elementText = reader.text()
+						if ( elementText ) {
+							switch ( elementName ) {
+
+								case 'psu_id':
+									psuId = elementText.toInteger()
+									break
+								case 'pb_recruitment_id':
+									pbRecruitmentId = elementText
+									break
+								case 'recruit_type':
+									recruitType = elementText.toInteger()
+									break
+								case 'du_id':
+									duId = elementText
+									break
+								case 'provider_id':
+									providerId = elementText
+									break
+								case 'event_id':
+									eventId = elementText
+									break
+								case 'event_type':
+									eventType = elementText.toInteger()
+									break
+								case 'event_repeat_key':
+									eventRepeatKey = elementText.toInteger()
+									break
+								case 'instrument_id':
+									instrumentId = elementText
+									break
+								case 'instrument_type':
+									instrumentType = elementText.toInteger()
+									break
+								case 'instrument_version':
+									instrumentVersion = elementText
+									break
+								case 'instrument_repeat_key':
+									instrumentRepeatKey = elementText.toInteger()
+									break
+								case 'pb_insti_info_date':
+									pbInstiInfoDate = elementText
+									break
+								case 'pb_insti_fullname':
+									pbInstiFullname = elementText
+									break
+								case 'pb_insti_id':
+									pbInstiId = elementText.toInteger()
+									break
+								case 'pb_insti_size':
+									pbInstiSize = elementText.toInteger()
+									break
+								case 'pb_prov_total':
+									pbProvTotal = elementText.toInteger()
+									break
+								case 'pb_pract_res':
+									pbPractRes = elementText.toInteger()
+									break
+								case 'pb_res_pharm':
+									pbResPharm = elementText.toInteger()
+									break
+								case 'pb_res_network':
+									pbResNetwork = elementText.toInteger()
+									break
+								case 'pb_res_oth':
+									pbResOth = elementText.toInteger()
+									break
+								case 'pb_prac_res_oth':
+									pbPracResOth = elementText
+									break
+								case 'pb_prac_spec':
+									pbPracSpec = elementText.toInteger()
+									break
+								case 'pb_spec_mou':
+									pbSpecMou = elementText.toInteger()
+									break
+								case 'pb_spec_lse':
+									pbSpecLse = elementText.toInteger()
+									break
+								case 'pb_spec_pmt':
+									pbSpecPmt = elementText.toInteger()
+									break
+								case 'pb_spec_irb':
+									pbSpecIrb = elementText.toInteger()
+									break
+								case 'pb_spec_ce':
+									pbSpecCe = elementText.toInteger()
+									break
+								case 'pb_sp_othinc':
+									pbSpOthinc = elementText.toInteger()
+									break
+								case 'pb_inc_oth':
+									pbIncOth = elementText
+									break
+								case 'provider_complete_date':
+									providerCompleteDate = elementText
+									break
+								case 'address_pb_id':
+									addressPbId = elementText
+									break
+								case 'address_1':
+									address1 = elementText
+									break
+								case 'address_2':
+									address2 = elementText
+									break
+								case 'unit':
+									unit = elementText
+									break
+								case 'city':
+									city = elementText
+									break
+								case 'state':
+									state = elementText.toInteger()
+									break
+								case 'zipcode':
+									zipcode = elementText
+									break
+								case 'zip4':
+									zip4 = elementText
+									break
+								case 'pb_prov_id':
+									pbProvId = elementText.toInteger()
+									break
+								case 'pb_prov_size':
+									pbProvSize = elementText.toInteger()
+									break
+								case 'num_obgyn':
+									numObgyn = elementText.toInteger()
+									break
+								case 'num_fp':
+									numFp = elementText.toInteger()
+									break
+								case 'num_midwives':
+									numMidwives = elementText.toInteger()
+									break
+								case 'num_other':
+									numOther = elementText.toInteger()
+									break
+								case 'pb_prac_type':
+									pbPracType = elementText.toInteger()
+									break
+								case 'pb_prac_type_oth':
+									pbPracTypeOth = elementText
+									break
+								case 'inst_name1':
+									instName1 = elementText
+									break
+								case 'institute_id1':
+									instituteId1 = elementText.toInteger()
+									break
+								case 'inst_name2':
+									instName2 = elementText
+									break
+								case 'institute_id2':
+									instituteId2 = elementText.toInteger()
+									break
+								case 'inst_name3':
+									instName3 = elementText
+									break
+								case 'institute_id3':
+									instituteId3 = elementText.toInteger()
+									break
+								case 'inst_name4':
+									instName4 = elementText
+									break
+								case 'institute_id4':
+									instituteId4 = elementText.toInteger()
+									break
+								case 'inst_name5':
+									instName5 = elementText
+									break
+								case 'institute_id5':
+									instituteId5 = elementText.toInteger()
+									break
+								case 'num_births':
+									numBirths = elementText.toInteger()
+									break
+								case 'num_new_pts':
+									numNewPts = elementText.toInteger()
+									break
+								case 'pt_race_aian':
+									ptRaceAian = elementText.toInteger()
+									break
+								case 'pt_race_asian':
+									ptRaceAsian = elementText.toInteger()
+									break
+								case 'pt_race_black':
+									ptRaceBlack = elementText.toInteger()
+									break
+								case 'pt_race_hisp':
+									ptRaceHisp = elementText.toInteger()
+									break
+								case 'pt_race_nhpi':
+									ptRaceNhpi = elementText.toInteger()
+									break
+								case 'pt_race_white':
+									ptRaceWhite = elementText.toInteger()
+									break
+								case 'pt_lang_eng':
+									ptLangEng = elementText.toInteger()
+									break
+								case 'pt_lang_span':
+									ptLangSpan = elementText.toInteger()
+									break
+								case 'pt_lang_oth':
+									ptLangOth = elementText.toInteger()
+									break
+								case 'pt_lang_spec':
+									ptLangSpec = elementText
+									break
+								case 'pay_ins_tricare':
+									payInsTricare = elementText.toInteger()
+									break
+								case 'pay_ins_medicaid':
+									payInsMedicaid = elementText.toInteger()
+									break
+								case 'pay_ins_comm':
+									payInsComm = elementText.toInteger()
+									break
+								case 'pay_ins_hmo':
+									payInsHmo = elementText.toInteger()
+									break
+								case 'pay_self':
+									paySelf = elementText.toInteger()
+									break
+								case 'provider_ncs_trn':
+									providerNcsTrn = elementText.toInteger()
+									break
+								case 'provider_ncs_infowt':
+									providerNcsInfowt = elementText.toInteger()
+									break
+								case 'provider_ncs_infoex':
+									providerNcsInfoex = elementText.toInteger()
+									break
+								case 'provider_ncs_acc':
+									providerNcsAcc = elementText.toInteger()
+									break
+								case 'provider_ncs_alt':
+									providerNcsAlt = elementText.toInteger()
+									break
+								case 'provider_ncs_ltr':
+									providerNcsLtr = elementText.toInteger()
+									break
+								case 'provider_ncs_pnltr':
+									providerNcsPnltr = elementText.toInteger()
+									break
+								case 'provider_ncs_info':
+									providerNcsInfo = elementText.toInteger()
+									break
+								case 'provider_ncs_stf':
+									providerNcsStf = elementText.toInteger()
+									break
+								case 'provider_ncs_rfr':
+									providerNcsRfr = elementText.toInteger()
+									break
+								case 'provider_ncs_partic':
+									providerNcsPartic = elementText.toInteger()
+									break
+								case 'provider_ncs_oth':
+									providerNcsOth = elementText
+									break
+								case 'transaction_type':
+									transactionType = elementText
+									break
+								default:
+									if (strict) {
+										throw new XMLStreamException(
+											"malformed XML, unknown element: ${elementText}")
+									} else {
+										log.warn "Element: ${elementName} unknown, ignoring."
+									}
+									break
+							}
+						}
+					}
+					reader.next()
+				}
+			} else {
+				throw new XMLStreamException("xml element did not start as ${XSD_TABLE_NAME}")
+			}
+		} else {
+			throw new XMLStreamException("constructor must be passed the start element for the table in the XMLStreamReader")
+		}
+	}
 
 	static constraints = {
+
 		psuId(nullable: false, inList:[20000054, 20000032, 20000032, 20000032, 20000032, 20000016, 20000039, 20000200, 20000028, 20000063, 20000067, 20000201, 20000202, 20000203, 20000090, 20000083, 20000204, 20000205, 20000042, 20000037, 20000206, 20000040, 20000207, 20000208, 20000209, 20000091, 20000210, 20000069, 20000211, 20000094, 20000212, 20000213, 20000102, 20000214, 20000215, 20000044, 20000216, 20000216, 20000216, 20000030, 20000217, 20000218, 20000218, 20000218, 20000219, 20000220, 20000221, 20000092, 20000222, 20000223, 20000224, 20000225, 20000225, 20000088, 20000087, 20000226, 20000103, 20000227, 20000228, 20000229, 20000230, 20000231, 20000232, 20000025, 20000233, 20000233, 20000233, 20000048, 20000234, 20000235, 20000050, 20000236, 20000035, 20000237, 20000238, 20000239, 20000240, 20000052, 20000241, 20000243, 20000244, 20000245, 20000246, 20000247, 20000248, 20000113, 20000249, 20000250, 20000251, 20000086, 20000252, 20000253, 20000254, 20000255, 20000256, 20000018, 20000058, 20000014, 20000257, 20000258, 20000259, 20000259, 20000098, 20000060, 20000260, 20000260, 20000260, 20000260, 20000261, 20000262, 20000263, 20000097, 20000264, 20000264, 20000265, 20000062, 20000117, 20000266, 20000267, 20000268, 20000269, 20000270, 20000271, 20000272, 20000273, -4, 20000000])
 		pbRecruitmentId(nullable: false, minSize:1, maxSize:36)
 		recruitType(nullable: false, inList:[1, 2, 3, 4, -4])
@@ -182,6 +487,7 @@ class PbRecruitment {
 	}
 	static mapping = {
 		table 'pb_recruitment'
+
 		psuId column:'psu_id'
 		pbRecruitmentId column:'pb_recruitment_id'
 		recruitType column:'recruit_type'

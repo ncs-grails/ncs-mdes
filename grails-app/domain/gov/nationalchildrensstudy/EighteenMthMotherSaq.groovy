@@ -1,5 +1,8 @@
 package gov.nationalchildrensstudy
 
+import javax.xml.stream.XMLStreamException
+import javax.xml.stream.XMLStreamReader
+
 /** Generated from Grails XSD plugin */
 class EighteenMthMotherSaq {
 
@@ -84,8 +87,292 @@ class EighteenMthMotherSaq {
 	Integer psoc18Copy6
 	Integer psoc18Total
 	String transactionType
+	public static final boolean DOMAIN_CLASS_FROM_XSD = true
+	public static final String XSD_TABLE_NAME = "eighteen_mth_mother_saq"
+
+	public EighteenMthMotherSaq(XMLStreamReader reader, boolean strict) {
+		if (reader.startElement) {
+			if (reader.localName() == XSD_TABLE_NAME) {
+				// We're in the table, load the first column
+				if ( reader.hasNext() ) { reader.next() }
+
+				while ( reader.hasNext() ) {
+					if ( reader.endElement ) {
+						if (reader.localName() == XSD_TABLE_NAME) {
+							break
+						}
+					} else if ( reader.startElement ) {
+						String elementName = reader.localName()
+						String elementText = reader.text()
+						if ( elementText ) {
+							switch ( elementName ) {
+
+								case 'psu_id':
+									psuId = elementText.toInteger()
+									break
+								case 'eighteen_mth_saq_id':
+									eighteenMthSaqId = elementText
+									break
+								case 'recruit_type':
+									recruitType = elementText.toInteger()
+									break
+								case 'du_id':
+									duId = elementText
+									break
+								case 'p_id':
+									pId = elementText
+									break
+								case 'event_id':
+									eventId = elementText
+									break
+								case 'event_type':
+									eventType = elementText.toInteger()
+									break
+								case 'event_repeat_key':
+									eventRepeatKey = elementText.toInteger()
+									break
+								case 'instrument_id':
+									instrumentId = elementText
+									break
+								case 'instrument_type':
+									instrumentType = elementText.toInteger()
+									break
+								case 'instrument_version':
+									instrumentVersion = elementText
+									break
+								case 'instrument_repeat_key':
+									instrumentRepeatKey = elementText.toInteger()
+									break
+								case 'asq_date_comp':
+									asqDateComp = elementText
+									break
+								case 'c_fname':
+									cFname = elementText
+									break
+								case 'c_minital':
+									cMinital = elementText
+									break
+								case 'c_lname':
+									cLname = elementText
+									break
+								case 'child_dob':
+									childDob = elementText
+									break
+								case 'weeks_premature':
+									weeksPremature = elementText.toInteger()
+									break
+								case 'child_sex':
+									childSex = elementText.toInteger()
+									break
+								case 'respondent_fname':
+									respondentFname = elementText
+									break
+								case 'respondent_minital':
+									respondentMinital = elementText
+									break
+								case 'respondent_lname':
+									respondentLname = elementText
+									break
+								case 'respondent_rel':
+									respondentRel = elementText.toInteger()
+									break
+								case 'respondent_rel_oth':
+									respondentRelOth = elementText
+									break
+								case 'asq18_address_id':
+									asq18AddressId = elementText
+									break
+								case 'asq18_address_1':
+									asq18Address1 = elementText
+									break
+								case 'asq18_address_2':
+									asq18Address2 = elementText
+									break
+								case 'asq18_unit':
+									asq18Unit = elementText
+									break
+								case 'asq18_city':
+									asq18City = elementText
+									break
+								case 'asq18_state':
+									asq18State = elementText.toInteger()
+									break
+								case 'asq18_zip':
+									asq18Zip = elementText
+									break
+								case 'asq18_zip4':
+									asq18Zip4 = elementText
+									break
+								case 'asq18_country':
+									asq18Country = elementText
+									break
+								case 'home_phone':
+									homePhone = elementText
+									break
+								case 'other_phone':
+									otherPhone = elementText
+									break
+								case 'email':
+									email = elementText
+									break
+								case 'asq18_assistname_comment':
+									asq18AssistnameComment = elementText
+									break
+								case 'asq_child_id':
+									asqChildId = elementText
+									break
+								case 'sc_id':
+									scId = elementText.toInteger()
+									break
+								case 'sc_name':
+									scName = elementText
+									break
+								case 'asq18_age_months':
+									asq18AgeMonths = elementText.toInteger()
+									break
+								case 'asq18_age_days':
+									asq18AgeDays = elementText.toInteger()
+									break
+								case 'asq18_adj_age_months':
+									asq18AdjAgeMonths = elementText.toInteger()
+									break
+								case 'asq18_adj_age_days':
+									asq18AdjAgeDays = elementText.toInteger()
+									break
+								case 'comm18_points_1':
+									comm18Points1 = elementText.toInteger()
+									break
+								case 'comm18_find_2':
+									comm18Find2 = elementText.toInteger()
+									break
+								case 'comm18_eight_3':
+									comm18Eight3 = elementText.toInteger()
+									break
+								case 'comm18_imitate_4':
+									comm18Imitate4 = elementText.toInteger()
+									break
+								case 'comm18_picture_5':
+									comm18Picture5 = elementText.toInteger()
+									break
+								case 'comm18_say_idea_6':
+									comm18SayIdea6 = elementText.toInteger()
+									break
+								case 'example18_comment':
+									example18Comment = elementText
+									break
+								case 'comm18_total':
+									comm18Total = elementText.toInteger()
+									break
+								case 'grmtr18_bndstd_1':
+									grmtr18Bndstd1 = elementText.toInteger()
+									break
+								case 'grmtr18_walk_2':
+									grmtr18Walk2 = elementText.toInteger()
+									break
+								case 'grmtr18_nofall_3':
+									grmtr18Nofall3 = elementText.toInteger()
+									break
+								case 'grmtr18_climb_4':
+									grmtr18Climb4 = elementText.toInteger()
+									break
+								case 'grmtr18_stairs_5':
+									grmtr18Stairs5 = elementText.toInteger()
+									break
+								case 'grmtr18_howkick_6':
+									grmtr18Howkick6 = elementText.toInteger()
+									break
+								case 'grmtr18_total':
+									grmtr18Total = elementText.toInteger()
+									break
+								case 'fnmtr18_throw_1':
+									fnmtr18Throw1 = elementText.toInteger()
+									break
+								case 'fnmtr18_stack_2':
+									fnmtr18Stack2 = elementText.toInteger()
+									break
+								case 'fnmtr18_mark_3':
+									fnmtr18Mark3 = elementText.toInteger()
+									break
+								case 'fnmtr18_threestk_4':
+									fnmtr18Threestk4 = elementText.toInteger()
+									break
+								case 'fnmtr18_turn_5':
+									fnmtr18Turn5 = elementText.toInteger()
+									break
+								case 'fnmtr18_spoon_6':
+									fnmtr18Spoon6 = elementText.toInteger()
+									break
+								case 'fnmtr18_total':
+									fnmtr18Total = elementText.toInteger()
+									break
+								case 'pslv18_drop_1':
+									pslv18Drop1 = elementText.toInteger()
+									break
+								case 'pslv18_rchtool_2':
+									pslv18Rchtool2 = elementText.toInteger()
+									break
+								case 'pslv18_dmpbtl_3':
+									pslv18Dmpbtl3 = elementText.toInteger()
+									break
+								case 'pslv18_scribble_4':
+									pslv18Scribble4 = elementText.toInteger()
+									break
+								case 'pslv18_copy_5':
+									pslv18Copy5 = elementText.toInteger()
+									break
+								case 'pslv18_btldmp_6':
+									pslv18Btldmp6 = elementText.toInteger()
+									break
+								case 'pslv18_total':
+									pslv18Total = elementText.toInteger()
+									break
+								case 'psoc18_mirror_1':
+									psoc18Mirror1 = elementText.toInteger()
+									break
+								case 'psoc18_hugtoy_2':
+									psoc18Hugtoy2 = elementText.toInteger()
+									break
+								case 'psoc18_attn_3':
+									psoc18Attn3 = elementText.toInteger()
+									break
+								case 'psoc18_help_4':
+									psoc18Help4 = elementText.toInteger()
+									break
+								case 'psoc18_spill_5':
+									psoc18Spill5 = elementText.toInteger()
+									break
+								case 'psoc18_copy_6':
+									psoc18Copy6 = elementText.toInteger()
+									break
+								case 'psoc18_total':
+									psoc18Total = elementText.toInteger()
+									break
+								case 'transaction_type':
+									transactionType = elementText
+									break
+								default:
+									if (strict) {
+										throw new XMLStreamException(
+											"malformed XML, unknown element: ${elementText}")
+									} else {
+										log.warn "Element: ${elementName} unknown, ignoring."
+									}
+									break
+							}
+						}
+					}
+					reader.next()
+				}
+			} else {
+				throw new XMLStreamException("xml element did not start as ${XSD_TABLE_NAME}")
+			}
+		} else {
+			throw new XMLStreamException("constructor must be passed the start element for the table in the XMLStreamReader")
+		}
+	}
 
 	static constraints = {
+
 		psuId(nullable: false, inList:[20000054, 20000032, 20000032, 20000032, 20000032, 20000016, 20000039, 20000200, 20000028, 20000063, 20000067, 20000201, 20000202, 20000203, 20000090, 20000083, 20000204, 20000205, 20000042, 20000037, 20000206, 20000040, 20000207, 20000208, 20000209, 20000091, 20000210, 20000069, 20000211, 20000094, 20000212, 20000213, 20000102, 20000214, 20000215, 20000044, 20000216, 20000216, 20000216, 20000030, 20000217, 20000218, 20000218, 20000218, 20000219, 20000220, 20000221, 20000092, 20000222, 20000223, 20000224, 20000225, 20000225, 20000088, 20000087, 20000226, 20000103, 20000227, 20000228, 20000229, 20000230, 20000231, 20000232, 20000025, 20000233, 20000233, 20000233, 20000048, 20000234, 20000235, 20000050, 20000236, 20000035, 20000237, 20000238, 20000239, 20000240, 20000052, 20000241, 20000243, 20000244, 20000245, 20000246, 20000247, 20000248, 20000113, 20000249, 20000250, 20000251, 20000086, 20000252, 20000253, 20000254, 20000255, 20000256, 20000018, 20000058, 20000014, 20000257, 20000258, 20000259, 20000259, 20000098, 20000060, 20000260, 20000260, 20000260, 20000260, 20000261, 20000262, 20000263, 20000097, 20000264, 20000264, 20000265, 20000062, 20000117, 20000266, 20000267, 20000268, 20000269, 20000270, 20000271, 20000272, 20000273, -4, 20000000])
 		eighteenMthSaqId(nullable: false, minSize:1, maxSize:36)
 		recruitType(nullable: false, inList:[1, 2, 3, 4, -4])
@@ -170,6 +457,7 @@ class EighteenMthMotherSaq {
 	}
 	static mapping = {
 		table 'eighteen_mth_mother_saq'
+
 		psuId column:'psu_id'
 		eighteenMthSaqId column:'eighteen_mth_saq_id'
 		recruitType column:'recruit_type'

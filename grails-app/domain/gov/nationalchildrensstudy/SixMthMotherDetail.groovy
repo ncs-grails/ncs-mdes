@@ -1,5 +1,8 @@
 package gov.nationalchildrensstudy
 
+import javax.xml.stream.XMLStreamException
+import javax.xml.stream.XMLStreamReader
+
 /** Generated from Grails XSD plugin */
 class SixMthMotherDetail {
 
@@ -86,8 +89,298 @@ class SixMthMotherDetail {
 	Integer daycare
 	Integer daycareHrs
 	String transactionType
+	public static final boolean DOMAIN_CLASS_FROM_XSD = true
+	public static final String XSD_TABLE_NAME = "six_mth_mother_detail"
+
+	public SixMthMotherDetail(XMLStreamReader reader, boolean strict) {
+		if (reader.startElement) {
+			if (reader.localName() == XSD_TABLE_NAME) {
+				// We're in the table, load the first column
+				if ( reader.hasNext() ) { reader.next() }
+
+				while ( reader.hasNext() ) {
+					if ( reader.endElement ) {
+						if (reader.localName() == XSD_TABLE_NAME) {
+							break
+						}
+					} else if ( reader.startElement ) {
+						String elementName = reader.localName()
+						String elementText = reader.text()
+						if ( elementText ) {
+							switch ( elementName ) {
+
+								case 'psu_id':
+									psuId = elementText.toInteger()
+									break
+								case 'six_mth_id':
+									sixMthId = elementText
+									break
+								case 'p_id':
+									pId = elementText
+									break
+								case 'six_mth_detail_id':
+									sixMthDetailId = elementText
+									break
+								case 'child_qnum':
+									childQnum = elementText.toInteger()
+									break
+								case 'child_sex':
+									childSex = elementText.toInteger()
+									break
+								case 'cname_confirm':
+									cnameConfirm = elementText.toInteger()
+									break
+								case 'c_fname':
+									cFname = elementText
+									break
+								case 'c_lname':
+									cLname = elementText
+									break
+								case 'cdob_confirm':
+									cdobConfirm = elementText.toInteger()
+									break
+								case 'child_dob':
+									childDob = elementText
+									break
+								case 'time_stamp_2':
+									timeStamp2 = elementText
+									break
+								case 'eyes_follow':
+									eyesFollow = elementText.toInteger()
+									break
+								case 'smile':
+									smile = elementText.toInteger()
+									break
+								case 'reach_1':
+									reach1 = elementText.toInteger()
+									break
+								case 'feed':
+									feed = elementText.toInteger()
+									break
+								case 'wave':
+									wave = elementText.toInteger()
+									break
+								case 'reach_2':
+									reach2 = elementText.toInteger()
+									break
+								case 'grab':
+									grab = elementText.toInteger()
+									break
+								case 'switch_hands':
+									switchHands = elementText.toInteger()
+									break
+								case 'pickup':
+									pickup = elementText.toInteger()
+									break
+								case 'hold':
+									hold = elementText.toInteger()
+									break
+								case 'sound_2':
+									sound2 = elementText.toInteger()
+									break
+								case 'sound_3':
+									sound3 = elementText.toInteger()
+									break
+								case 'speak_1':
+									speak1 = elementText.toInteger()
+									break
+								case 'speak_2':
+									speak2 = elementText.toInteger()
+									break
+								case 'headup':
+									headup = elementText.toInteger()
+									break
+								case 'roll_1':
+									roll1 = elementText.toInteger()
+									break
+								case 'roll_2':
+									roll2 = elementText.toInteger()
+									break
+								case 'situp':
+									situp = elementText.toInteger()
+									break
+								case 'stand':
+									stand = elementText.toInteger()
+									break
+								case 'time_stamp_3':
+									timeStamp3 = elementText
+									break
+								case 'sleep_place_1':
+									sleepPlace1 = elementText.toInteger()
+									break
+								case 'sleep_place_2':
+									sleepPlace2 = elementText.toInteger()
+									break
+								case 'sleep_place_2_oth':
+									sleepPlace2Oth = elementText
+									break
+								case 'sleep_position_night':
+									sleepPositionNight = elementText.toInteger()
+									break
+								case 'sleep_position_nap':
+									sleepPositionNap = elementText.toInteger()
+									break
+								case 'sleep_routine':
+									sleepRoutine = elementText.toInteger()
+									break
+								case 'sleep_hrs_day':
+									sleepHrsDay = elementText.toInteger()
+									break
+								case 'sleep_hrs_night':
+									sleepHrsNight = elementText.toInteger()
+									break
+								case 'sleep_time_night':
+									sleepTimeNight = elementText
+									break
+								case 'sleep_time_wake':
+									sleepTimeWake = elementText
+									break
+								case 'sleep_difficult':
+									sleepDifficult = elementText.toInteger()
+									break
+								case 'sleep_through':
+									sleepThrough = elementText.toInteger()
+									break
+								case 'time_stamp_4':
+									timeStamp4 = elementText
+									break
+								case 'c_health':
+									cHealth = elementText.toInteger()
+									break
+								case 'cold':
+									cold = elementText.toInteger()
+									break
+								case 'cold_age':
+									coldAge = elementText.toInteger()
+									break
+								case 'cold_age_unit':
+									coldAgeUnit = elementText.toInteger()
+									break
+								case 'ear_infection':
+									earInfection = elementText.toInteger()
+									break
+								case 'ear_infection_age':
+									earInfectionAge = elementText.toInteger()
+									break
+								case 'ear_infection_age_unit':
+									earInfectionAgeUnit = elementText.toInteger()
+									break
+								case 'gastro':
+									gastro = elementText.toInteger()
+									break
+								case 'gastro_age':
+									gastroAge = elementText.toInteger()
+									break
+								case 'gastro_age_unit':
+									gastroAgeUnit = elementText.toInteger()
+									break
+								case 'respiratory':
+									respiratory = elementText.toInteger()
+									break
+								case 'respiratory_age':
+									respiratoryAge = elementText.toInteger()
+									break
+								case 'respiratory_age_unit':
+									respiratoryAgeUnit = elementText.toInteger()
+									break
+								case 'fever':
+									fever = elementText.toInteger()
+									break
+								case 'fail_thrive':
+									failThrive = elementText.toInteger()
+									break
+								case 'time_stamp_5':
+									timeStamp5 = elementText
+									break
+								case 'r_hcare':
+									rHcare = elementText.toInteger()
+									break
+								case 'last_visit':
+									lastVisit = elementText
+									break
+								case 'visit_wt':
+									visitWt = elementText.toInteger()
+									break
+								case 'same_care':
+									sameCare = elementText.toInteger()
+									break
+								case 'hcare_sick':
+									hcareSick = elementText.toInteger()
+									break
+								case 'time_stamp_6':
+									timeStamp6 = elementText
+									break
+								case 'insure':
+									insure = elementText.toInteger()
+									break
+								case 'ins_employ':
+									insEmploy = elementText.toInteger()
+									break
+								case 'ins_medicaid':
+									insMedicaid = elementText.toInteger()
+									break
+								case 'ins_tricare':
+									insTricare = elementText.toInteger()
+									break
+								case 'ins_ihs':
+									insIhs = elementText.toInteger()
+									break
+								case 'ins_medicare':
+									insMedicare = elementText.toInteger()
+									break
+								case 'ins_oth':
+									insOth = elementText.toInteger()
+									break
+								case 'time_stamp_7':
+									timeStamp7 = elementText
+									break
+								case 'childcare':
+									childcare = elementText.toInteger()
+									break
+								case 'family_care':
+									familyCare = elementText.toInteger()
+									break
+								case 'family_care_hrs':
+									familyCareHrs = elementText.toInteger()
+									break
+								case 'homecare':
+									homecare = elementText.toInteger()
+									break
+								case 'homecare_hrs':
+									homecareHrs = elementText.toInteger()
+									break
+								case 'daycare':
+									daycare = elementText.toInteger()
+									break
+								case 'daycare_hrs':
+									daycareHrs = elementText.toInteger()
+									break
+								case 'transaction_type':
+									transactionType = elementText
+									break
+								default:
+									if (strict) {
+										throw new XMLStreamException(
+											"malformed XML, unknown element: ${elementText}")
+									} else {
+										log.warn "Element: ${elementName} unknown, ignoring."
+									}
+									break
+							}
+						}
+					}
+					reader.next()
+				}
+			} else {
+				throw new XMLStreamException("xml element did not start as ${XSD_TABLE_NAME}")
+			}
+		} else {
+			throw new XMLStreamException("constructor must be passed the start element for the table in the XMLStreamReader")
+		}
+	}
 
 	static constraints = {
+
 		psuId(nullable: false, inList:[20000054, 20000032, 20000032, 20000032, 20000032, 20000016, 20000039, 20000200, 20000028, 20000063, 20000067, 20000201, 20000202, 20000203, 20000090, 20000083, 20000204, 20000205, 20000042, 20000037, 20000206, 20000040, 20000207, 20000208, 20000209, 20000091, 20000210, 20000069, 20000211, 20000094, 20000212, 20000213, 20000102, 20000214, 20000215, 20000044, 20000216, 20000216, 20000216, 20000030, 20000217, 20000218, 20000218, 20000218, 20000219, 20000220, 20000221, 20000092, 20000222, 20000223, 20000224, 20000225, 20000225, 20000088, 20000087, 20000226, 20000103, 20000227, 20000228, 20000229, 20000230, 20000231, 20000232, 20000025, 20000233, 20000233, 20000233, 20000048, 20000234, 20000235, 20000050, 20000236, 20000035, 20000237, 20000238, 20000239, 20000240, 20000052, 20000241, 20000243, 20000244, 20000245, 20000246, 20000247, 20000248, 20000113, 20000249, 20000250, 20000251, 20000086, 20000252, 20000253, 20000254, 20000255, 20000256, 20000018, 20000058, 20000014, 20000257, 20000258, 20000259, 20000259, 20000098, 20000060, 20000260, 20000260, 20000260, 20000260, 20000261, 20000262, 20000263, 20000097, 20000264, 20000264, 20000265, 20000062, 20000117, 20000266, 20000267, 20000268, 20000269, 20000270, 20000271, 20000272, 20000273, -4, 20000000])
 		sixMthId(nullable: false, minSize:1, maxSize:36)
 		pId(nullable: false, minSize:1, maxSize:36)
@@ -174,6 +467,7 @@ class SixMthMotherDetail {
 	}
 	static mapping = {
 		table 'six_mth_mother_detail'
+
 		psuId column:'psu_id'
 		sixMthId column:'six_mth_id'
 		pId column:'p_id'

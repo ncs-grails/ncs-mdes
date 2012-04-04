@@ -1,5 +1,8 @@
 package gov.nationalchildrensstudy
 
+import javax.xml.stream.XMLStreamException
+import javax.xml.stream.XMLStreamReader
+
 /** Generated from Grails XSD plugin */
 class FatherPv1 {
 
@@ -123,8 +126,409 @@ class FatherPv1 {
 	Integer fReward
 	String timeStamp11
 	String transactionType
+	public static final boolean DOMAIN_CLASS_FROM_XSD = true
+	public static final String XSD_TABLE_NAME = "father_pv1"
+
+	public FatherPv1(XMLStreamReader reader, boolean strict) {
+		if (reader.startElement) {
+			if (reader.localName() == XSD_TABLE_NAME) {
+				// We're in the table, load the first column
+				if ( reader.hasNext() ) { reader.next() }
+
+				while ( reader.hasNext() ) {
+					if ( reader.endElement ) {
+						if (reader.localName() == XSD_TABLE_NAME) {
+							break
+						}
+					} else if ( reader.startElement ) {
+						String elementName = reader.localName()
+						String elementText = reader.text()
+						if ( elementText ) {
+							switch ( elementName ) {
+
+								case 'psu_id':
+									psuId = elementText.toInteger()
+									break
+								case 'father_id':
+									fatherId = elementText
+									break
+								case 'recruit_type':
+									recruitType = elementText.toInteger()
+									break
+								case 'du_id':
+									duId = elementText
+									break
+								case 'p_id':
+									pId = elementText
+									break
+								case 'event_id':
+									eventId = elementText
+									break
+								case 'event_type':
+									eventType = elementText.toInteger()
+									break
+								case 'event_repeat_key':
+									eventRepeatKey = elementText.toInteger()
+									break
+								case 'instrument_id':
+									instrumentId = elementText
+									break
+								case 'instrument_type':
+									instrumentType = elementText.toInteger()
+									break
+								case 'instrument_version':
+									instrumentVersion = elementText
+									break
+								case 'instrument_repeat_key':
+									instrumentRepeatKey = elementText.toInteger()
+									break
+								case 'time_stamp_1':
+									timeStamp1 = elementText
+									break
+								case 'f_int_ready':
+									fIntReady = elementText.toInteger()
+									break
+								case 'time_stamp_2':
+									timeStamp2 = elementText
+									break
+								case 'r_fname':
+									rFname = elementText
+									break
+								case 'r_lname':
+									rLname = elementText
+									break
+								case 'person_dob':
+									personDob = elementText
+									break
+								case 'age_elig':
+									ageElig = elementText.toInteger()
+									break
+								case 'f_relate':
+									fRelate = elementText.toInteger()
+									break
+								case 'f_relate_oth':
+									fRelateOth = elementText
+									break
+								case 'f_maristat':
+									fMaristat = elementText.toInteger()
+									break
+								case 'ethnicity':
+									ethnicity = elementText.toInteger()
+									break
+								case 'time_stamp_3':
+									timeStamp3 = elementText
+									break
+								case 'cig_now':
+									cigNow = elementText.toInteger()
+									break
+								case 'time_stamp_4':
+									timeStamp4 = elementText
+									break
+								case 'drink':
+									drink = elementText.toInteger()
+									break
+								case 'drink_now':
+									drinkNow = elementText.toInteger()
+									break
+								case 'drink_now_5':
+									drinkNow5 = elementText.toInteger()
+									break
+								case 'time_stamp_5':
+									timeStamp5 = elementText
+									break
+								case 'f_health':
+									fHealth = elementText.toInteger()
+									break
+								case 'f_asthma':
+									fAsthma = elementText.toInteger()
+									break
+								case 'f_eczema':
+									fEczema = elementText.toInteger()
+									break
+								case 'f_allergies':
+									fAllergies = elementText.toInteger()
+									break
+								case 'f_highbp':
+									fHighbp = elementText.toInteger()
+									break
+								case 'f_diabetes':
+									fDiabetes = elementText.toInteger()
+									break
+								case 'f_highcholest':
+									fHighcholest = elementText.toInteger()
+									break
+								case 'f_cancer':
+									fCancer = elementText.toInteger()
+									break
+								case 'f_cancer_type_oth':
+									fCancerTypeOth = elementText
+									break
+								case 'f_sicklecell':
+									fSicklecell = elementText.toInteger()
+									break
+								case 'f_autoimmune':
+									fAutoimmune = elementText.toInteger()
+									break
+								case 'f_autoimmune_type':
+									fAutoimmuneType = elementText.toInteger()
+									break
+								case 'f_autoimmune_type_oth':
+									fAutoimmuneTypeOth = elementText
+									break
+								case 'f_birth_defect':
+									fBirthDefect = elementText.toInteger()
+									break
+								case 'f_defect_type':
+									fDefectType = elementText
+									break
+								case 'f_blind':
+									fBlind = elementText.toInteger()
+									break
+								case 'f_deaf':
+									fDeaf = elementText.toInteger()
+									break
+								case 'f_add':
+									fAdd = elementText.toInteger()
+									break
+								case 'f_autism':
+									fAutism = elementText.toInteger()
+									break
+								case 'f_bipolar':
+									fBipolar = elementText.toInteger()
+									break
+								case 'f_depression':
+									fDepression = elementText.toInteger()
+									break
+								case 'f_anxiety':
+									fAnxiety = elementText.toInteger()
+									break
+								case 'f_oth_condition':
+									fOthCondition = elementText.toInteger()
+									break
+								case 'f_condition_oth':
+									fConditionOth = elementText
+									break
+								case 'time_stamp_6':
+									timeStamp6 = elementText
+									break
+								case 'working':
+									working = elementText.toInteger()
+									break
+								case 'work_hrs':
+									workHrs = elementText.toInteger()
+									break
+								case 'job_satisfied':
+									jobSatisfied = elementText.toInteger()
+									break
+								case 'hh_members':
+									hhMembers = elementText.toInteger()
+									break
+								case 'num_child':
+									numChild = elementText.toInteger()
+									break
+								case 'income':
+									income = elementText.toInteger()
+									break
+								case 'time_stamp_7':
+									timeStamp7 = elementText
+									break
+								case 'bothered':
+									bothered = elementText.toInteger()
+									break
+								case 'appetite_poor':
+									appetitePoor = elementText.toInteger()
+									break
+								case 'blues':
+									blues = elementText.toInteger()
+									break
+								case 'good_as_others':
+									goodAsOthers = elementText.toInteger()
+									break
+								case 'trb_keep_mind':
+									trbKeepMind = elementText.toInteger()
+									break
+								case 'depressed':
+									depressed = elementText.toInteger()
+									break
+								case 'evthg_effort':
+									evthgEffort = elementText.toInteger()
+									break
+								case 'hopeful_future':
+									hopefulFuture = elementText.toInteger()
+									break
+								case 'life_failure':
+									lifeFailure = elementText.toInteger()
+									break
+								case 'felt_fearful':
+									feltFearful = elementText.toInteger()
+									break
+								case 'sleep_restless':
+									sleepRestless = elementText.toInteger()
+									break
+								case 'happy':
+									happy = elementText.toInteger()
+									break
+								case 'talked_less':
+									talkedLess = elementText.toInteger()
+									break
+								case 'felt_lonely':
+									feltLonely = elementText.toInteger()
+									break
+								case 'people_unfriendly':
+									peopleUnfriendly = elementText.toInteger()
+									break
+								case 'enjoyed_life':
+									enjoyedLife = elementText.toInteger()
+									break
+								case 'crying_spells':
+									cryingSpells = elementText.toInteger()
+									break
+								case 'felt_sad':
+									feltSad = elementText.toInteger()
+									break
+								case 'feel_peop_dislike':
+									feelPeopDislike = elementText.toInteger()
+									break
+								case 'not_get_going':
+									notGetGoing = elementText.toInteger()
+									break
+								case 'time_stamp_8':
+									timeStamp8 = elementText
+									break
+								case 'born_us':
+									bornUs = elementText.toInteger()
+									break
+								case 'time_us':
+									timeUs = elementText.toInteger()
+									break
+								case 'm_born_us':
+									mBornUs = elementText.toInteger()
+									break
+								case 'f_born_us':
+									fBornUs = elementText.toInteger()
+									break
+								case 'ins_employ':
+									insEmploy = elementText.toInteger()
+									break
+								case 'ins_purchased':
+									insPurchased = elementText.toInteger()
+									break
+								case 'ins_medicaid':
+									insMedicaid = elementText.toInteger()
+									break
+								case 'ins_tricare':
+									insTricare = elementText.toInteger()
+									break
+								case 'ins_ihs':
+									insIhs = elementText.toInteger()
+									break
+								case 'ins_medicare':
+									insMedicare = elementText.toInteger()
+									break
+								case 'ins_oth':
+									insOth = elementText.toInteger()
+									break
+								case 'time_stamp_9':
+									timeStamp9 = elementText
+									break
+								case 'num_people_comm':
+									numPeopleComm = elementText.toInteger()
+									break
+								case 'freq_comm':
+									freqComm = elementText.toInteger()
+									break
+								case 'social_support':
+									socialSupport = elementText.toInteger()
+									break
+								case 'time_stamp_10':
+									timeStamp10 = elementText
+									break
+								case 'timing':
+									timing = elementText.toInteger()
+									break
+								case 'discuss_preg':
+									discussPreg = elementText.toInteger()
+									break
+								case 'seen_sono':
+									seenSono = elementText.toInteger()
+									break
+								case 'listen_heart':
+									listenHeart = elementText.toInteger()
+									break
+								case 'felt_move':
+									feltMove = elementText.toInteger()
+									break
+								case 'attend_lamaze':
+									attendLamaze = elementText.toInteger()
+									break
+								case 'bought_baby':
+									boughtBaby = elementText.toInteger()
+									break
+								case 'plan_attend_birth':
+									planAttendBirth = elementText.toInteger()
+									break
+								case 'child_lname':
+									childLname = elementText.toInteger()
+									break
+								case 'want_child_lname':
+									wantChildLname = elementText.toInteger()
+									break
+								case 'fam_attend_birth':
+									famAttendBirth = elementText.toInteger()
+									break
+								case 'want_fam_attend':
+									wantFamAttend = elementText.toInteger()
+									break
+								case 'f_time_essential':
+									fTimeEssential = elementText.toInteger()
+									break
+								case 'affect_difficult':
+									affectDifficult = elementText.toInteger()
+									break
+								case 'f_involved_as_m':
+									fInvolvedAsM = elementText.toInteger()
+									break
+								case 'f_effects_baby':
+									fEffectsBaby = elementText.toInteger()
+									break
+								case 'f_provide_matter':
+									fProvideMatter = elementText.toInteger()
+									break
+								case 'f_support_m':
+									fSupportM = elementText.toInteger()
+									break
+								case 'f_reward':
+									fReward = elementText.toInteger()
+									break
+								case 'time_stamp_11':
+									timeStamp11 = elementText
+									break
+								case 'transaction_type':
+									transactionType = elementText
+									break
+								default:
+									if (strict) {
+										throw new XMLStreamException(
+											"malformed XML, unknown element: ${elementText}")
+									} else {
+										log.warn "Element: ${elementName} unknown, ignoring."
+									}
+									break
+							}
+						}
+					}
+					reader.next()
+				}
+			} else {
+				throw new XMLStreamException("xml element did not start as ${XSD_TABLE_NAME}")
+			}
+		} else {
+			throw new XMLStreamException("constructor must be passed the start element for the table in the XMLStreamReader")
+		}
+	}
 
 	static constraints = {
+
 		psuId(nullable: false, inList:[20000054, 20000032, 20000032, 20000032, 20000032, 20000016, 20000039, 20000200, 20000028, 20000063, 20000067, 20000201, 20000202, 20000203, 20000090, 20000083, 20000204, 20000205, 20000042, 20000037, 20000206, 20000040, 20000207, 20000208, 20000209, 20000091, 20000210, 20000069, 20000211, 20000094, 20000212, 20000213, 20000102, 20000214, 20000215, 20000044, 20000216, 20000216, 20000216, 20000030, 20000217, 20000218, 20000218, 20000218, 20000219, 20000220, 20000221, 20000092, 20000222, 20000223, 20000224, 20000225, 20000225, 20000088, 20000087, 20000226, 20000103, 20000227, 20000228, 20000229, 20000230, 20000231, 20000232, 20000025, 20000233, 20000233, 20000233, 20000048, 20000234, 20000235, 20000050, 20000236, 20000035, 20000237, 20000238, 20000239, 20000240, 20000052, 20000241, 20000243, 20000244, 20000245, 20000246, 20000247, 20000248, 20000113, 20000249, 20000250, 20000251, 20000086, 20000252, 20000253, 20000254, 20000255, 20000256, 20000018, 20000058, 20000014, 20000257, 20000258, 20000259, 20000259, 20000098, 20000060, 20000260, 20000260, 20000260, 20000260, 20000261, 20000262, 20000263, 20000097, 20000264, 20000264, 20000265, 20000062, 20000117, 20000266, 20000267, 20000268, 20000269, 20000270, 20000271, 20000272, 20000273, -4, 20000000])
 		fatherId(nullable: false, minSize:1, maxSize:36)
 		recruitType(nullable: false, inList:[1, 2, 3, 4, -4])
@@ -248,6 +652,7 @@ class FatherPv1 {
 	}
 	static mapping = {
 		table 'father_pv1'
+
 		psuId column:'psu_id'
 		fatherId column:'father_id'
 		recruitType column:'recruit_type'

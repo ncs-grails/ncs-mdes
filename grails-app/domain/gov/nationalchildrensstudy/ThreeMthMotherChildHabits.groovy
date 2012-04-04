@@ -1,5 +1,8 @@
 package gov.nationalchildrensstudy
 
+import javax.xml.stream.XMLStreamException
+import javax.xml.stream.XMLStreamReader
+
 /** Generated from Grails XSD plugin */
 class ThreeMthMotherChildHabits {
 
@@ -60,8 +63,220 @@ class ThreeMthMotherChildHabits {
 	String diagnosisSpecify
 	String timeStamp6
 	String transactionType
+	public static final boolean DOMAIN_CLASS_FROM_XSD = true
+	public static final String XSD_TABLE_NAME = "three_mth_mother_child_habits"
+
+	public ThreeMthMotherChildHabits(XMLStreamReader reader, boolean strict) {
+		if (reader.startElement) {
+			if (reader.localName() == XSD_TABLE_NAME) {
+				// We're in the table, load the first column
+				if ( reader.hasNext() ) { reader.next() }
+
+				while ( reader.hasNext() ) {
+					if ( reader.endElement ) {
+						if (reader.localName() == XSD_TABLE_NAME) {
+							break
+						}
+					} else if ( reader.startElement ) {
+						String elementName = reader.localName()
+						String elementText = reader.text()
+						if ( elementText ) {
+							switch ( elementName ) {
+
+								case 'psu_id':
+									psuId = elementText.toInteger()
+									break
+								case 'three_mth_id':
+									threeMthId = elementText
+									break
+								case 'p_id':
+									pId = elementText
+									break
+								case 'three_month_habits_loop_id':
+									threeMonthHabitsLoopId = elementText
+									break
+								case 'sleep_place_1':
+									sleepPlace1 = elementText.toInteger()
+									break
+								case 'sleep_place_2':
+									sleepPlace2 = elementText.toInteger()
+									break
+								case 'sleep_place_2_oth':
+									sleepPlace2Oth = elementText
+									break
+								case 'sleep_position_night':
+									sleepPositionNight = elementText.toInteger()
+									break
+								case 'sleep_hrs_day':
+									sleepHrsDay = elementText.toInteger()
+									break
+								case 'sleep_hrs_night':
+									sleepHrsNight = elementText.toInteger()
+									break
+								case 'sleep_difficult':
+									sleepDifficult = elementText.toInteger()
+									break
+								case 'cry_more':
+									cryMore = elementText.toInteger()
+									break
+								case 'cry_console':
+									cryConsole = elementText.toInteger()
+									break
+								case 'cry_colic':
+									cryColic = elementText.toInteger()
+									break
+								case 'colic_freq':
+									colicFreq = elementText.toInteger()
+									break
+								case 'cry_problem':
+									cryProblem = elementText.toInteger()
+									break
+								case 'calm':
+									calm = elementText.toInteger()
+									break
+								case 'worried':
+									worried = elementText.toInteger()
+									break
+								case 'social':
+									social = elementText.toInteger()
+									break
+								case 'angry':
+									angry = elementText.toInteger()
+									break
+								case 'shy':
+									shy = elementText.toInteger()
+									break
+								case 'stubborn':
+									stubborn = elementText.toInteger()
+									break
+								case 'happy':
+									happy = elementText.toInteger()
+									break
+								case 'eyes_follow':
+									eyesFollow = elementText.toInteger()
+									break
+								case 'smile':
+									smile = elementText.toInteger()
+									break
+								case 'reach_1':
+									reach1 = elementText.toInteger()
+									break
+								case 'feed':
+									feed = elementText.toInteger()
+									break
+								case 'wave':
+									wave = elementText.toInteger()
+									break
+								case 'reach_2':
+									reach2 = elementText.toInteger()
+									break
+								case 'grab':
+									grab = elementText.toInteger()
+									break
+								case 'switch_hands':
+									switchHands = elementText.toInteger()
+									break
+								case 'pickup':
+									pickup = elementText.toInteger()
+									break
+								case 'hold':
+									hold = elementText.toInteger()
+									break
+								case 'sound_2':
+									sound2 = elementText.toInteger()
+									break
+								case 'sound_3':
+									sound3 = elementText.toInteger()
+									break
+								case 'speak_1':
+									speak1 = elementText.toInteger()
+									break
+								case 'speak_2':
+									speak2 = elementText.toInteger()
+									break
+								case 'headup':
+									headup = elementText.toInteger()
+									break
+								case 'roll_1':
+									roll1 = elementText.toInteger()
+									break
+								case 'roll_2':
+									roll2 = elementText.toInteger()
+									break
+								case 'time_stamp_4':
+									timeStamp4 = elementText
+									break
+								case 'childcare':
+									childcare = elementText.toInteger()
+									break
+								case 'family_care_hrs':
+									familyCareHrs = elementText.toInteger()
+									break
+								case 'homecare_hrs':
+									homecareHrs = elementText.toInteger()
+									break
+								case 'daycare_hrs':
+									daycareHrs = elementText.toInteger()
+									break
+								case 'time_stamp_5':
+									timeStamp5 = elementText
+									break
+								case 'c_health':
+									cHealth = elementText.toInteger()
+									break
+								case 'r_hcare':
+									rHcare = elementText.toInteger()
+									break
+								case 'last_visit':
+									lastVisit = elementText
+									break
+								case 'visit_wt':
+									visitWt = elementText.toInteger()
+									break
+								case 'same_care':
+									sameCare = elementText.toInteger()
+									break
+								case 'hcare_sick':
+									hcareSick = elementText.toInteger()
+									break
+								case 'hospital':
+									hospital = elementText.toInteger()
+									break
+								case 'diagnosis':
+									diagnosis = elementText.toInteger()
+									break
+								case 'diagnosis_specify':
+									diagnosisSpecify = elementText
+									break
+								case 'time_stamp_6':
+									timeStamp6 = elementText
+									break
+								case 'transaction_type':
+									transactionType = elementText
+									break
+								default:
+									if (strict) {
+										throw new XMLStreamException(
+											"malformed XML, unknown element: ${elementText}")
+									} else {
+										log.warn "Element: ${elementName} unknown, ignoring."
+									}
+									break
+							}
+						}
+					}
+					reader.next()
+				}
+			} else {
+				throw new XMLStreamException("xml element did not start as ${XSD_TABLE_NAME}")
+			}
+		} else {
+			throw new XMLStreamException("constructor must be passed the start element for the table in the XMLStreamReader")
+		}
+	}
 
 	static constraints = {
+
 		psuId(nullable: false, inList:[20000054, 20000032, 20000032, 20000032, 20000032, 20000016, 20000039, 20000200, 20000028, 20000063, 20000067, 20000201, 20000202, 20000203, 20000090, 20000083, 20000204, 20000205, 20000042, 20000037, 20000206, 20000040, 20000207, 20000208, 20000209, 20000091, 20000210, 20000069, 20000211, 20000094, 20000212, 20000213, 20000102, 20000214, 20000215, 20000044, 20000216, 20000216, 20000216, 20000030, 20000217, 20000218, 20000218, 20000218, 20000219, 20000220, 20000221, 20000092, 20000222, 20000223, 20000224, 20000225, 20000225, 20000088, 20000087, 20000226, 20000103, 20000227, 20000228, 20000229, 20000230, 20000231, 20000232, 20000025, 20000233, 20000233, 20000233, 20000048, 20000234, 20000235, 20000050, 20000236, 20000035, 20000237, 20000238, 20000239, 20000240, 20000052, 20000241, 20000243, 20000244, 20000245, 20000246, 20000247, 20000248, 20000113, 20000249, 20000250, 20000251, 20000086, 20000252, 20000253, 20000254, 20000255, 20000256, 20000018, 20000058, 20000014, 20000257, 20000258, 20000259, 20000259, 20000098, 20000060, 20000260, 20000260, 20000260, 20000260, 20000261, 20000262, 20000263, 20000097, 20000264, 20000264, 20000265, 20000062, 20000117, 20000266, 20000267, 20000268, 20000269, 20000270, 20000271, 20000272, 20000273, -4, 20000000])
 		threeMthId(nullable: false, minSize:1, maxSize:36)
 		pId(nullable: false, minSize:1, maxSize:36)
@@ -122,6 +337,7 @@ class ThreeMthMotherChildHabits {
 	}
 	static mapping = {
 		table 'three_mth_mother_child_habits'
+
 		psuId column:'psu_id'
 		threeMthId column:'three_mth_id'
 		pId column:'p_id'

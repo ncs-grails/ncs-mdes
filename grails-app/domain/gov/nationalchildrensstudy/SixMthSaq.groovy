@@ -1,5 +1,8 @@
 package gov.nationalchildrensstudy
 
+import javax.xml.stream.XMLStreamException
+import javax.xml.stream.XMLStreamReader
+
 /** Generated from Grails XSD plugin */
 class SixMthSaq {
 
@@ -71,8 +74,253 @@ class SixMthSaq {
 	String herbalOth
 	String timeStamp2
 	String transactionType
+	public static final boolean DOMAIN_CLASS_FROM_XSD = true
+	public static final String XSD_TABLE_NAME = "six_mth_saq"
+
+	public SixMthSaq(XMLStreamReader reader, boolean strict) {
+		if (reader.startElement) {
+			if (reader.localName() == XSD_TABLE_NAME) {
+				// We're in the table, load the first column
+				if ( reader.hasNext() ) { reader.next() }
+
+				while ( reader.hasNext() ) {
+					if ( reader.endElement ) {
+						if (reader.localName() == XSD_TABLE_NAME) {
+							break
+						}
+					} else if ( reader.startElement ) {
+						String elementName = reader.localName()
+						String elementText = reader.text()
+						if ( elementText ) {
+							switch ( elementName ) {
+
+								case 'psu_id':
+									psuId = elementText.toInteger()
+									break
+								case 'six_mth_saq_id':
+									sixMthSaqId = elementText
+									break
+								case 'recruit_type':
+									recruitType = elementText.toInteger()
+									break
+								case 'du_id':
+									duId = elementText
+									break
+								case 'p_id':
+									pId = elementText
+									break
+								case 'event_id':
+									eventId = elementText
+									break
+								case 'event_type':
+									eventType = elementText.toInteger()
+									break
+								case 'event_repeat_key':
+									eventRepeatKey = elementText.toInteger()
+									break
+								case 'instrument_id':
+									instrumentId = elementText
+									break
+								case 'instrument_type':
+									instrumentType = elementText.toInteger()
+									break
+								case 'instrument_version':
+									instrumentVersion = elementText
+									break
+								case 'instrument_repeat_key':
+									instrumentRepeatKey = elementText.toInteger()
+									break
+								case 'time_stamp_1':
+									timeStamp1 = elementText
+									break
+								case 'breast_feed':
+									breastFeed = elementText.toInteger()
+									break
+								case 'breast_feed_now':
+									breastFeedNow = elementText.toInteger()
+									break
+								case 'pumped':
+									pumped = elementText.toInteger()
+									break
+								case 'pumped_now':
+									pumpedNow = elementText.toInteger()
+									break
+								case 'breast_stop':
+									breastStop = elementText.toInteger()
+									break
+								case 'breast_stop_unit':
+									breastStopUnit = elementText.toInteger()
+									break
+								case 'breast_day':
+									breastDay = elementText.toInteger()
+									break
+								case 'breast_week':
+									breastWeek = elementText.toInteger()
+									break
+								case 'formula_day':
+									formulaDay = elementText.toInteger()
+									break
+								case 'formula_week':
+									formulaWeek = elementText.toInteger()
+									break
+								case 'cow_milk_day':
+									cowMilkDay = elementText.toInteger()
+									break
+								case 'cow_milk_week':
+									cowMilkWeek = elementText.toInteger()
+									break
+								case 'milk_oth_day':
+									milkOthDay = elementText.toInteger()
+									break
+								case 'milk_oth_week':
+									milkOthWeek = elementText.toInteger()
+									break
+								case 'pumped_2':
+									pumped2 = elementText.toInteger()
+									break
+								case 'breast_milk_stored':
+									breastMilkStored = elementText.toInteger()
+									break
+								case 'breast_milk_temp':
+									breastMilkTemp = elementText.toInteger()
+									break
+								case 'formula':
+									formula = elementText.toInteger()
+									break
+								case 'formula_iron':
+									formulaIron = elementText.toInteger()
+									break
+								case 'formula_label':
+									formulaLabel = elementText.toInteger()
+									break
+								case 'formula_amt':
+									formulaAmt = elementText.toInteger()
+									break
+								case 'formula_unit':
+									formulaUnit = elementText.toInteger()
+									break
+								case 'water_amt':
+									waterAmt = elementText.toInteger()
+									break
+								case 'water_unit':
+									waterUnit = elementText.toInteger()
+									break
+								case 'water_2':
+									water2 = elementText.toInteger()
+									break
+								case 'ounces':
+									ounces = elementText.toInteger()
+									break
+								case 'clean_hands1':
+									cleanHands1 = elementText.toInteger()
+									break
+								case 'clean_hands2':
+									cleanHands2 = elementText.toInteger()
+									break
+								case 'clean_hands3':
+									cleanHands3 = elementText.toInteger()
+									break
+								case 'clean_hands4':
+									cleanHands4 = elementText.toInteger()
+									break
+								case 'clean_hands5':
+									cleanHands5 = elementText.toInteger()
+									break
+								case 'b_type1':
+									bType1 = elementText.toInteger()
+									break
+								case 'b_type2':
+									bType2 = elementText.toInteger()
+									break
+								case 'b_type3':
+									bType3 = elementText.toInteger()
+									break
+								case 'b_type4':
+									bType4 = elementText.toInteger()
+									break
+								case 'b_type5':
+									bType5 = elementText.toInteger()
+									break
+								case 'pacifier':
+									pacifier = elementText.toInteger()
+									break
+								case 'cows_milk_1':
+									cowsMilk1 = elementText.toInteger()
+									break
+								case 'cows_milk_2':
+									cowsMilk2 = elementText.toInteger()
+									break
+								case 'cows_milk2_unit':
+									cowsMilk2Unit = elementText.toInteger()
+									break
+								case 'juice':
+									juice = elementText.toInteger()
+									break
+								case 'juice_age':
+									juiceAge = elementText.toInteger()
+									break
+								case 'juice_age_unit':
+									juiceAgeUnit = elementText.toInteger()
+									break
+								case 'juice_calcium':
+									juiceCalcium = elementText.toInteger()
+									break
+								case 'c_food1':
+									cFood1 = elementText.toInteger()
+									break
+								case 'c_food2':
+									cFood2 = elementText.toInteger()
+									break
+								case 'c_food3':
+									cFood3 = elementText.toInteger()
+									break
+								case 'c_food4':
+									cFood4 = elementText.toInteger()
+									break
+								case 'c_food5':
+									cFood5 = elementText.toInteger()
+									break
+								case 'organic':
+									organic = elementText.toInteger()
+									break
+								case 'supp_form':
+									suppForm = elementText.toInteger()
+									break
+								case 'herbal':
+									herbal = elementText.toInteger()
+									break
+								case 'herbal_oth':
+									herbalOth = elementText
+									break
+								case 'time_stamp_2':
+									timeStamp2 = elementText
+									break
+								case 'transaction_type':
+									transactionType = elementText
+									break
+								default:
+									if (strict) {
+										throw new XMLStreamException(
+											"malformed XML, unknown element: ${elementText}")
+									} else {
+										log.warn "Element: ${elementName} unknown, ignoring."
+									}
+									break
+							}
+						}
+					}
+					reader.next()
+				}
+			} else {
+				throw new XMLStreamException("xml element did not start as ${XSD_TABLE_NAME}")
+			}
+		} else {
+			throw new XMLStreamException("constructor must be passed the start element for the table in the XMLStreamReader")
+		}
+	}
 
 	static constraints = {
+
 		psuId(nullable: false, inList:[20000054, 20000032, 20000032, 20000032, 20000032, 20000016, 20000039, 20000200, 20000028, 20000063, 20000067, 20000201, 20000202, 20000203, 20000090, 20000083, 20000204, 20000205, 20000042, 20000037, 20000206, 20000040, 20000207, 20000208, 20000209, 20000091, 20000210, 20000069, 20000211, 20000094, 20000212, 20000213, 20000102, 20000214, 20000215, 20000044, 20000216, 20000216, 20000216, 20000030, 20000217, 20000218, 20000218, 20000218, 20000219, 20000220, 20000221, 20000092, 20000222, 20000223, 20000224, 20000225, 20000225, 20000088, 20000087, 20000226, 20000103, 20000227, 20000228, 20000229, 20000230, 20000231, 20000232, 20000025, 20000233, 20000233, 20000233, 20000048, 20000234, 20000235, 20000050, 20000236, 20000035, 20000237, 20000238, 20000239, 20000240, 20000052, 20000241, 20000243, 20000244, 20000245, 20000246, 20000247, 20000248, 20000113, 20000249, 20000250, 20000251, 20000086, 20000252, 20000253, 20000254, 20000255, 20000256, 20000018, 20000058, 20000014, 20000257, 20000258, 20000259, 20000259, 20000098, 20000060, 20000260, 20000260, 20000260, 20000260, 20000261, 20000262, 20000263, 20000097, 20000264, 20000264, 20000265, 20000062, 20000117, 20000266, 20000267, 20000268, 20000269, 20000270, 20000271, 20000272, 20000273, -4, 20000000])
 		sixMthSaqId(nullable: false, minSize:1, maxSize:36)
 		recruitType(nullable: false, inList:[1, 2, 3, 4, -4])
@@ -144,6 +392,7 @@ class SixMthSaq {
 	}
 	static mapping = {
 		table 'six_mth_saq'
+
 		psuId column:'psu_id'
 		sixMthSaqId column:'six_mth_saq_id'
 		recruitType column:'recruit_type'
