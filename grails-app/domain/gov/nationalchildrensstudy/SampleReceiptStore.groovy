@@ -131,7 +131,7 @@ class SampleReceiptStore {
 		storageCommentOth(nullable: true, maxSize:255)
 		removedFromStorageDt(nullable: true, maxSize:16, matches:"([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9])?")
 		tempEventOccurred(nullable: false, inList:[1, -3, -4])
-		tempEventAction(nullable: false, inList:[1, 2, -5, -4])
+		tempEventAction(nullable: false, inList:[1, 2, -5, -3, -4])
 		tempEventActionOth(nullable: true, maxSize:255)
 		transactionType(nullable: true, maxSize:36)
 	}

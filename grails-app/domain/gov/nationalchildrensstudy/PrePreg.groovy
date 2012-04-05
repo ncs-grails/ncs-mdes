@@ -623,7 +623,7 @@ class PrePreg {
 		thyroid1(nullable: false, inList:[1, 2, -1, -2, -4])
 		thyroid2(nullable: false, inList:[1, 2, -1, -2, -3, -4])
 		vitamin(nullable: false, inList:[1, 2, -1, -2, -4])
-		hlthCare(nullable: false, inList:[1, 2, 3, 4, 5, 6, 7, -1, -2, -4])
+		hlthCare(nullable: false, inList:[1, 2, 3, 4, 5, 6, 7, -1, -2, -3, -4])
 		timeStamp3(nullable: true, maxSize:19, matches:"([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9])?")
 		insure(nullable: false, inList:[1, 2, -1, -2, -3, -4])
 		insEmploy(nullable: false, inList:[1, 2, -1, -2, -3, -4])

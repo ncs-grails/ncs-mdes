@@ -501,7 +501,7 @@ class TwelveMthMotherDetail {
 		lastVisit(nullable: true, maxSize:10, matches:"([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9])?")
 		visitWt(nullable: true, matches:"([-+]?[\\d]{1,9})?")
 		sameCare(nullable: false, inList:[1, 2, -1, -2, -4, -7])
-		hcareSick(nullable: false, inList:[1, 2, 3, 4, 5, 6, 7, -1, -2, -3, -4])
+		hcareSick(nullable: false, inList:[1, 2, 3, 4, 5, 6, -1, -2, -3, -4, -7])
 		timeStamp5(nullable: true, maxSize:19, matches:"([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9])?")
 		earInfection(nullable: false, inList:[1, 2, -1, -2, -4])
 		gastro(nullable: false, inList:[1, 2, -1, -2, -4])

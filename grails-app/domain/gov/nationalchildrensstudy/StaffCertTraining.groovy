@@ -99,7 +99,7 @@ class StaffCertTraining {
 		certTrainType(nullable: false, inList:[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, -4])
 		certCompleted(nullable: false, inList:[1, 2, -4])
 		certDate(nullable: true, maxSize:10, matches:"([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9])?")
-		staffBgcheckLvl(nullable: false, inList:[1, 2, 3, 4, -4])
+		staffBgcheckLvl(nullable: false, inList:[1, 2, 3, 4, -7, -4])
 		certTypeFrequency(nullable: true, maxSize:10)
 		certTypeExpDate(nullable: true, maxSize:10, matches:"([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9])?")
 		certComment(nullable: true, maxSize:8000)

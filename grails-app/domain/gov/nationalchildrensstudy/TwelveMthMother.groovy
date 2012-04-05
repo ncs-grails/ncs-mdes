@@ -22,8 +22,8 @@ class TwelveMthMother {
 	Integer multChild
 	Integer childNum
 	String timeStamp8
-	Integer covers
 	Integer tannicAcid
+	Integer covers
 	Integer vacuum
 	Integer removal
 	Integer method
@@ -169,11 +169,11 @@ class TwelveMthMother {
 								case 'time_stamp_8':
 									timeStamp8 = elementText
 									break
-								case 'covers':
-									covers = elementText.toInteger()
-									break
 								case 'tannic_acid':
 									tannicAcid = elementText.toInteger()
+									break
+								case 'covers':
+									covers = elementText.toInteger()
 									break
 								case 'vacuum':
 									vacuum = elementText.toInteger()
@@ -445,8 +445,8 @@ class TwelveMthMother {
 		multChild(nullable: false, inList:[1, 2, -4])
 		childNum(nullable: true, matches:"([-+]?[\\d]{1,9})?")
 		timeStamp8(nullable: true, maxSize:19, matches:"([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9])?")
-		covers(nullable: false, inList:[1, 2, -1, -2, -3, -4])
 		tannicAcid(nullable: false, inList:[1, 2, -1, -2, -3, -4])
+		covers(nullable: false, inList:[1, 2, -1, -2, -3, -4])
 		vacuum(nullable: false, inList:[1, 2, -1, -2, -3, -4])
 		removal(nullable: false, inList:[1, 2, -1, -2, -3, -4])
 		method(nullable: false, inList:[1, 2, -1, -2, -3, -4])
@@ -544,8 +544,8 @@ class TwelveMthMother {
 		multChild column:'mult_child'
 		childNum column:'child_num'
 		timeStamp8 column:'time_stamp_8'
-		covers column:'covers'
 		tannicAcid column:'tannic_acid'
+		covers column:'covers'
 		vacuum column:'vacuum'
 		removal column:'removal'
 		method column:'method'

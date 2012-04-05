@@ -84,6 +84,10 @@ class PregScreenHi2 {
 	Integer cellPhone3
 	Integer cellPhone4
 	String cellPhone
+	Integer haveEmail
+	String email
+	Integer emailType
+	Integer emailShare
 	Integer sameAddr
 	String mailAddressId
 	String mailAddress1
@@ -93,10 +97,6 @@ class PregScreenHi2 {
 	Integer mailState
 	String mailZip
 	String mailZip4
-	Integer haveEmail
-	String email
-	Integer emailType
-	Integer emailShare
 	Integer planMove
 	Integer whereMove
 	Integer moveInfo
@@ -382,6 +382,18 @@ class PregScreenHi2 {
 								case 'cell_phone':
 									cellPhone = elementText
 									break
+								case 'have_email':
+									haveEmail = elementText.toInteger()
+									break
+								case 'email':
+									email = elementText
+									break
+								case 'email_type':
+									emailType = elementText.toInteger()
+									break
+								case 'email_share':
+									emailShare = elementText.toInteger()
+									break
 								case 'same_addr':
 									sameAddr = elementText.toInteger()
 									break
@@ -408,18 +420,6 @@ class PregScreenHi2 {
 									break
 								case 'mail_zip4':
 									mailZip4 = elementText
-									break
-								case 'have_email':
-									haveEmail = elementText.toInteger()
-									break
-								case 'email':
-									email = elementText
-									break
-								case 'email_type':
-									emailType = elementText.toInteger()
-									break
-								case 'email_share':
-									emailShare = elementText.toInteger()
 									break
 								case 'plan_move':
 									planMove = elementText.toInteger()
@@ -615,6 +615,10 @@ class PregScreenHi2 {
 		cellPhone3(nullable: false, inList:[1, 2, -1, -2, -3, -4])
 		cellPhone4(nullable: false, inList:[1, 2, -1, -2, -3, -4])
 		cellPhone(nullable: true, maxSize:10)
+		haveEmail(nullable: false, inList:[1, 2, -1, -2, -3, -4])
+		email(nullable: true, maxSize:100)
+		emailType(nullable: false, inList:[1, 2, 3, -1, -2, -3, -4])
+		emailShare(nullable: false, inList:[1, 2, -3, -4])
 		sameAddr(nullable: false, inList:[1, 2, -1, -2, -3, -4])
 		mailAddressId(nullable: true, maxSize:36)
 		mailAddress1(nullable: true, maxSize:100)
@@ -624,10 +628,6 @@ class PregScreenHi2 {
 		mailState(nullable: false, inList:[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -2, -3, -4])
 		mailZip(nullable: true, maxSize:5)
 		mailZip4(nullable: true, maxSize:4)
-		haveEmail(nullable: false, inList:[1, 2, -1, -2, -3, -4])
-		email(nullable: true, maxSize:100)
-		emailType(nullable: false, inList:[1, 2, 3, -1, -2, -3, -4])
-		emailShare(nullable: false, inList:[1, 2, -3, -4])
 		planMove(nullable: false, inList:[1, 2, -1, -2, -3, -4])
 		whereMove(nullable: false, inList:[1, 2, -1, -2, -3, -4])
 		moveInfo(nullable: false, inList:[1, 2, 3, -1, -2, -3, -4])
@@ -741,6 +741,10 @@ class PregScreenHi2 {
 		cellPhone3 column:'cell_phone_3'
 		cellPhone4 column:'cell_phone_4'
 		cellPhone column:'cell_phone'
+		haveEmail column:'have_email'
+		email column:'email'
+		emailType column:'email_type'
+		emailShare column:'email_share'
 		sameAddr column:'same_addr'
 		mailAddressId column:'mail_address_id'
 		mailAddress1 column:'mail_address1'
@@ -750,10 +754,6 @@ class PregScreenHi2 {
 		mailState column:'mail_state'
 		mailZip column:'mail_zip'
 		mailZip4 column:'mail_zip4'
-		haveEmail column:'have_email'
-		email column:'email'
-		emailType column:'email_type'
-		emailShare column:'email_share'
 		planMove column:'plan_move'
 		whereMove column:'where_move'
 		moveInfo column:'move_info'

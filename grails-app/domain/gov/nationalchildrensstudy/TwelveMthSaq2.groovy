@@ -92,7 +92,7 @@ class TwelveMthSaq2 {
 	Integer bType5
 	Integer pacifer
 	Integer cowsMilk1
-	Integer cowsMilk2
+	BigDecimal cowsMilk2
 	Integer cereal
 	Integer pureed
 	Integer tableFood
@@ -378,7 +378,7 @@ class TwelveMthSaq2 {
 									cowsMilk1 = elementText.toInteger()
 									break
 								case 'cows_milk_2':
-									cowsMilk2 = elementText.toInteger()
+									cowsMilk2 = elementText.toBigDecimal()
 									break
 								case 'cereal':
 									cereal = elementText.toInteger()
@@ -507,7 +507,7 @@ class TwelveMthSaq2 {
 		bType5(nullable: false, inList:[1, 2, 3, 4, -1, -2, -4])
 		pacifer(nullable: false, inList:[1, 2, -1, -2, -4])
 		cowsMilk1(nullable: false, inList:[1, 2, -1, -2, -4])
-		cowsMilk2(nullable: true, matches:"([-+]?[\\d]{1,9})?")
+		cowsMilk2(nullable: true, matches:"(([-+]?\\d{1,12})|([-+]?\\d{0,12}\\.\\d{1,6})|(\\d{0,12}\\.\\d{1,6})|([-+]?\\d{1,12}\\.\\d{0,6}))?")
 		cereal(nullable: false, inList:[1, 2, 3, 4, 5, -1, -2, -4, -7])
 		pureed(nullable: false, inList:[1, 2, 3, 4, 5, -1, -2, -4, -7])
 		tableFood(nullable: false, inList:[1, 2, 3, 4, 5, -1, -2, -4, -7])

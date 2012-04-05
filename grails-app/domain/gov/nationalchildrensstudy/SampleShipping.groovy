@@ -111,7 +111,7 @@ class SampleShipping {
 		shipmentCoolant(nullable: false, inList:[1, 2, -4])
 		shipmentTrackingNo(nullable: false, minSize:1, maxSize:36)
 		shipmentIssuesOth(nullable: true, maxSize:255)
-		staffIdTrack(nullable: true, maxSize:36)
+		staffIdTrack(nullable: false, minSize:1, maxSize:36)
 		sampleShippedBy(nullable: false, inList:[1, 2, -4])
 		transactionType(nullable: true, maxSize:36)
 	}

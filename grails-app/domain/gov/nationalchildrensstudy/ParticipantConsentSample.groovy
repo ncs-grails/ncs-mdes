@@ -81,8 +81,8 @@ class ParticipantConsentSample {
 		pId(nullable: false, minSize:1, maxSize:36)
 		participantConsentId(nullable: false, minSize:1, maxSize:36)
 		participantConsentSampleId(nullable: false, minSize:1, maxSize:36)
-		sampleConsentType(nullable: false, inList:[1, 2, 3, -4])
-		sampleConsentGiven(nullable: false, inList:[1, 2, -4])
+		sampleConsentType(nullable: false, inList:[1, 2, 3, -7, -4])
+		sampleConsentGiven(nullable: false, inList:[1, 2, -7, -4])
 		transactionType(nullable: true, maxSize:36)
 	}
 	static mapping = {

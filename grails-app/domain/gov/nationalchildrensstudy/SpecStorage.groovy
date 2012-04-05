@@ -15,6 +15,7 @@ class SpecStorage {
 	Integer masterStorageUnit
 	String storageComment
 	String storageCommentOth
+	Integer removedFromStorage
 	String removedFromStorageDt
 	String tempEventSt
 	String tempEventEt
@@ -68,6 +69,9 @@ class SpecStorage {
 								case 'storage_comment_oth':
 									storageCommentOth = elementText
 									break
+								case 'removed_from_storage':
+									removedFromStorage = elementText.toInteger()
+									break
 								case 'removed_from_storage_dt':
 									removedFromStorageDt = elementText
 									break
@@ -116,9 +120,10 @@ class SpecStorage {
 		staffId(nullable: false, minSize:1, maxSize:36)
 		equipId(nullable: true, maxSize:36)
 		masterStorageUnit(nullable: false, inList:[1, 2, 3, 4, -4])
-		storageComment(nullable: false, minSize:1, maxSize:255)
+		storageComment(nullable: true, maxSize:255)
 		storageCommentOth(nullable: true, maxSize:255)
-		removedFromStorageDt(nullable: false, minSize:1, maxSize:16, matches:"([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9])?")
+		removedFromStorage(nullable: false, inList:[1, 2, -1, -2, -4])
+		removedFromStorageDt(nullable: true, maxSize:16, matches:"([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9])?")
 		tempEventSt(nullable: true, maxSize:19, matches:"([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9])?")
 		tempEventEt(nullable: true, maxSize:19, matches:"([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9])?")
 		tempEventLowTemp(nullable: true, matches:"(([-+]?\\d{1,12})|([-+]?\\d{0,12}\\.\\d{1,6})|(\\d{0,12}\\.\\d{1,6})|([-+]?\\d{1,12}\\.\\d{0,6}))?")
@@ -137,6 +142,7 @@ class SpecStorage {
 		masterStorageUnit column:'master_storage_unit'
 		storageComment column:'storage_comment'
 		storageCommentOth column:'storage_comment_oth'
+		removedFromStorage column:'removed_from_storage'
 		removedFromStorageDt column:'removed_from_storage_dt'
 		tempEventSt column:'temp_event_st'
 		tempEventEt column:'temp_event_et'

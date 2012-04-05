@@ -20,6 +20,8 @@ class Staff {
 	Integer staffEthnicity
 	Integer staffExp
 	String staffComment
+	String ncsActiveDate
+	String ncsInactiveDate
 	String transactionType
 	public static final boolean DOMAIN_CLASS_FROM_XSD = true
 	public static final String XSD_TABLE_NAME = "staff"
@@ -83,6 +85,12 @@ class Staff {
 								case 'staff_comment':
 									staffComment = elementText
 									break
+								case 'ncs_active_date':
+									ncsActiveDate = elementText
+									break
+								case 'ncs_inactive_date':
+									ncsInactiveDate = elementText
+									break
 								case 'transaction_type':
 									transactionType = elementText
 									break
@@ -123,6 +131,8 @@ class Staff {
 		staffEthnicity(nullable: false, inList:[1, 2, -1, -6, -4])
 		staffExp(nullable: false, inList:[1, 2, 3, -7, -4])
 		staffComment(nullable: true, maxSize:8000)
+		ncsActiveDate(nullable: true, maxSize:10, matches:"([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9])?")
+		ncsInactiveDate(nullable: true, maxSize:10, matches:"([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9])?")
 		transactionType(nullable: true, maxSize:36)
 	}
 	static mapping = {
@@ -142,6 +152,8 @@ class Staff {
 		staffEthnicity column:'staff_ethnicity'
 		staffExp column:'staff_exp'
 		staffComment column:'staff_comment'
+		ncsActiveDate column:'ncs_active_date'
+		ncsInactiveDate column:'ncs_inactive_date'
 		transactionType column:'transaction_type'
 	}
 }

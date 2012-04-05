@@ -24,6 +24,7 @@ class SpecReceipt {
 	String centrifugeCommentOth
 	String centrifugeSt
 	String centrifugeEt
+	BigDecimal centrifugeTemperature
 	String centrifugeStaffId
 	String equipId
 	String transactionType
@@ -101,6 +102,9 @@ class SpecReceipt {
 								case 'centrifuge_et':
 									centrifugeEt = elementText
 									break
+								case 'centrifuge_temperature':
+									centrifugeTemperature = elementText.toBigDecimal()
+									break
 								case 'centrifuge_staff_id':
 									centrifugeStaffId = elementText
 									break
@@ -147,10 +151,11 @@ class SpecReceipt {
 		lowerTriggerCold(nullable: false, inList:[1, 2, -7, -4])
 		lowerTriggerAmbient(nullable: false, inList:[1, 2, -7, -4])
 		storageContainerId(nullable: false, minSize:1, maxSize:36)
-		centrifugeComment(nullable: false, inList:[1, 2, 3, -4])
+		centrifugeComment(nullable: false, inList:[1, 2, 3, -7, -4])
 		centrifugeCommentOth(nullable: true, maxSize:255)
 		centrifugeSt(nullable: true, maxSize:5, matches:"([0-9][0-9]:[0-9][0-9])?")
 		centrifugeEt(nullable: true, maxSize:5, matches:"([0-9][0-9]:[0-9][0-9])?")
+		centrifugeTemperature(nullable: true, matches:"(([-+]?\\d{1,12})|([-+]?\\d{0,12}\\.\\d{1,6})|(\\d{0,12}\\.\\d{1,6})|([-+]?\\d{1,12}\\.\\d{0,6}))?")
 		centrifugeStaffId(nullable: true, maxSize:36)
 		equipId(nullable: true, maxSize:36)
 		transactionType(nullable: true, maxSize:36)
@@ -176,6 +181,7 @@ class SpecReceipt {
 		centrifugeCommentOth column:'centrifuge_comment_oth'
 		centrifugeSt column:'centrifuge_st'
 		centrifugeEt column:'centrifuge_et'
+		centrifugeTemperature column:'centrifuge_temperature'
 		centrifugeStaffId column:'centrifuge_staff_id'
 		equipId column:'equip_id'
 		transactionType column:'transaction_type'

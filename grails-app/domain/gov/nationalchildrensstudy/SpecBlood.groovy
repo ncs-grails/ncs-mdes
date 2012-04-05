@@ -58,7 +58,7 @@ class SpecBlood {
 	String centrifugeCommentOth
 	String timeStamp4
 	Integer coldTempMeasure
-	Integer coldTemp
+	BigDecimal coldTemp
 	Integer coldThresholdLow
 	Integer coldThresholdHigh
 	Integer ambientThresholdLow
@@ -243,7 +243,7 @@ class SpecBlood {
 									coldTempMeasure = elementText.toInteger()
 									break
 								case 'cold_temp':
-									coldTemp = elementText.toInteger()
+									coldTemp = elementText.toBigDecimal()
 									break
 								case 'cold_threshold_low':
 									coldThresholdLow = elementText.toInteger()
@@ -341,7 +341,7 @@ class SpecBlood {
 		centrifugeCommentOth(nullable: true, maxSize:255)
 		timeStamp4(nullable: true, maxSize:19, matches:"([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9])?")
 		coldTempMeasure(nullable: false, inList:[1, 2, -7, -3, -4])
-		coldTemp(nullable: true, matches:"([-+]?[\\d]{1,9})?")
+		coldTemp(nullable: true, matches:"(([-+]?\\d{1,12})|([-+]?\\d{0,12}\\.\\d{1,6})|(\\d{0,12}\\.\\d{1,6})|([-+]?\\d{1,12}\\.\\d{0,6}))?")
 		coldThresholdLow(nullable: false, inList:[1, 2, -3, -4])
 		coldThresholdHigh(nullable: false, inList:[1, 2, -3, -4])
 		ambientThresholdLow(nullable: false, inList:[1, 2, -3, -4])

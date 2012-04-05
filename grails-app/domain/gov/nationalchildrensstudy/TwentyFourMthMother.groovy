@@ -18,8 +18,8 @@ class TwentyFourMthMother {
 	Integer instrumentType
 	String instrumentVersion
 	Integer instrumentRepeatKey
-	Integer multChild
 	String timeStamp1
+	Integer multChild
 	Integer childNum
 	Integer pregnant
 	String origDueDate
@@ -173,11 +173,11 @@ class TwentyFourMthMother {
 								case 'instrument_repeat_key':
 									instrumentRepeatKey = elementText.toInteger()
 									break
-								case 'mult_child':
-									multChild = elementText.toInteger()
-									break
 								case 'time_stamp_1':
 									timeStamp1 = elementText
+									break
+								case 'mult_child':
+									multChild = elementText.toInteger()
 									break
 								case 'child_num':
 									childNum = elementText.toInteger()
@@ -505,8 +505,8 @@ class TwentyFourMthMother {
 		instrumentType(nullable: false, inList:[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, -5, -4])
 		instrumentVersion(nullable: false, minSize:1, maxSize:36)
 		instrumentRepeatKey(nullable: false)
-		multChild(nullable: false, inList:[1, 2, -4])
 		timeStamp1(nullable: true, maxSize:19, matches:"([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9])?")
+		multChild(nullable: false, inList:[1, 2, -4])
 		childNum(nullable: true, matches:"([-+]?[\\d]{1,9})?")
 		pregnant(nullable: false, inList:[1, 2, 3, 4, 5, -1, -2, -3, -4])
 		origDueDate(nullable: true, maxSize:10, matches:"([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9])?")
@@ -620,8 +620,8 @@ class TwentyFourMthMother {
 		instrumentType column:'instrument_type'
 		instrumentVersion column:'instrument_version'
 		instrumentRepeatKey column:'instrument_repeat_key'
-		multChild column:'mult_child'
 		timeStamp1 column:'time_stamp_1'
+		multChild column:'mult_child'
 		childNum column:'child_num'
 		pregnant column:'pregnant'
 		origDueDate column:'orig_due_date'

@@ -101,7 +101,7 @@ class EnvEquipment {
 		serialNo(nullable: false, minSize:1, maxSize:50)
 		governmentAssetTagNo(nullable: true, maxSize:36)
 		retiredDate(nullable: true, maxSize:10, matches:"([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9])?")
-		retiredReason(nullable: false, inList:[1, 2, 3, 5, -4, -5])
+		retiredReason(nullable: false, inList:[1, 2, 3, 5, 6, -4, -5])
 		retiredReasonOth(nullable: true, maxSize:255)
 		transactionType(nullable: true, maxSize:36)
 	}

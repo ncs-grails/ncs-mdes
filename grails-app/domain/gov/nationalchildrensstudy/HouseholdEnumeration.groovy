@@ -412,7 +412,7 @@ class HouseholdEnumeration {
 		phoneAltType(nullable: false, inList:[1, 2, 3, 4, -5, -1, -2, -3, -4])
 		phoneAltTypeOth(nullable: true, maxSize:255)
 		timeStamp10(nullable: true, maxSize:19, matches:"([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9])?")
-		hhElig(nullable: false, inList:[1, 2, 3, 4, -3, -4])
+		hhElig(nullable: false, inList:[1, 2, 3, 4, -4])
 		timeStamp11(nullable: true, maxSize:19, matches:"([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9])?")
 		contactType(nullable: false, inList:[1, 2, 3, 4, -5, -3, -4])
 		contactTypeOth(nullable: true, maxSize:255)

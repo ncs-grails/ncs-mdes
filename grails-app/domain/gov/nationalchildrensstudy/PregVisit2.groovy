@@ -695,7 +695,7 @@ class PregVisit2 {
 		ageHome(nullable: false, inList:[1, 2, 3, 4, 5, -1, -2, -3, -4])
 		lengthReside(nullable: true, matches:"([-+]?[\\d]{1,9})?")
 		lengthResideUnit(nullable: false, inList:[1, 2, 3, -3, -4])
-		mainHeat(nullable: false, inList:[1, 2, 3, 4, 5, 6, 7, 8, -7, -5, -1, -2, -3, -4])
+		mainHeat(nullable: false, inList:[1, 2, 3, 4, 5, 6, 7, 8, 9, -5, -1, -2, -3, -4])
 		mainHeatOth(nullable: true, maxSize:255)
 		heat2Oth(nullable: true, maxSize:255)
 		cooling(nullable: false, inList:[1, 2, -1, -2, -3, -4])

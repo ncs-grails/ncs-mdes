@@ -88,6 +88,7 @@ class SixMthMotherDetail {
 	Integer homecareHrs
 	Integer daycare
 	Integer daycareHrs
+	Integer smokeHours
 	String transactionType
 	public static final boolean DOMAIN_CLASS_FROM_XSD = true
 	public static final String XSD_TABLE_NAME = "six_mth_mother_detail"
@@ -355,6 +356,9 @@ class SixMthMotherDetail {
 								case 'daycare_hrs':
 									daycareHrs = elementText.toInteger()
 									break
+								case 'smoke_hours':
+									smokeHours = elementText.toInteger()
+									break
 								case 'transaction_type':
 									transactionType = elementText
 									break
@@ -463,6 +467,7 @@ class SixMthMotherDetail {
 		homecareHrs(nullable: true, matches:"([-+]?[\\d]{1,9})?")
 		daycare(nullable: false, inList:[1, 2, -1, -2, -3, -4])
 		daycareHrs(nullable: true, matches:"([-+]?[\\d]{1,9})?")
+		smokeHours(nullable: true, matches:"([-+]?[\\d]{1,9})?")
 		transactionType(nullable: true, maxSize:36)
 	}
 	static mapping = {
@@ -550,6 +555,7 @@ class SixMthMotherDetail {
 		homecareHrs column:'homecare_hrs'
 		daycare column:'daycare'
 		daycareHrs column:'daycare_hrs'
+		smokeHours column:'smoke_hours'
 		transactionType column:'transaction_type'
 	}
 }
