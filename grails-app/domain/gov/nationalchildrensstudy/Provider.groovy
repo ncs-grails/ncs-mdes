@@ -117,7 +117,7 @@ class Provider {
 		providerId(nullable: false, minSize:1, maxSize:36)
 		providerType(nullable: false, inList:[1, 2, 3, 4, -5, -4])
 		providerTypeOth(nullable: true, maxSize:255)
-		providerNcsRole(nullable: false, inList:[1, 2, 3, 4, 5, 6, 7, -5, -4])
+		providerNcsRole(nullable: true, inList:[1, 2, 3, 4, 5, 6, 7, -5, -4])
 		providerNcsRoleOth(nullable: true, maxSize:255)
 		practiceInfo(nullable: false, inList:[1, 2, -4])
 		practicePatientLoad(nullable: false, inList:[1, 2, 3, 4, 5, -4])

@@ -209,7 +209,7 @@ class NonInterviewRpt {
 		personId(nullable: true, maxSize:36)
 		nirVacInfo(nullable: false, inList:[1, 2, 3, 4, 5, 6, -5, -7, -4])
 		nirVacInfoOth(nullable: true, maxSize:255)
-		nirNoaccess(nullable: false, inList:[1, 2, 3, -5, -7, -4])
+		nirNoaccess(nullable: true, inList:[1, 2, 3, -5, -7, -4])
 		nirNoaccessOth(nullable: true, maxSize:255)
 		nirAccessAttempt(nullable: false, inList:[1, 2, 3, -5, -7, -4])
 		nirAccessAttemptOth(nullable: true, maxSize:255)

@@ -43,6 +43,6 @@ grails.project.dependency.resolution = {
 
         build ":tomcat:$grailsVersion"
 
-		compile ":xsd-reverse-engineer:0.2.5"
+		compile ":xsd-reverse-engineer:0.3.2"
     }
 }
