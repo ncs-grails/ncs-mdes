@@ -28,6 +28,7 @@ grails.project.dependency.resolution = {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
 
         runtime 'mysql:mysql-connector-java:5.1.18'
+		runtime 'postgresql:postgresql:9.1-901.jdbc4'
     }
 
     plugins {
@@ -41,5 +42,7 @@ grails.project.dependency.resolution = {
         //runtime ":yui-minify-resources:0.1.4"
 
         build ":tomcat:$grailsVersion"
+
+		compile ":xsd-reverse-engineer:0.2.1"
     }
 }
