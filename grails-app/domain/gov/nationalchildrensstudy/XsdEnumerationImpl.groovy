@@ -1,0 +1,12 @@
+package gov.nationalchildrensstudy
+
+/** This is a bse class to be extended by any enumeration type */
+class XsdEnumerationImpl extends XsdEnumerationDefinition {
+
+	/** The name of the data type if available */
+	String typeName
+
+	static constraints = {
+		typeName(nullable:true, maxLength:255)
+	}
+}
