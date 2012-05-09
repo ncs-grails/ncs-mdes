@@ -1,7 +1,7 @@
 Use ncs_mdes_prod;
 
 /*************************************************************************************
- *     TABLES IN DB
+ * TABLES IN DB
  *************************************************************************************/
 
 -- number of  tables in db (n=268)
@@ -18,8 +18,301 @@ select * from information_schema.tables where table_schema = 'ncs_mdes_prod';
 show columns from xsd_enumeration_definition;
 select * from xsd_enumeration_definition;
 
+
 /*************************************************************************************
- * PERSON
+ * PERSON AND PARTICIPANTS
+ *************************************************************************************/
+
+
+/*************************************************************************************
+ * link_person_participant
+ *************************************************************************************/
+
+show columns from link_person_participant;
+select count(*) n from link_person_participant;
+
+
+-- PSU_ID ---------------------------------------------------------------------------
+
+-- count
+select l.psu_id as psu_id_value,
+   d.label as psu_id_description,
+   count(l.id) as n
+from link_person_participant l left outer join
+   xsd_enumeration_definition d on l.psu_id = d.value
+where type_name = 'psu_cl1'
+group by l.psu_id;
+
+-- psu_id  is not correct
+select * from link_person_participant where psu_id != 20000048;
+
+
+-- PERSON_PID_ID --------------------------------------------------------------------
+
+-- count
+select person_pid_id, count(*) n
+from link_person_participant 
+group by person_pid_id;
+
+--  is not unique
+select *
+from ( select person_pid_id, count(*) n from link_person_participant  group by person_pid_id ) l
+where l.n > 1;
+
+
+-- P_ID -----------------------------------------------------------------------------
+
+-- p_id count
+select p_id, count(*) n from link_person_participant group by p_id order by count(*) desc;
+
+
+-- PERSON_ID ------------------------------------------------------------------------
+
+-- person_id count
+select person_id, count(*) from link_person_participant group by person_id order by count(*) desc; 
+
+-- person_id is null
+select person_id, count(*) from link_person_participant where person_id is null group by person_id;
+
+
+-- RELATION & RELATION_OTH ----------------------------------------------------------
+
+-- relation
+
+select l.relation as relation_value,
+   d.label as relation_description,
+   count(l.id) as n
+from link_person_participant l left outer join
+   xsd_enumeration_definition d on l.relation = d.value
+where type_name = 'person_partcpnt_reltnshp_cl1'
+group by l.relation;
+
+-- relation_oth
+
+select relation_oth as relation_oth_value,
+   case
+       when relation_oth = -7 then 'Not Applicable'
+       else relation_oth
+   end as relation_oth_description,
+   count(*) n
+from link_person_participant
+group by relation_oth;
+
+
+-- IS_ACTIVE ------------------------------------------------------------------------
+
+-- count
+select l.is_active as is_active_value,
+   d.label as relation_description,
+   count(l.id) as n
+from link_person_participant l left outer join
+   xsd_enumeration_definition d on l.is_active = d.value
+where type_name = 'confirm_type_cl2'
+group by l.is_active;
+
+-- inactive links
+select l.is_active as is_active_value,
+   d.label as relation_description,
+   count(l.id) as n
+from link_person_participant l left outer join
+   xsd_enumeration_definition d on l.is_active = d.value
+where type_name = 'confirm_type_cl2' 
+	and l.is_active != 1 or l.is_active is null
+group by l.is_active;
+
+
+-- TRANSACTION TYPE -----------------------------------------------------------------
+
+select transaction_type, count(*) n
+from link_person_participant
+group by transaction_type;
+
+
+/*************************************************************************************
+ * participant
+ *************************************************************************************/
+
+show columns from participant;
+select count(*) n from participant;
+
+
+-- PSU_ID ---------------------------------------------------------------------------
+
+-- count
+select p.psu_id as psu_id_value,
+   d.label as psu_id_description,
+   count(p.id) as n
+from participant p left outer join
+   xsd_enumeration_definition d on p.psu_id = d.value
+where type_name = 'psu_cl1'
+group by p.psu_id;
+
+-- psu_id  is not correct
+select * from participant where psu_id != 20000048;
+
+
+-- P_ID -----------------------------------------------------------------------------
+
+select p_id, count(*) n
+from participant 
+group by p_id;
+
+-- more than one p_id
+
+select * 
+from ( select p_id, count(*) n from participant group by p_id ) p
+where p.n > 1;	
+
+
+-- P_TYPE & P_TYPE_OTH --------------------------------------------------------------
+
+-- p_type
+
+select p.p_type as p_type_value,
+   d.label as p_type_description,
+   count(p.id) as n
+from participant p left outer join
+   xsd_enumeration_definition d on p.p_type = d.value
+where type_name = 'participant_type_cl1'
+group by p.p_type;
+
+-- TODO: does participant.p_type = 'NCS Child)'(6) match up with link_person_participant.relation = 'Child' (8)
+-- TODO: how does participant.p_type (study eligibility) compare to ppg_details.ppg_pid_status?
+
+-- p_type_oth
+
+select p_type_oth as p_type_oth_value,
+   case when p_type_oth = -7 then 'Not Applicable' else p_type_oth end as p_type_oth_description,
+   count(*) n
+from participant
+group by p_type_oth;
+
+
+-- STATUS_INFO_SOURCE, STATUS_INFO_SOURCE_OTH, STATUS_INFO_MODE, STATUS_INFO_MODE_OTH, STATUS_INFO_DATE
+
+-- status_info_source
+
+select p.status_info_source as status_info_source_value,
+   d.label as status_info_source_description,
+   count(p.id) as n
+from participant p left outer join
+   xsd_enumeration_definition d on p.status_info_source = d.value
+where type_name = 'information_source_cl4'
+group by p.status_info_source;
+
+-- status_info_source_oth
+
+select status_info_source_oth as status_info_source_oth_value,
+   case when status_info_source_oth = -7 then 'Not Applicable' else status_info_source_oth end as status_info_source_oth_description,
+   count(*) n
+from participant
+group by status_info_source_oth;
+
+-- status_info_mode
+
+select p.status_info_mode as status_info_mode_value,
+   d.label as status_info_mode_description,
+   count(p.id) as n
+from participant p left outer join
+   xsd_enumeration_definition d on p.status_info_mode = d.value
+where type_name = 'contact_type_cl1'
+group by p.status_info_mode;
+
+-- status_info_mode_oth
+
+select status_info_mode_oth as status_info_mode_oth_value,
+   case
+       when status_info_mode_oth = -7 then 'Not Applicable'
+       else status_info_mode_oth
+   end as status_info_mode_oth_description,
+   count(*) n
+from participant
+group by status_info_mode_oth;
+
+-- status_info_date
+
+select status_info_date, count(*) n from participant group by status_info_date order by count(*) desc;
+
+
+-- ENROLL_STAUTS & ENROLL_DATE ------------------------------------------------------
+
+-- enroll_status
+
+-- possible enroll status
+
+select * from xsd_enumeration_definition where type_name = 'confirm_type_cl2';
+
+-- enroll_status count
+
+select p.enroll_status as enroll_status_value,
+   d.label as enroll_status_description,
+   count(p.id) as n
+from participant p left outer join
+   xsd_enumeration_definition d on p.enroll_status = d.value
+where type_name = 'confirm_type_cl2'
+group by p.enroll_status;
+
+-- enroll_date
+
+select enroll_date, count(*) n from participant group by enroll_date order by count(*) desc;
+
+-- TODO: does participant.enroll_status match up with participant.enroll_date?
+
+
+-- PID_ENTRY & PID_ENTRY_OTHER ------------------------------------------------------
+
+-- pid_entry
+
+select p.pid_entry as pid_entry_value,
+   d.label as pid_entry_description,
+   count(p.id) as n
+from participant p left outer join
+   xsd_enumeration_definition d on p.pid_entry = d.value
+where type_name = 'study_entry_method_cl1'
+group by p.pid_entry;
+
+-- pid_entry_other
+
+select pid_entry_other as pid_entry_other_value,
+   case
+       when pid_entry_other = -7 then 'Not Applicable'
+       else pid_entry_other
+   end as pid_entry_other_description,
+   count(*) n
+from participant
+group by pid_entry_other;
+
+
+-- PID_AGE_ELIG ---------------------------------------------------------------------
+
+select p.pid_age_elig as pid_age_elig_value,
+   d.label as pid_age_elig_description,
+   count(p.id) as n
+from participant p left outer join
+   xsd_enumeration_definition d on p.pid_age_elig = d.value
+where type_name = 'age_eligible_cl2'
+group by p.pid_age_elig;
+
+-- TODO: how does participant.P_TYPE match up to participant.PID_AGE_ELIG?
+
+
+-- PID_COMMENT ----------------------------------------------------------------------
+
+select pid_comment, count(*) n
+from participant
+group by pid_comment;
+
+
+-- TRANSACTION TYPE -----------------------------------------------------------------
+
+select transaction_type, count(*) n
+from participant
+group by transaction_type;
+
+
+
+/*************************************************************************************
+ * person
  *************************************************************************************/
 
 show columns from person;
@@ -28,7 +321,15 @@ select count(*) n from person;
 
 -- PSU_ID ---------------------------------------------------------------------------
 
-select psu_id, count(*) from person group by psu_id;
+-- count
+select p.psu_id as psu_id_value,
+   d.label as psu_id_description,
+   count(p.id) as n
+from person p left outer join
+   xsd_enumeration_definition d on p.psu_id = d.value
+where type_name = 'psu_cl1'
+group by p.psu_id;
+
 
 -- psu_id  is not correct
 select * from person where psu_id != 20000048;
@@ -37,6 +338,9 @@ select * from person where psu_id != 20000048;
 -- PERSON_ID ------------------------------------------------------------------------
 
 select person_id, count(*) from person group by person_id;
+-- ISSUE: 
+	-- odd person_ids (-3 and -7)
+	-- why are some ids numeric only (1958907), while others are alphanumeric with a date appended (C7312012-02-24)?
 
 -- person_id is not unique
 select *
@@ -44,60 +348,61 @@ from (
   select person_id, count(*) n
   from person
   group by person_id
-)    c
-where c.n > 1;
+) p
+where p.n > 1;
 
 
 -- PREFIX ---------------------------------------------------------------------------
 
-select p.prefix code, d.label, p.n
-from
-  (
-           select prefix, count(*) n
-           from person
-           group by prefix
-  ) p left outer join
-  xsd_enumeration_definition d on p.prefix = d.value
-where d.type_name = 'name_prefix_cl1';
+select p.prefix as prefix_value, 
+	d.label as prefix_description, 
+	count(p.id) as n
+from person p left outer join
+	xsd_enumeration_definition d on p.prefix = d.value
+where d.type_name = 'name_prefix_cl1'
+group by prefix;
+
+-- ISSUE: all prefixes are "NA"
 
 
 -- FIRST_NAME -----------------------------------------------------------------------
 
 -- count
-select first_name, count(*) n from person group by first_name;
+select first_name, count(*) n from person group by first_name order by first_name;
+-- ISSUES: firstnames that are
+	-- null (n=3900)
+	-- '-3' (n=22)
+	-- '26' (n=1)
+	-- '30' (n=1)
 
 -- null first names
-select count(*) from person  where first_name is null;
+-- ISSUE: 390 rows with null first_name
+select count(*) 
+from person 
+where first_name is null;
 
--- first names that have non-alpha characters
-select a.first_name, count(*) n
+-- ISSUE: of 390 null first names, most do not have a middle or last name
+select first_name, middle_name, last_name
+from person 
+where first_name is null;
+
+-- first names that have odd non-alpha characters (excludes single quote, hyphen, space)
+select p.first_name, count(*) n
 from
    (
-       select p.id, p.first_name
-       from person p left outer join
-          (
-               select id, first_name
-               from person
-               where first_name REGEXP '^[[:alpha:]]+$'
-           ) ex on p.id = ex.id
-       where ex.id is null
-   ) a
-group by a.first_name;
+		select id, first_name
+		from person
+		where first_name not REGEXP "^[A-Za-z\\'\\ \\-]+$" 
+   ) p
+group by p.first_name;
+-- ISSUE: first names with parenthesis, period, comma, slash, and number
 
--- first names that have a period (suggesting person had middle name) but person also has a middle name
+-- first names that have a period (suggesting person had middle name) but person also has a name provided in middle name column
 select id, first_name,  middle_name
 from person
-where  first_name REGEXP '[.]'  and middle_name != -7;
+where  first_name REGEXP '[.]' and middle_name != -7;
 
--- first names that have other characters that are not alpha characters or a period
-select a.first_name, count(*) n
-from
-   (
-       select id, first_name
-       from person
-       where first_name NOT REGEXP '^[[:alpha:]]+$' AND first_name not REGEXP '[.]'
-   ) a
-group by a.first_name;
+-- TODO: how may of first name oddities are participants
 
 
 -- LAST_NAME ------------------------------------------------------------------------
@@ -108,30 +413,21 @@ select last_name, count(*) n from person group by last_name;
 -- null last names
 select count(*) from person  where last_name is null;
 
--- first names that have non-alpha characters
-select a.last_name, count(*) n
-from
-   (
-       select p.id, p.last_name
-       from person p left outer join
-          (
-               select id, last_name
-               from person
-               where last_name REGEXP '^[[:alpha:]]+$'
-           ) ex on p.id = ex.id
-       where ex.id is null
-   ) a
-group by a.last_name;
+-- ISSUE: 3 null last names
+select first_name, middle_name, last_name from person where last_name is null;
 
 -- last names that have other characters that are not alpha characters or a period
-select a.last_name, count(*) n
+-- first names that have odd non-alpha characters (excludes single quote, hyphen, space)
+select p.last_name, count(*) n
 from
    (
-       select id, last_name
-       from person
-       where last_name NOT REGEXP '^[[:alpha:]]+$' AND last_name not REGEXP '[.]'
-   ) a
-group by a.last_name;
+		select id, last_name
+		from person
+		where last_name not REGEXP "^[A-Za-z\\'\\ \\-]+$" 
+   ) p
+group by p.last_name;
+
+-- TODO: how may of last name oddities are participants
 
 
 -- MIDDLE NAME ----------------------------------------------------------------------
@@ -142,59 +438,18 @@ select middle_name, count(*) n from person group by middle_name;
 -- null middle names
 select count(*) from person  where middle_name is null;
 
--- middle names that have non-alpha characters
-select a.middle_name, count(*) n
+-- middle names that have odd non-alpha characters (excludes single quote, hyphen, space, period)
+select p.middle_name, count(*) n
 from
    (
-       select p.id, p.middle_name
-       from person p left outer join
-          (
-               select id, middle_name
-               from person
-               where middle_name REGEXP '^[[:alpha:]]+$'
-           ) ex on p.id = ex.id
-       where ex.id is null
-   ) a
-group by a.middle_name;
-
--- first names that have other characters that are not alpha characters or a period
-select a.middle_name, count(*) n
-from
-   (
-       select id, middle_name
-       from person
-       where middle_name NOT REGEXP '^[[:alpha:]]+$' AND middle_name not REGEXP '[.]'
-   ) a
-group by a.middle_name;
+		select id, middle_name
+		from person
+		where middle_name not REGEXP "^[A-Za-z\\'\\ \\-\\.]+$" 
+   ) p
+group by p.middle_name;
 
 
--- LAST, FIRST & MIDDLE NAMES -------------------------------------------------------
-
-select c.first_name, c.middle_name, c.last_name, count(*) n
-from
-   (
-       -- first & last name are null
-       select id, first_name, middle_name, last_name
-       from person
-       where first_name is null or last_name is null
-       union
-       -- first names that have a period (suggesting person had middle name) but person also has a middle name
-       select id, first_name, middle_name, last_name
-       from person
-       where  first_name REGEXP '[.]'  and middle_name != -7
-       union
-       -- first names that have other characters that are not alpha characters or a period
-       select id, first_name, middle_name, last_name
-       from person
-       where first_name NOT REGEXP '^[[:alpha:]]+$' AND first_name not REGEXP '[.]'
-       union
-       -- last names that have other characters that are not alpha characters or a period
-       select id, first_name, middle_name, last_name
-       from person
-       where last_name NOT REGEXP '^[[:alpha:]]+$' AND last_name not REGEXP '[.]'
-   ) c
-group by c.first_name, c.middle_name, c.last_name
-order by count(*) desc;
+-- TODO: Are any person with name abnomallies are participants?
 
 
 -- MAIDEN NAME ----------------------------------------------------------------------
@@ -206,27 +461,28 @@ select case when maiden_name = -7 then 'not applicable' else maiden_name end as 
 -- SUFFIX ---------------------------------------------------------------------------
 
 -- count
-select suffix as suffix_code,
-   case
-       when suffix = 1 then 'Jr.'
-       when suffix = 2 then 'Sr.'
-       when suffix = 3 then 'Third'
-       when suffix = -7 then 'NA'
-       when suffix = -4 then 'MISSING IN ERROR'
-   end as suffix_description,
-   count(*) n
-from person
+select suffix as suffix_value,
+	d.label as suffix_description, 
+   	count(*) n
+from person p left outer join
+   xsd_enumeration_definition d on p.suffix = d.value
+where type_name = 'name_suffix_cl1'
 group by suffix;
+-- ISSUE: all person.suffix are null
 
 
 -- TITLE ----------------------------------------------------------------------------
 
 -- count
 select title as title_code,
-   case when title = -7 then 'NA' ELSE title end as title_description,
-   count(*) n
+	case 
+		when title = -7 then 'NA' 
+		else title 
+	end as title_description,
+	count(*) n
 from person
 group by title;
+-- ISSUE: all person.title are null
 
 
 -- SEX ------------------------------------------------------------------------------
@@ -237,6 +493,8 @@ from person p left outer join
    xsd_enumeration_definition d on p.sex = d.value
 where type_name = 'gender_cl1'
 group by p.sex, d.label;
+
+-- TODO: do any of the participants have an UNKNOWN gender?
 
 
 -- AGE ------------------------------------------------------------------------------
@@ -462,246 +720,7 @@ group by transaction_type;
 
 
 /*************************************************************************************
- * PARTICIPANTS
- *************************************************************************************/
-
-show columns from participant;
-select count(*) n from participant;
-
-
--- PSU_ID ---------------------------------------------------------------------------
-
-select psu_id, count(*) from participant group by psu_id;
-
--- psu_id  is not correct
-select * from participant where psu_id != 20000048;
-
-
--- P_TYPE & P_TYPE_OTH --------------------------------------------------------------
-
--- p_type
-
-select p.p_type as p_type_value,
-   d.label as p_type_description,
-   count(p.id) as n
-from participant p left outer join
-   xsd_enumeration_definition d on p.p_type = d.value
-where type_name = 'participant_type_cl1'
-group by p.p_type;
-
--- p_type_oth
-
-select p_type_oth as p_type_oth_value,
-   case when p_type_oth = -7 then 'Not Applicable' else p_type_oth end as p_type_oth_description,
-   count(*) n
-from participant
-group by p_type_oth;
-
-
--- STATUS_INFO_SOURCE, STATUS_INFO_SOURCE_OTH, STATUS_INOF_MODE, STATUS_INFO_MODE_OTH, STATUS_INFO_DATE
-
--- status_info_source
-
-select p.status_info_source as status_info_source_value,
-   d.label as status_info_source_description,
-   count(p.id) as n
-from participant p left outer join
-   xsd_enumeration_definition d on p.status_info_source = d.value
-where type_name = 'information_source_cl4'
-group by p.status_info_source;
-
--- status_info_source_oth
-
-select status_info_source_oth as status_info_source_oth_value,
-   case when status_info_source_oth = -7 then 'Not Applicable' else status_info_source_oth end as status_info_source_oth_description,
-   count(*) n
-from participant
-group by status_info_source_oth;
-
--- status_info_mode
-
-select p.status_info_mode as status_info_mode_value,
-   d.label as status_info_mode_description,
-   count(p.id) as n
-from participant p left outer join
-   xsd_enumeration_definition d on p.status_info_mode = d.value
-where type_name = 'contact_type_cl1'
-group by p.status_info_mode;
-
--- status_info_mode_oth
-
-select status_info_mode_oth as status_info_mode_oth_value,
-   case
-       when status_info_mode_oth = -7 then 'Not Applicable'
-       else status_info_mode_oth
-   end as status_info_mode_oth_description,
-   count(*) n
-from participant
-group by status_info_mode_oth;
-
--- status_info_date
-
-select status_info_date, count(*) n from participant group by status_info_date order by count(*) desc;
-
-
--- ENROLL_STAUTS & ENROLL_DATE ------------------------------------------------------
-
--- enroll_status
-
-select p.enroll_status as enroll_status_value,
-   d.label as enroll_status_description,
-   count(p.id) as n
-from participant p left outer join
-   xsd_enumeration_definition d on p.enroll_status = d.value
-where type_name = 'confirm_type_cl2'
-group by p.enroll_status;
-
--- enroll_date
-
-select enroll_date, count(*) n from participant group by enroll_date order by count(*) desc;
-
-
--- PID_ENTRY & PID_ENTRY_OTHER ------------------------------------------------------
-
--- pid_entry
-
-select p.pid_entry as pid_entry_value,
-   d.label as pid_entry_description,
-   count(p.id) as n
-from participant p left outer join
-   xsd_enumeration_definition d on p.pid_entry = d.value
-where type_name = 'study_entry_method_cl1'
-group by p.pid_entry;
-
--- pid_entry_other
-
-select pid_entry_other as pid_entry_other_value,
-   case
-       when pid_entry_other = -7 then 'Not Applicable'
-       else pid_entry_other
-   end as pid_entry_other_description,
-   count(*) n
-from participant
-group by pid_entry_other;
-
-
--- PID_AGE_ELIG ---------------------------------------------------------------------
-
-select p.pid_age_elig as pid_age_elig_value,
-   d.label as pid_age_elig_description,
-   count(p.id) as n
-from participant p left outer join
-   xsd_enumeration_definition d on p.pid_age_elig = d.value
-where type_name = 'age_eligible_cl2'
-group by p.pid_age_elig;
-
-
--- PID_COMMENT ----------------------------------------------------------------------
-
-select pid_comment, count(*) n
-from participant
-group by pid_comment;
-
-
--- TRANSACTION TYPE -----------------------------------------------------------------
-
-select transaction_type, count(*) n
-from participant
-group by transaction_type;
-
-
-/*************************************************************************************
- * LINK_PERSON_PARTICIPANT
- *************************************************************************************/
-
-show columns from link_person_participant;
-select count(*) n from link_person_participant;
-
-
--- PSU_ID ---------------------------------------------------------------------------
-
-select psu_id, count(*) from link_person_participant group by psu_id;
-
--- psu_id  is not correct
-select * from link_person_participant where psu_id != 20000048;
-
--- PERSON_ID ------------------------------------------------------------------------
-
-select person_id, count(*)
-from link_person_participant
-group by person_id
-order by count(*) desc;
-
-
--- P_ID -----------------------------------------------------------------------------
-
-select p_id, count(*) n
-from link_person_participant
-group by p_id
-order by count(*) desc;
-
-
--- PERSON_PID_ID --------------------------------------------------------------------
-
-select person_pid_id, count(*) from link_person_participant group by person_pid_id order by count(*) desc;
-
--- person_pid_id is not unique
-select *
-from
-   (
-       select person_pid_id, count(*) n
-       from link_person_participant
-       group by person_pid_id
-   ) l
-where l.n > 1
-order by l.n desc;
-
-
--- RELATION & RELATION_OTH ----------------------------------------------------------
-
--- relation
-
-select l.relation as relation_value,
-   d.label as relation_description,
-   count(l.id) as n
-from link_person_participant l left outer join
-   xsd_enumeration_definition d on l.relation = d.value
-where type_name = 'person_partcpnt_reltnshp_cl1'
-group by l.relation;
-
--- relation_oth
-
-select relation_oth as relation_oth_value,
-   case
-       when relation_oth = -7 then 'Not Applicable'
-       else relation_oth
-   end as relation_oth_description,
-   count(*) n
-from link_person_participant
-group by relation_oth;
-
-
--- IS_ACTIVE ------------------------------------------------------------------------
-
-select l.is_active as is_active_value,
-   d.label as relation_description,
-   count(l.id) as n
-from link_person_participant l left outer join
-   xsd_enumeration_definition d on l.is_active = d.value
-where type_name = 'confirm_type_cl2'
-group by l.is_active;
-
--- TODO: who is not active?
-
--- TRANSACTION TYPE -----------------------------------------------------------------
-
-select transaction_type, count(*) n
-from link_person_participant
-group by transaction_type;
-
-
-/*************************************************************************************
- * PERSON_RACE
+ * person_race
  *************************************************************************************/
 
 show columns from person_race;
@@ -759,7 +778,7 @@ group by transaction_type;
 
 
 /*************************************************************************************
- * LINK_PERSON_HOUSEHOLD
+ * link_person_household
  *************************************************************************************/
 
 show columns from link_person_household;
@@ -844,7 +863,7 @@ from link_person_household
 group by transaction_type;
 
 /*************************************************************************************
- * ADDRESS
+ * address
  *************************************************************************************/
 
 show columns from address;
@@ -1195,7 +1214,7 @@ to me
 
 
 /*************************************************************************************
- * EMAIL
+ * email
  *************************************************************************************/
 
 show columns from email;
@@ -1396,7 +1415,7 @@ group by transaction_type;
 
 
 /*************************************************************************************
- * TELEPHONE
+ * telephone
  *************************************************************************************/
 
 show columns from telephone;
@@ -1644,7 +1663,7 @@ from telephone
 group by transaction_type;
 
 /*************************************************************************************
- * PPG_DETAILS
+ * ppg_details
  *************************************************************************************/
 
 show columns from ppg_details;
@@ -1735,7 +1754,7 @@ group by transaction_type;
 
 
 /*************************************************************************************
- * PPG_STATUS_HISTORY
+ * ppg_status_history
  *************************************************************************************/
 
 show columns from ppg_status_history;
