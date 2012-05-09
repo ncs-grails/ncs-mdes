@@ -1870,3 +1870,104 @@ group by ppg_comment;
 select transaction_type, count(*) n
 from ppg_status_history
 group by transaction_type;
+
+
+/*************************************************************************************
+ * CORRESPONDENCE & EVENTS
+ *************************************************************************************/
+
+
+/*************************************************************************************
+ * link_contact
+ *************************************************************************************/
+ 
+show columns from link_contact;
+select count(*) n from link_contact;
+
+
+-- PSU_ID ---------------------------------------------------------------------------
+
+select psu_id, count(*) from link_contact group by psu_id;
+
+select x.psu_id as psu_id_value,
+   d.label as psu_id_description,
+   count(p.id) as n
+from link_contact x left outer join
+   xsd_enumeration_definition d on x.psu_id = d.value
+where type_name = 'psu_cl1'
+group by x.psu_id;
+
+-- psu_id  is not correct
+select * from ppg_status_history where psu_id != 20000048;
+
+
+/*************************************************************************************
+ * link_contact
+ *************************************************************************************/
+
+show columns from link_contact;
+select count(*) n from link_contact;
+
+
+-- PSU_ID ---------------------------------------------------------------------------
+
+select psu_id, count(*) from link_contact group by psu_id;
+
+select x.psu_id as psu_id_value,
+   d.label as psu_id_description,
+   count(x.id) as n
+from link_contact x left outer join
+   xsd_enumeration_definition d on x.psu_id = d.value
+where type_name = 'psu_cl1'
+group by x.psu_id;
+
+-- psu_id  is not correct
+select * from link_contact where psu_id != 20000048;
+
+-- PSU_ID ---------------------------------------------------------------------------
+-- CONTACT_ID -----------------------------------------------------------------------
+-- contact_link_id -----------------------------------------------------------------
+-- event_id -------------------------------------------------------------------------
+-- instrument_id ------------------------------------------------------------------
+-- staff_id ---------------------------------------------------------------------------
+-- person_id -----------------------------------------------------------------------
+-- provider_id ---------------------------------------------------------------------
+-- transaction_type --------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+/*************************************************************************************
+ * contact
+ *************************************************************************************/
+
+/*************************************************************************************
+ * event
+ *************************************************************************************/
+
+/*************************************************************************************
+ * instrument
+ *************************************************************************************/
+
+
+
+
+/*
+non_interview_rpt
+non_interview_rpt_dutype
+non_interview_rpt_noaccess
+non_interview_rpt_refusal
+non_interview_rpt_vacant
+
+incident
+incident_media
+incident_unanticipated
+
+participant_consent 
+participant_vis_consent 
+*/
