@@ -25,7 +25,7 @@ select * from xsd_enumeration_definition;
 
 
 /*************************************************************************************
- * link_person_participant
+ * table; link_person_participant
  *************************************************************************************/
 
 show columns from link_person_participant;
@@ -129,7 +129,7 @@ group by transaction_type;
 
 
 /*************************************************************************************
- * participant
+ * table: participant
  *************************************************************************************/
 
 show columns from participant;
@@ -312,7 +312,7 @@ group by transaction_type;
 
 
 /*************************************************************************************
- * person
+ * table: person
  *************************************************************************************/
 
 show columns from person;
@@ -720,7 +720,7 @@ group by transaction_type;
 
 
 /*************************************************************************************
- * person_race
+ * table: person_race
  *************************************************************************************/
 
 show columns from person_race;
@@ -778,7 +778,7 @@ group by transaction_type;
 
 
 /*************************************************************************************
- * link_person_household
+ * table: link_person_household
  *************************************************************************************/
 
 show columns from link_person_household;
@@ -863,7 +863,7 @@ from link_person_household
 group by transaction_type;
 
 /*************************************************************************************
- * address
+ * table: address
  *************************************************************************************/
 
 show columns from address;
@@ -1214,7 +1214,7 @@ to me
 
 
 /*************************************************************************************
- * email
+ * table: email
  *************************************************************************************/
 
 show columns from email;
@@ -1415,7 +1415,7 @@ group by transaction_type;
 
 
 /*************************************************************************************
- * telephone
+ * table: telephone
  *************************************************************************************/
 
 show columns from telephone;
@@ -1663,7 +1663,7 @@ from telephone
 group by transaction_type;
 
 /*************************************************************************************
- * ppg_details
+ * table: ppg_details
  *************************************************************************************/
 
 show columns from ppg_details;
@@ -1754,7 +1754,7 @@ group by transaction_type;
 
 
 /*************************************************************************************
- * ppg_status_history
+ * table: ppg_status_history
  *************************************************************************************/
 
 show columns from ppg_status_history;
@@ -1878,7 +1878,7 @@ group by transaction_type;
 
 
 /*************************************************************************************
- * link_contact
+ * table: link_contact
  *************************************************************************************/
  
 show columns from link_contact;
@@ -1902,7 +1902,7 @@ select * from ppg_status_history where psu_id != 20000048;
 
 
 /*************************************************************************************
- * link_contact
+ * table: link_contact
  *************************************************************************************/
 
 show columns from link_contact;
@@ -2028,9 +2028,8 @@ from link_contact
 group by transaction_type;
 
 
-
 /*************************************************************************************
- * contact
+ * table: contact
  *************************************************************************************/
 
 
@@ -2332,14 +2331,89 @@ from contact
 group by transaction_type;
 
 
-
-
 /*************************************************************************************
- * event
+ * table: event
  *************************************************************************************/
 
+
+show columns from event;
+select count(*) n from event;
+
+
+-- PSU_ID ---------------------------------------------------------------------------
+
+select psu_id, count(*) n from event group by psu_id;
+
+select x.psu_id as psu_id_value,
+   d.label as psu_id_description,
+   count(x.id) as n
+from event x left outer join
+   xsd_enumeration_definition d on x.psu_id = d.value
+where type_name = 'psu_cl1'
+group by x.psu_id;
+
+-- psu_id  is not correct
+select * from event where psu_id != 20000048;
+
+
+-- PARTICIPANT_ID -------------------------------------------------------------
+
+-- frequency
+select participant_id, count(*) n from event group by participant_id;
+-- ISSUE; why are there 27242 rows with no participant_ids?
+
+
+-- EVENT_TYPE & EVENT_TYPE_OTH -------------------------------------
+
+
+-- event_type
+
+select x.event_type as event_type_value,
+   d.label as psu_id_description,
+   count(x.id) as n
+from event x left outer join
+   xsd_enumeration_definition d on x.event_type = d.value
+where type_name = 'event_type_cl1'
+group by x.event_type;
+
+
+-- event_type_oth
+
+select event_type_oth, 
+   case
+       when event_type_oth = -7 then 'Not Applicable'
+       else event_type_oth
+   end as event_type_oth_description,
+	count(*) n
+from event
+group by event_type_oth
+order by event_type_oth;
+
+
+-- EVENT_BREAKOFF -----------------------------------------------------------
+-- EVENT_COMMENT -----------------------------------------------------------
+-- EVENT_DISP -------------------------------------------------------------------
+-- EVENT_DISP_CAT ------------------------------------------------------------
+-- EVENT_END_DATE ----------------------------------------------------------
+-- EVENT_END_TIME -----------------------------------------------------------
+-- EVENT_ID ----------------------------------------------------------------------
+-- EVENT_INCENT_CASH -----------------------------------------------------
+-- EVENT_INCENT_NONCASH ----------------------------------------------
+-- EVENT_INCENTIVE_TYPE -------------------------------------------------
+-- EVENT_REPEAT_KEY -------------------------------------------------------
+-- EVENT_START_DATE ------------------------------------------------------
+-- EVENT_START_TIME -------------------------------------------------------
+
+-- TRANSITION_TYPE ----------------------------------------------------------
+
+select transaction_type, count(*) n
+from event
+group by transaction_type;
+
+
+
 /*************************************************************************************
- * instrument
+ * table: instrument
  *************************************************************************************/
 
 
