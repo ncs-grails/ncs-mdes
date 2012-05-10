@@ -1924,27 +1924,415 @@ group by x.psu_id;
 -- psu_id  is not correct
 select * from link_contact where psu_id != 20000048;
 
--- PSU_ID ---------------------------------------------------------------------------
+
 -- CONTACT_ID -----------------------------------------------------------------------
--- contact_link_id -----------------------------------------------------------------
--- event_id -------------------------------------------------------------------------
--- instrument_id ------------------------------------------------------------------
--- staff_id ---------------------------------------------------------------------------
--- person_id -----------------------------------------------------------------------
--- provider_id ---------------------------------------------------------------------
--- transaction_type --------------------------------------------------------------
+
+-- count
+select *
+from 
+	(
+		select contact_id, count(*) n
+		from link_contact 
+		group by contact_id 
+	) l
+where l.n > 1;
+-- ISSUE: can the same contact_id have multiple rows here?
 
 
+-- CONTACT_LINK_ID ------------------------------------------------------------------
+
+-- count
+select *
+from 
+	(
+		select contact_link_id, count(*) n
+		from link_contact 
+		group by contact_link_id 
+	) l
+where l.n > 1;
 
 
+-- EVENT_ID -------------------------------------------------------------------------
+
+select *
+from 
+	(
+		select event_id, count(*) n
+		from link_contact 
+		group by event_id 
+	) l
+where l.n > 1
+order by event_id;
+
+-- ISSUE: 173 null event_id
 
 
+-- INSTRUMENT_ID --------------------------------------------------------------------
+
+select *
+from 
+	(
+		select instrument_id, count(*) n
+		from link_contact 
+		group by instrument_id 
+	) l
+where l.n > 1
+order by instrument_id;
+-- ISSUE: 168,027 null values
+
+
+-- STAFF_ID -------------------------------------------------------------------------
+
+select *
+from 
+	(
+		select staff_id, count(*) n
+		from link_contact 
+		group by staff_id 
+	) l
+where l.n > 1
+order by staff_id;
+
+
+-- PERSON_ID ------------------------------------------------------------------------
+
+select *
+from 
+	(
+		select person_id, count(*) n
+		from link_contact 
+		group by person_id 
+	) l
+where l.n > 1
+order by person_id;
+-- ISSUE: 164,132 with person_id of -7
+
+-- PRIVIDER_ID ----------------------------------------------------------------------
+
+select *
+from 
+	(
+		select provider_id, count(*) n
+		from link_contact 
+		group by provider_id 
+	) l
+where l.n > 1
+order by provider_id;
+-- ISSUE: provider code is either: null OR -7
+
+
+-- TRANSACTION_TYPE -----------------------------------------------------------------
+
+select transaction_type, count(*) n
+from link_contact
+group by transaction_type;
 
 
 
 /*************************************************************************************
  * contact
  *************************************************************************************/
+
+
+show columns from contact;
+select count(*) n from contact;
+
+
+-- PSU_ID ---------------------------------------------------------------------------
+
+select psu_id, count(*) from contact group by psu_id;
+
+select x.psu_id as psu_id_value,
+   d.label as psu_id_description,
+   count(x.id) as n
+from contact x left outer join
+   xsd_enumeration_definition d on x.psu_id = d.value
+where type_name = 'psu_cl1'
+group by x.psu_id;
+
+-- psu_id  is not correct
+select * from link_contact where psu_id != 20000048;
+
+
+-- CONTACT_ID -----------------------------------------------------------------------
+
+
+-- count
+
+select contact_id, count(*) n
+from contact 
+group by contact_id 
+order by contact_id;
+-- ISSUE: contact_id of -3 and -7
+
+
+-- look for multiple counts
+select *
+from 
+	(
+		select contact_id, count(*) n
+		from contact 
+		group by contact_id 
+	) l
+where l.n > 1;
+
+
+-- CONTACT_DISP ---------------------------------------------------------------------
+
+select contact_disp, count(*) n
+from contact 
+group by contact_disp 
+order by contact_disp;
+-- ISSUE: where is "Value from Disposition Codes on Event Disp Codes worksheet of this document" (code list)
+
+
+-- CONTACT_TYPE & CONTACT_TYPE_OTH --------------------------------------------------
+
+
+-- contact_type
+
+select x.contact_type as contact_type_value,
+   d.label as contact_type_description,
+   count(x.id) as n
+from contact x left outer join
+   xsd_enumeration_definition d on x.contact_type = d.value
+where type_name = 'contact_type_cl1'
+group by x.contact_type;
+-- ISSUE: "Missing in Error" (n=2)
+
+
+-- contact_type_oth
+
+select contact_type_oth, 
+   case
+       when contact_type_oth = -7 then 'Not Applicable'
+       else contact_type_oth
+   end as contact_type_oth_description,
+count(*) n
+from contact 
+group by contact_type_oth 
+order by contact_type_oth;
+-- ISSUE: contact_type_oth = -4 (n=153)
+
+
+-- CONTACT_DATE, CONTACT_START_TIME & CONTACT_END_TIME ------------------------------
+
+
+-- contact_date
+
+select contact_date, count(*) n
+from contact 
+group by contact_date 
+order by contact_date;
+
+
+-- contact_start_tme 
+
+select contact_start_time, count(*) n
+from contact 
+group by contact_start_time 
+order by contact_start_time;
+
+
+-- contact_end_time
+
+select contact_end_time, count(*) n
+from contact 
+group by contact_end_time 
+order by contact_end_time;
+
+
+-- CONTACT_LANG & CONTACT_LANG_OTH --------------------------------------------------
+
+
+-- code list for "contact_type_cl1"
+
+select *
+from xsd_enumeration_definition 
+where type_name = 'language_cl2'
+order by value;
+
+
+-- contact_lang
+
+select x.contact_lang as contact_lang_value,
+   d.label as contact_lang_description,
+   count(x.id) as n
+from contact x left outer join
+   xsd_enumeration_definition d on x.contact_lang = d.value
+where type_name = 'language_cl2'
+group by x.contact_lang;
+-- ISSUE: "Missing in Error" (n=165,848)
+
+
+-- contact_lang_oth
+
+select contact_lang_oth, 
+   case
+       when contact_lang_oth = -7 then 'Not Applicable'
+       else contact_lang_oth
+   end as contact_lang_oth_description,
+	count(*) n
+from contact 
+group by contact_lang_oth 
+order by contact_lang_oth;
+
+-- CONTACT_INTERPRET & CONTACT_INTERPRET_OTH ----------------------------------------
+
+
+-- contact_interpret
+
+select x.contact_interpret as contact_interpret_value,
+   d.label as contact_interpret_description,
+   count(x.id) as n
+from contact x left outer join
+   xsd_enumeration_definition d on x.contact_interpret = d.value
+where type_name = 'translation_method_cl3'
+group by x.contact_interpret;
+-- TODO: does contact_lang correlate with contact_interpret/
+
+
+-- contact_interpret_oth
+
+select contact_interpret_oth, 
+   case
+       when contact_interpret_oth = -7 then 'Not Applicable'
+       else contact_interpret_oth
+   end as contact_interpret_oth_description,
+	count(*) n
+from contact 
+group by contact_interpret_oth 
+order by contact_interpret_oth;
+
+
+-- CONTACT_LOCATION & CONTACT_LOCATION_OTH ------------------------------------------
+
+
+-- code list "contact_location_cl1"
+select *
+from xsd_enumeration_definition 
+where type_name = 'contact_location_cl1'
+group by value;
+
+
+-- contact_location
+
+select x.contact_location as contact_location_value,
+   d.label as contact_location_description,
+   count(x.id) as n
+from contact x left outer join
+   xsd_enumeration_definition d on x.contact_location = d.value
+where type_name = 'contact_location_cl1'
+group by x.contact_location;
+
+
+-- contact_location_oth
+
+select contact_location_oth, 
+   case
+       when contact_location_oth = -7 then 'Not Applicable'
+       else contact_location_oth
+   end as contact_location_oth_description,
+	count(*) n
+from contact 
+group by contact_location_oth 
+order by contact_location_oth;
+
+
+-- CONTACT_PRIVATE & CONTACT_PRIVATE_OTH --------------------------------------------
+
+-- code list "confirm_type_cl2"
+
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl2'
+group by value;
+
+
+-- contact_private
+
+select x.contact_private as contact_private_value,
+   d.label as contact_private_description,
+   count(x.id) as n
+from contact x left outer join
+   xsd_enumeration_definition d on x.contact_private = d.value
+where type_name = 'confirm_type_cl2'
+group by x.contact_private;
+
+
+-- contact_private_oth
+
+select contact_private_detail, 
+   case
+       when contact_private_detail = -7 then 'Not Applicable'
+       else contact_private_detail
+   end as contact_private_detail_description,
+	count(*) n
+from contact 
+group by contact_private_detail 
+order by contact_private_detail;
+
+
+-- CONTACT_DISTANCE -----------------------------------------------------------------
+
+select contact_distance, count(*) n
+from contact 
+group by contact_distance 
+order by contact_distance;
+-- ISSUE: what is value of -4.00 (n=171,014)
+
+
+-- WHO_CONTACTED & WHO_CONTACT_OTH --------------------------------------------------
+
+
+-- code list "confirm_type_cl2"
+
+select *
+from xsd_enumeration_definition 
+where type_name = 'contacted_person_cl1'
+group by value;
+
+
+-- who_contacted
+
+select x.who_contacted as who_contacted_value,
+   d.label as who_contacted_description,
+   count(x.id) as n
+from contact x left outer join
+   xsd_enumeration_definition d on x.who_contacted = d.value
+where type_name = 'contacted_person_cl1'
+group by x.who_contacted;
+
+
+-- who_contact_oth
+
+select who_contact_oth, 
+   case
+       when who_contact_oth = -7 then 'Not Applicable'
+       else who_contact_oth
+   end as who_contact_oth_description,
+	count(*) n
+from contact 
+group by who_contact_oth 
+order by who_contact_oth;
+
+
+-- CONTACT_COMMENT ------------------------------------------------------------------
+
+select contact_comment, count(*) n
+from contact 
+group by contact_comment 
+order by contact_comment;
+
+
+-- TRANSACTION_TYPE -----------------------------------------------------------------
+
+select transaction_type, count(*) n
+from contact
+group by transaction_type;
+
+
+
 
 /*************************************************************************************
  * event
