@@ -20,7 +20,24 @@ select * from xsd_enumeration_definition;
 
 
 /*************************************************************************************
- * PERSON AND PARTICIPANTS
+ *
+ * 		PARTICIPANTS
+ *
+ * 		Person: 
+ * 				link_person_participant
+ * 				participant
+ *				person
+ * 				person_race,
+ * 				
+ * 		Address/Telephone/Email: 
+ * 				address 
+ * 				email
+ * 				telephone
+ * 		
+ * 		Pregnancy/Probability Group: 
+ * 				ppg_details
+ * 				ppg_status_history
+ *
  *************************************************************************************/
 
 
@@ -862,6 +879,7 @@ select transaction_type, count(*) n
 from link_person_household
 group by transaction_type;
 
+
 /*************************************************************************************
  * table: address
  *************************************************************************************/
@@ -1206,11 +1224,6 @@ order by count(*) desc;
 select transaction_type, count(*) n
 from address
 group by transaction_type;
-
-Simone Vuong
-7:15 AM (59 minutes ago)
-Reply
-to me 
 
 
 /*************************************************************************************
@@ -1873,7 +1886,34 @@ group by transaction_type;
 
 
 /*************************************************************************************
- * CORRESPONDENCE & EVENTS
+ *
+ * 		CORRESPONDENCE & EVENTS
+ *
+ * 		Contact and Event: 
+ * 				link_contact
+ * 				contact 
+ * 				event
+ * 				instrument
+ * 				
+ * 		Non-interview Report: 
+ * 				non_interview_rpt, 
+ * 				non_interview_rpt_dutype, 
+ * 				non_interview_rpt_noaccess, 
+ * 				non_interview_rpt_refusal, 
+ * 				non_interview_rpt_vacant
+ * 				
+ * 		Incident: 
+ * 				incident
+ * 				incident_media
+ * 				incident_unanticipated
+ * 				
+ * 		Consent/Authorization: 
+ * 				participant_auth
+ * 				participant_consent 
+ * 				participant_consent_sample
+ * 				participant_rvis 
+ * 				participant_vis_consent
+ *
  *************************************************************************************/
 
 
@@ -2342,8 +2382,12 @@ select count(*) n from event;
 
 -- PSU_ID ---------------------------------------------------------------------------
 
+
+-- frequency
 select psu_id, count(*) n from event group by psu_id;
 
+
+-- code list
 select x.psu_id as psu_id_value,
    d.label as psu_id_description,
    count(x.id) as n
@@ -2352,24 +2396,53 @@ from event x left outer join
 where type_name = 'psu_cl1'
 group by x.psu_id;
 
--- psu_id  is not correct
+
+-- psu_id is not correct
 select * from event where psu_id != 20000048;
+
+
+-- EVENT_ID -------------------------------------------------------------
+
+
+-- frequency
+select event_id, count(*) n from event group by event_id;
+
+
+-- multiple event_ids
+select * 
+from
+	(
+		select event_id, count(*) n 
+		from event 
+		group by event_id
+	) e
+where e.n > 1 ;
 
 
 -- PARTICIPANT_ID -------------------------------------------------------------
 
+
 -- frequency
 select participant_id, count(*) n from event group by participant_id;
--- ISSUE; why are there 27242 rows with no participant_ids?
+-- ISSUE: why are there 27242 rows with no participant_ids?
 
 
--- EVENT_TYPE & EVENT_TYPE_OTH -------------------------------------
+-- EVENT_TYPE & EVENT_TYPE_OTH ------------------------------------------------
+
+
+-- event code list
+
+select value as event_type_value, 
+	label as event_type_description
+from xsd_enumeration_definition
+where type_name = 'event_type_cl1'
+order by value;
 
 
 -- event_type
 
 select x.event_type as event_type_value,
-   d.label as psu_id_description,
+   d.label as event_type_description,
    count(x.id) as n
 from event x left outer join
    xsd_enumeration_definition d on x.event_type = d.value
@@ -2390,21 +2463,90 @@ group by event_type_oth
 order by event_type_oth;
 
 
--- EVENT_BREAKOFF -----------------------------------------------------------
--- EVENT_COMMENT -----------------------------------------------------------
--- EVENT_DISP -------------------------------------------------------------------
--- EVENT_DISP_CAT ------------------------------------------------------------
--- EVENT_END_DATE ----------------------------------------------------------
--- EVENT_END_TIME -----------------------------------------------------------
--- EVENT_ID ----------------------------------------------------------------------
--- EVENT_INCENT_CASH -----------------------------------------------------
--- EVENT_INCENT_NONCASH ----------------------------------------------
--- EVENT_INCENTIVE_TYPE -------------------------------------------------
--- EVENT_REPEAT_KEY -------------------------------------------------------
--- EVENT_START_DATE ------------------------------------------------------
--- EVENT_START_TIME -------------------------------------------------------
+-- EVENT_REPEAT_KEY -----------------------------------------------------------
 
--- TRANSITION_TYPE ----------------------------------------------------------
+select event_repeat_key, count(*) n from event group by event_repeat_key;
+
+
+-- EVENT_DISP & EVENT_DISP_CAT ------------------------------------------------
+
+
+-- event_disp frequency
+select event_disp, count(*) n from event group by event_disp;
+-- ISSUE: where is the event_disp code?
+
+
+-- event_disp_cat frequency
+select x.event_disp_cat as event_disp_cat_value,
+   d.label as event_disp_cat_description,
+   count(x.id) as n
+from event x left outer join
+   xsd_enumeration_definition d on x.event_disp_cat = d.value
+where type_name = 'event_dspstn_cat_cl1'
+group by x.event_disp_cat;
+
+
+-- EVENT_START_DATE & EVENT_START_TIME ----------------------------------------
+
+-- either event_start_date or event_start_time is null
+select id, event_start_date, event_start_time
+from event
+where event_start_date is null
+	 or event_start_time is null;
+
+
+-- EVENT_END_DATE & EVENT_END_TIME --------------------------------------------
+
+-- either event_end_date or event_end_time is null
+select id, event_end_date, event_end_time
+from event
+where event_start_date is null
+	 or event_start_time is null;
+
+
+-- EVENT_BREAKOFF -------------------------------------------------------------
+
+select event_breakoff, count(*) n from event group by event_breakoff;
+
+select x.event_breakoff as event_breakoff_value,
+   d.label as event_breakoff_description,
+   count(x.id) as n
+from event x left outer join
+   xsd_enumeration_definition d on x.event_breakoff = d.value
+where type_name = 'confirm_type_cl1'
+group by x.event_breakoff;
+
+
+-- EVENT_INCENTIVE_TYPE, EVENT_INCENT_CASH & EVENT_INCENT_NONCASH -------------
+
+
+-- event_incentive_type
+
+select x.event_incentive_type as event_incentive_type_value,
+   d.label as event_incentive_type_description,
+   count(x.id) as n
+from event x left outer join
+   xsd_enumeration_definition d on x.event_incentive_type = d.value
+where type_name = 'incentive_type_cl1'
+group by x.event_incentive_type;
+
+
+-- event_incent_cash
+
+select event_incent_cash, count(*) n from event group by event_incent_cash;
+
+
+-- event_incent_noncash
+select event_incent_noncash, count(*) n from event group by event_incent_noncash;
+-- ISSUE: what is code = -7
+
+
+-- EVENT_COMMENT --------------------------------------------------------------
+
+select event_comment, count(*) n from event group by event_comment;
+
+
+-- TRANSITION_TYPE ------------------------------------------------------------
 
 select transaction_type, count(*) n
 from event
@@ -2417,14 +2559,326 @@ group by transaction_type;
  *************************************************************************************/
 
 
+show columns from instrument;
+select count(*) n from instrument;
+
+
+-- PSU_ID ---------------------------------------------------------------------------
+
+
+-- frequency
+select psu_id, count(*) n from instrument group by psu_id;
+
+
+-- code list
+select x.psu_id as psu_id_value,
+   d.label as psu_id_description,
+   count(x.id) as n
+from instrument x left outer join
+   xsd_enumeration_definition d on x.psu_id = d.value
+where type_name = 'psu_cl1'
+group by x.psu_id;
+
+
+-- psu_id is not correct
+select * from instrument where psu_id != 20000048;
+
+
+-- INSTRUMENT_ID --------------------------------------------------------------------
+
+
+-- instrument_id frequency
+select instrument_id, count(*) n from instrument group by instrument_id;
+
+
+-- multiple instrument_id 
+select * 
+from
+	(
+		select instrument_id, count(*) n 
+		from instrument 
+		group by instrument_id
+	) i
+where i.n > 1
+order by i.n;
+
+
+-- EVENT_ID -------------------------------------------------------------------------
+
+
+-- instrument_id frequency
+select event_id, count(*) n from instrument group by event_id;
+
+
+-- multiple instrument_id 
+select * 
+from
+	(
+		select event_id, count(*) n 
+		from instrument 
+		group by event_id
+	) i
+where i.n > 1
+order by i.n;
+
+
+-- INSTRUMENT_TYPE & INSTRUMENT_TYPE_OTH --------------------------------------------
+
+
+-- instrument_type frequency
+
+select x.instrument_type as instrument_type_value,
+   d.label as instrument_type_description,
+   count(x.id) as n
+from instrument x left outer join
+   xsd_enumeration_definition d on x.instrument_type = d.value
+where type_name = 'instrument_type_cl1'
+group by x.instrument_type;
+
+
+-- instrument_type_oth frequency
+
+select instrument_type_oth, 
+   case
+       when instrument_type_oth = -7 then 'Not Applicable'
+       else instrument_type_oth
+   end as instrument_type_oth_description,
+	count(*) n
+from instrument
+group by instrument_type_oth
+order by instrument_type_oth;
+
+
+-- INSTRUMENT_VERSION ---------------------------------------------------------------
+
+select instrument_version, count(*) n from instrument group by instrument_version;
+
+
+-- INSTRUMENT_REPEAT_KEY ------------------------------------------------------------
+
+select instrument_repeat_key, count(*) n from instrument group by instrument_repeat_key;
+
+
+-- INS_DATE_START & INS_START_TIME --------------------------------------------------
+
+
+-- missing ins_date_start or ins_start_time
+select id, ins_date_start, ins_start_time
+from instrument
+where ins_date_start is null
+	or ins_start_time is null;
+
+
+-- INS_DATE_END & INS_END_TIME ------------------------------------------------------
+
+
+-- missing ins_date_end or ins_end_time
+select id, ins_date_end, ins_end_time
+from instrument
+where ins_date_end is null
+	or ins_end_time is null;
+
+
+-- INS_BREAKOFF ---------------------------------------------------------------------
+
+
+-- ins_breakoff code list
+select * from xsd_enumeration_definition where type_name = 'confirm_type_cl2';
+
+
+-- ins_breakoff frequency
+select x.ins_breakoff as ins_breakoff_value,
+   d.label as ins_breakoff_description,
+   count(x.id) as n
+from instrument x left outer join
+   xsd_enumeration_definition d on x.ins_breakoff = d.value
+where type_name = 'confirm_type_cl2'
+group by x.ins_breakoff;
+
+
+-- INS_STATUS -----------------------------------------------------------------------
+
+
+-- ins_status code list
+select * from xsd_enumeration_definition where type_name = 'instrument_status_cl1' order by value;
+
+
+-- ins_status frequency
+select x.ins_status as ins_status_value,
+   d.label as ins_status_description,
+   count(x.id) as n
+from instrument x left outer join
+   xsd_enumeration_definition d on x.ins_status = d.value
+where type_name = 'instrument_status_cl1'
+group by x.ins_status;
+
+
+-- INS_MODE & INS_MODE_OTH ----------------------------------------------------------
+
+
+-- ins_mode code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'instrument_admin_mode_cl1'
+order by value;
+
+
+-- ins_mode frequency
+select x.ins_mode as ins_mode_value,
+   d.label as ins_mode_description,
+   count(x.id) as n
+from instrument x left outer join
+   xsd_enumeration_definition d on x.ins_mode = d.value
+where type_name = 'instrument_admin_mode_cl1'
+group by x.ins_mode;
+
+
+-- ins_mode_oth frequency
+select ins_mode_oth, 
+   case
+       when ins_mode_oth = -7 then 'Not Applicable'
+       else ins_mode_oth
+   end as ins_mode_oth_description,
+	count(*) n
+from instrument
+group by ins_mode_oth
+order by ins_mode_oth;
+
+
+-- INS_METHOD -----------------------------------------------------------------------
+
+
+-- ins_method code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'instrument_admin_method_cl1'
+order by value;
+
+
+-- ins_method frequency
+select x.ins_method as ins_method_value,
+   d.label as ins_method_description,
+   count(x.id) as n
+from instrument x left outer join
+   xsd_enumeration_definition d on x.ins_method = d.value
+where type_name = 'instrument_admin_method_cl1'
+group by x.ins_method;
+
+
+-- SUP_REVIEW -----------------------------------------------------------------------
+
+
+-- sup_review code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl2'
+order by value;
+
+
+-- sup_review frequency
+select x.sup_review as sup_review_value,
+   d.label as sup_review_description,
+   count(x.id) as n
+from instrument x left outer join
+   xsd_enumeration_definition d on x.sup_review = d.value
+where type_name = 'confirm_type_cl2'
+group by x.sup_review;
+
+
+-- DATA_PROBLEM ---------------------------------------------------------------------
+
+
+-- data_problem code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl2'
+order by value;
+
+
+-- sup_review frequency
+select x.data_problem as data_problem_value,
+   d.label as data_problem_description,
+   count(x.id) as n
+from instrument x left outer join
+   xsd_enumeration_definition d on x.data_problem = d.value
+where type_name = 'confirm_type_cl2'
+group by x.data_problem;
+
+
+-- INSTRU_COMMENT -------------------------------------------------------------------
+
+select instru_comment, count(*) n from instrument group by instru_comment;
+
+
+-- TRANSACTION_TYPE -----------------------------------------------------------------
+
+select transaction_type, count(*) n
+from instrument
+group by transaction_type;
+
+
+/*************************************************************************************
+ * table: non_interview_rpt
+ *************************************************************************************/
+
+
+show columns from non_interview_rpt;
+select count(*) n from non_interview_rpt;
+
+
+-- PSU_ID ---------------------------------------------------------------------------
+
+
+-- frequency
+select psu_id, count(*) n from non_interview_rpt group by psu_id;
+
+
+-- code list
+select x.psu_id as psu_id_value,
+   d.label as psu_id_description,
+   count(x.id) as n
+from non_interview_rpt x left outer join
+   xsd_enumeration_definition d on x.psu_id = d.value
+where type_name = 'psu_cl1'
+group by x.psu_id;
+
+
+-- psu_id is not correct
+select * from non_interview_rpt where psu_id != 20000048;
+
+
+
+/*************************************************************************************
+ * table: non_interview_rpt_dutype
+ *************************************************************************************/
+
+ 
+/*************************************************************************************
+ * table: non_interview_rpt_noaccess
+ *************************************************************************************/
+ 
+/*************************************************************************************
+ * table: non_interview_rpt_refusal
+ *************************************************************************************/
+ 
+/*************************************************************************************
+ * table: non_interview_rpt_vacant
+ *************************************************************************************/
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /*
-non_interview_rpt
-non_interview_rpt_dutype
-non_interview_rpt_noaccess
-non_interview_rpt_refusal
-non_interview_rpt_vacant
 
 incident
 incident_media
@@ -2432,4 +2886,5 @@ incident_unanticipated
 
 participant_consent 
 participant_vis_consent 
+
 */
