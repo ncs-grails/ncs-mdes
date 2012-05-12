@@ -2220,7 +2220,6 @@ order by contact_lang_oth;
 
 
 -- contact_interpret
-
 select x.contact_interpret as contact_interpret_value,
    d.label as contact_interpret_description,
    count(x.id) as n
@@ -3323,7 +3322,7 @@ group by transaction_type;
 show columns from non_interview_rpt_dutype;
 select count(*) n from non_interview_rpt_dutype;
 
--- NOTE: no date
+-- NOTE: no data
 
  
 
@@ -3335,7 +3334,7 @@ select count(*) n from non_interview_rpt_dutype;
 show columns from non_interview_rpt_noaccess;
 select count(*) n from non_interview_rpt_noaccess;
 
--- NOTE: no date
+-- NOTE: no data
 
 
  
@@ -3347,7 +3346,7 @@ select count(*) n from non_interview_rpt_noaccess;
 show columns from non_interview_rpt_refusal;
 select count(*) n from non_interview_rpt_refusal;
 
--- NOTE: no date
+-- NOTE: no data
 
 
  
@@ -3358,23 +3357,614 @@ select count(*) n from non_interview_rpt_refusal;
 show columns from non_interview_rpt_vacant;
 select count(*) n from non_interview_rpt_vacant;
 
--- NOTE: no date
+-- NOTE: no data
 
 
 
+/*************************************************************************************
+ * table: incident
+ *************************************************************************************/
+
+show columns from incident;
+select count(*) n from incident;
+
+-- NOTE: no data
+
+
+/*************************************************************************************
+ * table: incident_media
+ *************************************************************************************/
+
+
+show columns from incident_media;
+select count(*) n from incident_media;
+
+-- NOTE: no data
+
+
+/*************************************************************************************
+ * table: incident_unanticipated
+ *************************************************************************************/
+
+show columns from incident_unanticipated;
+select count(*) n from incident_unanticipated;
+
+-- NOTE: no data
 
 
 
+/*************************************************************************************
+ * table: participant_auth
+ *************************************************************************************/
+
+show columns from participant_auth;
+select count(*) n from participant_auth;
+
+-- NOTE: no data
 
 
 
-/*
+/*************************************************************************************
+ * table: participant_consent 
+ *************************************************************************************/
 
-incident
-incident_media
-incident_unanticipated
 
-participant_consent 
-participant_vis_consent 
+show columns from participant_consent;
+select count(*) n from participant_consent;
 
-*/
+
+-- PSU_ID ---------------------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+
+
+-- PARTICIPANT_CONSENT_ID -----------------------------------------------------------
+
+
+-- participant_consent_id frequency
+select participant_consent_id, count(*) n
+from participant_consent
+group by participant_consent_id;
+
+
+-- multiple participant_consent_id 
+select *
+from
+	(
+		select participant_consent_id, count(*) n
+		from participant_consent
+		group by participant_consent_id
+	) c
+where c.n > 1;
+
+
+-- P_ID -----------------------------------------------------------------------------
+
+
+-- p_id frequency
+select p_id, count(*) n
+from participant_consent
+group by p_id
+order by count(*);
+
+
+-- multiple p_id 
+select *
+from
+	(
+		select p_id, count(*) n
+		from participant_consent
+		group by p_id
+	) c
+where c.n > 1;
+
+
+-- CONSENT_VERSION ------------------------------------------------------------------
+
+select consent_version, count(*) n
+from participant_consent
+group by consent_version
+order by count(*);
+
+
+-- CONSENT_EXPIRATION ---------------------------------------------------------------
+
+select consent_expiration, count(*) n
+from participant_consent
+group by consent_expiration
+order by count(*);
+
+
+-- CONSENT_TYPE (for Phase 1 Concent only) ------------------------------------------
+
+-- consent_type code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'consent_type_cl1'
+order by value;
+
+
+-- consent_type frequency
+select x.consent_type as consent_type_value,
+   d.label as consent_type_description,
+   count(*) as n
+from participant_consent x left outer join
+   xsd_enumeration_definition d on x.consent_type = d.value
+where type_name = 'consent_type_cl1'
+group by x.consent_type;
+
+
+-- CONSENT_FORM_TYPE (for Phase 1 Concent only) -------------------------------------
+
+
+-- consent_form_type code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'consent_type_cl1'
+order by value;
+
+
+-- consent_type frequency
+select x.consent_form_type as consent_form_type_value,
+   d.label as consent_form_type_description,
+   count(*) as n
+from participant_consent x left outer join
+   xsd_enumeration_definition d on x.consent_form_type = d.value
+where type_name = 'consent_type_cl1'
+group by x.consent_form_type;
+
+
+-- CONSENT_GIVEN --------------------------------------------------------------------
+
+
+-- consent_given code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl2'
+order by value;
+
+
+-- consent_given frequency
+select x.consent_given as consent_given_value,
+   d.label as consent_given_description,
+   count(*) as n
+from participant_consent x left outer join
+   xsd_enumeration_definition d on x.consent_given = d.value
+where type_name = 'confirm_type_cl2'
+group by x.consent_given;
+
+
+-- CONSENT_DATE ---------------------------------------------------------------------
+
+-- consent_date frequency
+select consent_date, count(*) n
+from participant_consent
+group by consent_date
+order by count(*);
+
+-- no consent_date
+select *
+from participant_consent
+where consent_date is null;
+
+
+-- CONSENT_WITHDRAW -----------------------------------------------------------------
+
+
+-- consent_withdraw code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl2'
+order by value;
+
+
+-- consent_given frequency
+select x.consent_withdraw as consent_withdraw_value,
+   d.label as consent_withdraw_description,
+   count(*) as n
+from participant_consent x left outer join
+   xsd_enumeration_definition d on x.consent_withdraw = d.value
+where type_name = 'confirm_type_cl2'
+group by x.consent_withdraw;
+
+
+-- CONSENT_WITHDRAW_TYPE ------------------------------------------------------------
+
+
+-- consent_withdraw_type code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'consent_withdraw_reason_cl1'
+order by value;
+
+
+-- consent_withdraw_type frequency
+select x.consent_withdraw_type as consent_withdraw_type_value,
+   d.label as consent_withdraw_type_description,
+   count(*) as n
+from participant_consent x left outer join
+   xsd_enumeration_definition d on x.consent_withdraw_type = d.value
+where type_name = 'consent_withdraw_reason_cl1'
+group by x.consent_withdraw_type;
+
+
+-- CONSENT_WITHDRAW_REASON ----------------------------------------------------------
+
+
+-- consent_withdraw_reason code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'consent_withdraw_reason_cl2'
+order by value;
+
+
+-- consent_withdraw_reason frequency
+select x.consent_withdraw_reason as consent_withdraw_reason_value,
+   d.label as consent_withdraw_reason_description,
+   count(*) as n
+from participant_consent x left outer join
+   xsd_enumeration_definition d on x.consent_withdraw_reason = d.value
+where type_name = 'consent_withdraw_reason_cl2'
+group by x.consent_withdraw_reason;
+-- ISSUE: why all are "Missing in Error" (-4), when the consent_withdraw_type for all are "Legitimate Skip" (-3)
+
+
+-- CONSENT_WITHDRAW_DATE ------------------------------------------------------------
+
+select consent_withdraw_date, count(*) n
+from participant_consent
+group by consent_withdraw_date
+order by count(*);
+
+
+-- CONSENT_LANGUAGE & CONSENT_LANGUAGE_OTH ------------------------------------------
+
+
+-- consent_language code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'language_cl2'
+order by value;
+
+
+-- consent_language frequency
+select x.consent_language as consent_language_value,
+   d.label as consent_language_description,
+   count(*) as n
+from participant_consent x left outer join
+   xsd_enumeration_definition d on x.consent_language = d.value
+where type_name = 'language_cl2'
+group by x.consent_language;
+
+
+-- consent_language_oth frequency
+select consent_language_oth, 
+   case
+       when consent_language_oth = -7 then 'Not Applicable'
+       else consent_language_oth
+   end as consent_language_oth_description,
+	count(*) n
+from participant_consent
+group by consent_language_oth;
+-- ISSUE: what does consent_language of -3 mean?
+
+
+-- PERSON_WHO_CONSENTED_ID & WHO_CONSENTED ------------------------------------------
+
+-- person_who_consented_id frequency
+select person_who_consented_id, count(*) n
+from participant_consent
+group by person_who_consented_id
+order by count(*) desc;
+
+-- person_who_consented_id is null
+select *
+from participant_consent
+where person_who_consented_id is null;
+
+
+-- who_consented code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'age_status_cl1'
+order by value;
+
+
+-- who_consented frequency
+select x.who_consented as who_consented_value,
+   d.label as who_consented_description,
+   count(*) as n
+from participant_consent x left outer join
+   xsd_enumeration_definition d on x.who_consented = d.value
+where type_name = 'age_status_cl1'
+group by x.who_consented;
+
+
+-- who_consented is null
+select *
+from participant_consent
+where who_consented is null;
+
+
+-- PERSON_WTHDRW_CONSENT_ID & WHO_WTHDRW_CONSENT ----------------------------------
+
+
+-- person_wthdrw_consent_id frequency
+select person_wthdrw_consent_id, count(*) n
+from participant_consent
+group by person_wthdrw_consent_id
+order by count(*) desc;
+-- ISSUE: what is person_wthdrw_consent_id of -7
+
+
+-- person_wthdrw_consent_id is null
+select *
+from participant_consent
+where person_wthdrw_consent_id is null;
+
+
+-- who_wthdrw_consent code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'age_status_cl3'
+order by value;
+
+
+-- who_consented frequency
+select x.who_wthdrw_consent as who_wthdrw_consent_value,
+   d.label as who_wthdrw_consent_description,
+   count(*) as n
+from participant_consent x left outer join
+   xsd_enumeration_definition d on x.who_wthdrw_consent = d.value
+where type_name = 'age_status_cl3'
+group by x.who_wthdrw_consent;
+
+
+-- CONSENT_TRANSLATE ----------------------------------------------------------------
+
+
+-- consent_translate code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'translation_method_cl1'
+order by value;
+
+
+-- consent_translate frequency
+select x.consent_translate as consent_translate_value,
+   d.label as consent_translate_description,
+   count(*) as n
+from participant_consent x left outer join
+   xsd_enumeration_definition d on x.consent_translate = d.value
+where type_name = 'translation_method_cl1'
+group by x.consent_translate;
+
+
+-- CONSENT_COMMENTS -----------------------------------------------------------------
+
+select consent_comments, count(*) n
+from participant_consent
+group by consent_comments
+order by count(*) desc;
+-- ISSUE: what is consent_comment = -3
+
+
+-- CONTACT_ID -----------------------------------------------------------------------
+
+select contact_id, count(*) n
+from participant_consent
+group by contact_id
+order by count(*) desc;
+
+-- contact_id is null
+select *
+from participant_consent
+where contact_id is null;
+
+
+-- RECONSIDERATION_SCRIPT_USE -------------------------------------------------------
+
+
+-- reconsideration_script_use code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl21'
+order by value;
+
+
+-- reconsideration_script_use frequency
+select x.reconsideration_script_use as reconsideration_script_use_value,
+   d.label as reconsideration_script_use_description,
+   count(*) as n
+from participant_consent x left outer join
+   xsd_enumeration_definition d on x.reconsideration_script_use = d.value
+where type_name = 'confirm_type_cl21'
+group by x.reconsideration_script_use;
+
+
+-- TRANSACTION_TYPE -----------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+ 
+
+
+/*************************************************************************************
+ * table: participant_consent_sample
+ *************************************************************************************/
+
+show columns from participant_consent_sample;
+select count(*) n from participant_consent_sample;
+
+-- NOTE: no data
+
+
+/*************************************************************************************
+ * table: participant_vis_consent 
+ *************************************************************************************/
+
+show columns from participant_vis_consent;
+select count(*) n from participant_vis_consent;
+
+
+-- PSU_ID ---------------------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+
+
+-- PID_VISIT_CONSENT_ID -------------------------------------------------------------
+
+select pid_visit_consent_id, count(*) n from participant_vis_consent group by pid_visit_consent_id order by count(*);
+
+select pid_visit_consent_id from participant_vis_consent where pid_visit_consent_id is null;
+
+
+-- P_ID -----------------------------------------------------------------------------
+
+select p_id, count(*) n from participant_vis_consent group by p_id order by count(*);
+
+select p_id from participant_vis_consent where p_id is null;
+
+
+-- VIS_CONSENT_TYPE -----------------------------------------------------------------
+
+
+-- vis_consent_type code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'visit_type_cl1'
+order by value;
+
+
+-- vis_consent_type frequency
+select x.vis_consent_type as vis_consent_type_value,
+   d.label as vis_consent_type_description,
+   count(*) as n
+from participant_vis_consent x left outer join
+   xsd_enumeration_definition d on x.vis_consent_type = d.value
+where type_name = 'visit_type_cl1'
+group by x.vis_consent_type;
+
+
+-- VIS_CONSENT_RESPONSE -------------------------------------------------------------
+
+
+-- vis_consent_response code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl2'
+order by value;
+
+
+-- vis_consent_response frequency
+select x.vis_consent_response as vis_consent_response_value,
+   d.label as vis_consent_response_description,
+   count(*) as n
+from participant_vis_consent x left outer join
+   xsd_enumeration_definition d on x.vis_consent_response = d.value
+where type_name = 'confirm_type_cl2'
+group by x.vis_consent_response;
+
+
+-- VIS_LANGUAGE & VIS_LANGUAGE_OTH --------------------------------------------------
+
+
+-- vis_language code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl2'
+order by value;
+
+
+-- vis_language frequency
+select x.vis_language as vis_language_value,
+   d.label as vis_language_description,
+   count(*) as n
+from participant_vis_consent x left outer join
+   xsd_enumeration_definition d on x.vis_language = d.value
+where type_name = 'language_cl2'
+group by x.vis_language;
+
+
+-- vis_language_oth frequency
+select vis_language_oth, 
+   case
+       when vis_language_oth = -7 then 'Not Applicable'
+       else vis_language_oth
+   end as vis_language_oth_description,
+	count(*) n 
+from participant_vis_consent 
+group by vis_language_oth 
+order by count(*);
+
+
+-- VIS_PERSON_WHO_CONSENTED_ID ------------------------------------------------------
+
+select vis_person_who_consented_id, count(*) n from participant_vis_consent group by vis_person_who_consented_id order by count(*);
+
+select vis_person_who_consented_id from participant_vis_consent where vis_person_who_consented_id is null;
+
+
+-- VIS_WHO_CONSENTED ----------------------------------------------------------------
+
+
+-- vis_who_consented code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'age_status_cl1'
+order by value;
+
+
+-- vis_who_consented frequency
+select x.vis_who_consented as vis_who_consented_value,
+   d.label as vis_who_consented_description,
+   count(*) as n
+from participant_vis_consent x left outer join
+   xsd_enumeration_definition d on x.vis_who_consented = d.value
+where type_name = 'age_status_cl1'
+group by x.vis_who_consented;
+
+
+-- VIS_TRANSLATE --------------------------------------------------------------------
+
+
+-- vis_translate code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'translation_method_cl1'
+order by value;
+
+
+-- vis_translate frequency
+select x.vis_translate as vis_translate_value,
+   d.label as vis_translate_description,
+   count(*) as n
+from participant_vis_consent x left outer join
+   xsd_enumeration_definition d on x.vis_translate = d.value
+where type_name = 'translation_method_cl1'
+group by x.vis_translate;
+
+
+-- VIS_COMMENTS ---------------------------------------------------------------------
+
+select vis_comments, count(*) n from participant_vis_consent group by vis_comments order by count(*);
+
+
+-- CONTACT_ID -----------------------------------------------------------------------
+
+select contact_id, count(*) n from participant_vis_consent group by contact_id order by count(*);
+
+select contact_id from participant_vis_consent where contact_id is null;
+
+
+-- TRANSACTION_TYPE -----------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+
+
+/*************************************************************************************
+ * table: participant_rvis
+ *************************************************************************************/
+
+show columns from participant_rvis;
+select count(*) n from participant_rvis;
+
+-- NOTE: no data
+
+
+
