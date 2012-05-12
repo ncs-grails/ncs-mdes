@@ -3968,3 +3968,691 @@ select count(*) n from participant_rvis;
 
 
 
+/*************************************************************************************
+ *
+ * 		OUTREACH
+ * 				outreach
+ * 				outreach_eval
+ * 				outreach_lang2
+ * 				outreach_race 
+ * 				outreach_staff
+ * 				outreach_target
+ *
+ *************************************************************************************/
+
+
+/*************************************************************************************
+ * table: outreach
+ *************************************************************************************/
+
+show columns from outreach;
+select count(*) n from outreach;
+
+
+-- PSU_ID ---------------------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+
+
+-- TSU_ID ---------------------------------------------------------------------------
+
+select tsu_id, count(*) n from outreach group by tsu_id order by count(*);
+
+select tsu_id from outreach where tsu_id is null;
+
+
+-- SSU_ID ---------------------------------------------------------------------------
+
+select ssu_id, count(*) n from outreach group by ssu_id order by count(*);
+-- ISSUE: why is there ssu_id = -7 (n=3)
+
+select ssu_id from outreach where ssu_id is null;
+
+
+-- OUTREACH_EVENT_ID ----------------------------------------------------------------
+
+select outreach_event_id, count(*) n from outreach group by outreach_event_id order by count(*);
+
+select outreach_event_id from outreach where outreach_event_id is null;
+
+select * 
+from
+	(
+		select outreach_event_id, count(*) n 
+		from outreach
+		group by outreach_event_id
+	) o
+where o.n > 1;
+
+
+-- OUTREACH_EVENT_DATE --------------------------------------------------------------
+
+select outreach_event_date, count(*) n from outreach group by outreach_event_date order by count(*);
+
+select outreach_event_date from outreach where outreach_event_date is null;
+
+
+-- OUTREACH_TARGET & OUTREACH_TARGET_OTH --------------------------------------------
+
+
+-- outreach_target code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'outreach_target_cl1'
+order by value;
+
+
+-- outreach_target frequency
+select x.outreach_target as outreach_target_value,
+   d.label as outreach_target_description,
+   count(*) as n
+from participant_vis_consent x left outer join
+   xsd_enumeration_definition d on x.outreach_target = d.value
+where type_name = 'outreach_target_cl1'
+group by x.outreach_target;
+
+
+-- outreach_target_oth frequency
+select outreach_target_oth, count(*) n from outreach group by outreach_target_oth order by count(*);
+
+
+-- OUTREACH_MODE & OUTREACH_MODE_OTH ------------------------------------------------
+
+
+-- outreach_mode code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'outreach_mode_cl1'
+order by value;
+
+
+-- outreach_mode frequency
+select x.outreach_mode as outreach_mode_value,
+   d.label as outreach_mode_description,
+   count(*) as n
+from outreach x left outer join
+   xsd_enumeration_definition d on x.outreach_mode = d.value
+where type_name = 'outreach_mode_cl1'
+group by x.outreach_mode;
+
+
+-- outreach_mode_oth frequency
+select outreach_mode_oth, count(*) n 
+from outreach 
+group by outreach_mode_oth 
+order by count(*);
+
+
+-- OUTREACH_TYPE & OUTREACH_TYPE_OTH ------------------------------------------------
+
+
+-- outreach_type code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'outreach_type_cl1'
+order by value;
+
+
+-- outreach_type frequency
+select x.outreach_type as outreach_type_value,
+   d.label as outreach_type_description,
+   count(*) as n
+from outreach x left outer join
+   xsd_enumeration_definition d on x.outreach_type = d.value
+where type_name = 'outreach_type_cl1'
+group by x.outreach_type;
+
+
+-- outreach_mode_oth frequency
+select outreach_type_oth, count(*) n 
+from outreach 
+group by outreach_type_oth 
+order by outreach_type_oth ;
+
+
+-- OUTREACH_TAILORED ----------------------------------------------------------------
+
+
+-- outreach_tailored code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl2'
+order by value;
+
+
+-- outreach_tailored frequency
+select x.outreach_tailored as outreach_tailored_value,
+   d.label as outreach_tailored_description,
+   count(*) as n
+from outreach x left outer join
+   xsd_enumeration_definition d on x.outreach_tailored = d.value
+where type_name = 'confirm_type_cl2'
+group by x.outreach_tailored;
+
+
+-- OUTREACH_LANG1, OUTREACH_LANG2, OUTREACH_LANG_OTH --------------------------------
+
+-- outreach_lang1 code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl2'
+order by value;
+
+
+-- outreach_lang1 frequency
+select x.outreach_lang1 as outreach_lang1_value,
+   d.label as outreach_lang1_description,
+   count(*) as n
+from outreach x left outer join
+   xsd_enumeration_definition d on x.outreach_lang1 = d.value
+where type_name = 'confirm_type_cl2'
+group by x.outreach_lang1;
+
+
+-- outreach_lang2 code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'language_cl2'
+order by value;
+
+
+-- outreach_lang2 frequency
+select x.outreach_lang2 as outreach_lang2_value,
+   d.label as outreach_lang2_description,
+   count(*) as n
+from outreach x left outer join
+   xsd_enumeration_definition d on x.outreach_lang2 = d.value
+where type_name = 'language_cl2'
+group by x.outreach_lang2;
+
+select outreach_lang2, count(*)
+from outreach
+group by outreach_lang2;
+
+-- ISSUE: why are all outreach_lang2 null, when outreach_lang1 suggust some outreach was language specific?
+
+
+-- outreach_lang_oth
+select outreach_lang_oth, count(*) n 
+from outreach 
+group by outreach_lang_oth 
+order by outreach_lang_oth ;
+
+
+-- OUTREACH_RACE1, OUTREACH_RACE2, OUTREACH_RACE_OTH --------------------------------
+
+
+-- outreach_race1 code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl6'
+order by value;
+
+
+-- outreach_race1 frequency
+select x.outreach_race1 as outreach_race1_value,
+   d.label as outreach_race1_description,
+   count(*) as n
+from outreach x left outer join
+   xsd_enumeration_definition d on x.outreach_race1 = d.value
+where type_name = 'confirm_type_cl6'
+group by x.outreach_race1;
+
+
+-- outreach_race2 code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'race_cl3'
+order by value;
+
+
+-- outreach_race2 frequency
+select x.outreach_race2 as outreach_race2_value,
+   d.label as outreach_race2_description,
+   count(*) as n
+from outreach x left outer join
+   xsd_enumeration_definition d on x.outreach_race2 = d.value
+where type_name = 'race_cl3'
+group by x.outreach_race2;
+
+select outreach_race2, count(*)
+from outreach
+group by outreach_race2;
+
+-- ISSUE: outreach_race2 is null, but outreach_race1 suggust some outreach was specific to a race
+
+
+-- outreach_lang_oth
+select outreach_race_oth, count(*) n 
+from outreach 
+group by outreach_race_oth 
+order by outreach_race_oth ;
+
+
+-- OUTREACH_CULTURE1, OUTREACH_CULTURE2, OUTREACH_CULTURE_OTH -----------------------
+
+
+-- outreach_culture1 code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl6'
+order by value;
+
+
+-- outreach_culture1 frequency
+select x.outreach_culture1 as outreach_culture1_value,
+   d.label as outreach_culture1_description,
+   count(*) as n
+from outreach x left outer join
+   xsd_enumeration_definition d on x.outreach_culture1 = d.value
+where type_name = 'confirm_type_cl6'
+group by x.outreach_culture1;
+
+
+-- outreach_culture2 code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'culture_cl1'
+order by value;
+
+
+-- outreach_culture2 frequency
+select x.outreach_culture2 as outreach_culture2_value,
+   d.label as outreach_culture2_description,
+   count(*) as n
+from outreach x left outer join
+   xsd_enumeration_definition d on x.outreach_culture2 = d.value
+where type_name = 'culture_cl1'
+group by x.outreach_culture2;
+
+select outreach_culture2, count(*)
+from outreach
+group by outreach_culture2;
+
+
+-- outreach_culture_oth
+select outreach_culture_oth, count(*) n 
+from outreach 
+group by outreach_culture_oth 
+order by outreach_culture_oth;
+
+
+-- OUTREACH_QUANTITY ----------------------------------------------------------------
+
+select outreach_quantity, count(*) n 
+from outreach 
+group by outreach_quantity 
+order by outreach_quantity;
+
+
+-- OUTREACH_COST --------------------------------------------------------------------
+
+select outreach_cost, count(*) n 
+from outreach 
+group by outreach_cost 
+order by outreach_cost;
+
+
+-- OUTREACH_STAFFING ----------------------------------------------------------------
+
+select outreach_staffing, count(*) n 
+from outreach 
+group by outreach_staffing 
+order by outreach_staffing;
+
+
+-- OUTREACH_INCIDENT ----------------------------------------------------------------
+
+-- outreach_incident code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl2'
+order by value;
+
+
+-- outreach_incident frequency
+select x.outreach_incident as outreach_incident_value,
+   d.label as outreach_incident_description,
+   count(*) as n
+from outreach x left outer join
+   xsd_enumeration_definition d on x.outreach_incident = d.value
+where type_name = 'confirm_type_cl2'
+group by x.outreach_incident;
+
+select outreach_incident, count(*)
+from outreach
+group by outreach_incident;
+
+
+-- INCIDENT_ID ----------------------------------------------------------------------
+
+select incident_id, count(*) n 
+from outreach 
+group by incident_id 
+order by incident_id;
+
+
+-- OUTREACH_EVAL_RESULT -------------------------------------------------------------
+
+
+-- outreach_eval_result code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'success_level_cl1'
+order by value;
+
+
+-- outreach_eval_result frequency
+select x.outreach_eval_result as outreach_eval_result,
+   d.label as eval_result_description,
+   count(*) as n
+from outreach x left outer join
+   xsd_enumeration_definition d on x.outreach_eval_result = d.value
+where type_name = 'success_level_cl1'
+group by x.outreach_eval_result;
+
+select outreach_eval_result, count(*)
+from outreach
+group by outreach_eval_result;
+
+
+-- TRANSACTION_TYPE -----------------------------------------------------------------
+
+select transaction_type, count(*) n
+from outreach
+group by transaction_type;
+
+
+
+/*************************************************************************************
+ * table: outreach_eval
+ *************************************************************************************/
+
+show columns from outreach_eval;
+select count(*) n from outreach_eval;
+
+-- PSU_ID ---------------------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+
+-- OUTREACH_EVENT_EVAL_ID -----------------------------------------------------------
+
+
+
+-- OUTREACH_EVENT_ID ----------------------------------------------------------------
+-- OUTREACH_EVAL & OUTREACH_EVAL_OTH ------------------------------------------------
+
+-- TRANSACTION_TYPE -----------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+
+
+
+
+
+ 
+/*************************************************************************************
+ * table: outreach_lang2
+ *************************************************************************************/
+
+show columns from outreach_lang2;
+select count(*) n from outreach_lang2;
+
+-- PSU_ID ---------------------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+
+-- OUTREACH_LANG2_ID ----------------------------------------------------------------
+-- OUTREACH_EVENT_ID ----------------------------------------------------------------
+-- OUTREACH_LANG2 -------------------------------------------------------------------
+
+-- TRANSACTION_TYPE -----------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+
+
+
+ 
+/*************************************************************************************
+ * table: outreach_race 
+ *************************************************************************************/
+
+show columns from outreach_race;
+select count(*) n from outreach_race;
+
+
+-- PSU_ID ---------------------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+
+
+-- OUTREACH_RACE_ID -----------------------------------------------------------------
+
+select outreach_race_id, count(*) n
+from outreach_race 
+group by outreach_race_id
+order by outreach_race_id desc;
+
+select *
+from outreach_race 
+where outreach_race_id is null;
+
+select *
+from 
+	(
+		select outreach_race_id, count(*) n
+		from outreach_race 
+		group by outreach_race_id
+	) o
+where o.n > 1;
+
+
+-- OUTREACH_EVENT_ID ----------------------------------------------------------------
+
+select outreach_event_id, count(*) n
+from outreach_race 
+group by outreach_event_id
+order by outreach_event_id desc;
+
+select *
+from outreach_race 
+where outreach_event_id is null;
+
+select *
+from 
+	(
+		select outreach_event_id, count(*) n
+		from outreach_race 
+		group by outreach_race_id
+	) o
+where o.n > 1;
+
+
+-- OUTREACH_RACE2 & OUTREACH_RACE_OTH -----------------------------------------------
+
+
+-- outreach_race2 code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'race_cl3'
+order by value;
+
+
+-- outreach_race2 frequency
+select x.outreach_race2 as outreach_race2,
+   d.label as outreach_race2_description,
+   count(*) as n
+from outreach_race x left outer join
+   xsd_enumeration_definition d on x.outreach_race2 = d.value
+where type_name = 'race_cl3'
+group by x.outreach_race2;
+
+select outreach_race2, count(*)
+from outreach_race
+group by outreach_race2;
+
+
+-- OUTREACH_RACE_OTH ----------------------------------------------------------------
+
+select outreach_race_oth, count(*) n
+from outreach_race 
+group by outreach_race_oth
+order by outreach_race_oth desc;
+
+
+-- TRANSACTION_TYPE -----------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+ 
+
+
+/*************************************************************************************
+ * table: outreach_staff
+ *************************************************************************************/
+
+show columns from outreach_staff;
+select count(*) n from outreach_staff;
+
+-- PSU_ID ---------------------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+
+
+-- OUTREACH_EVENT_STAFF_ID ----------------------------------------------------------
+
+select outreach_event_staff_id, count(*) n
+from outreach_staff 
+group by outreach_event_staff_id
+order by outreach_event_staff_id desc;
+
+select *
+from outreach_staff 
+where outreach_event_staff_id is null;
+
+select *
+from 
+	(
+		select outreach_event_staff_id, count(*) n
+		from outreach_staff 
+		group by outreach_event_staff_id
+	) o
+where o.n > 1;
+
+
+-- OUTREACH_EVENT_ID ----------------------------------------------------------------
+
+
+select outreach_event_id, count(*) n
+from outreach_staff 
+group by outreach_event_id;
+
+select *
+from outreach_staff 
+where outreach_event_id is null;
+
+select *
+from 
+	(
+		select outreach_event_id, count(*) n
+		from outreach_staff 
+		group by outreach_event_id
+	) o
+where o.n > 1;
+
+
+-- STAFF_ID -------------------------------------------------------------------------
+
+
+select outreach_staff_id, count(*) n
+from outreach_staff 
+group by outreach_staff_id
+order by outreach_staff_id desc;
+
+select *
+from outreach_staff 
+where outreach_staff_id is null;
+
+select *
+from 
+	(
+		select outreach_staff_id, count(*) n
+		from outreach_staff 
+		group by outreach_staff_id
+	) o
+where o.n > 1;
+
+
+-- TRANSACTION_TYPE -----------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+
+
+
+/*************************************************************************************
+ * table: outreach_target
+ *************************************************************************************/
+
+show columns from outreach_target;
+select count(*) n from outreach_target;
+
+-- PSU_ID ---------------------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+
+
+-- OUTREACH_TARGET_ID ---------------------------------------------------------------
+
+select outreach_target_id, count(*) n
+from outreach_target 
+group by outreach_target_id
+order by count(*);
+
+select *
+from outreach_target 
+where outreach_target_id is null;
+
+select *
+from 
+	(
+		select outreach_target_id, count(*) n
+		from outreach_target 
+		group by outreach_target_id
+	) o
+where o.n > 1;
+
+
+-- OUTREACH_EVENT_ID ----------------------------------------------------------------
+
+
+select outreach_event_id, count(*) n
+from outreach_target 
+group by outreach_event_id
+order by count(*);
+
+select *
+from outreach_target 
+where outreach_event_id is null;
+
+select *
+from 
+	(
+		select outreach_event_id, count(*) n
+		from outreach_target 
+		group by outreach_event_id
+	) o
+where o.n > 1;
+
+
+-- OUTREACH_TARGET_MS & OUTREACH_TARGET_MS_OTH --------------------------------------
+
+
+-- outreach_target_ms code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'outreach_target_cl1'
+order by value;
+
+
+-- outreach_race2 frequency
+select x.outreach_target_ms as outreach_target_ms,
+   d.label as outreach_target_ms_description,
+   count(*) as n
+from outreach_target x left outer join
+   xsd_enumeration_definition d on x.outreach_target_ms = d.value
+where type_name = 'outreach_target_cl1'
+group by x.outreach_target_ms;
+
+
+-- TRANSACTION_TYPE -----------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+
