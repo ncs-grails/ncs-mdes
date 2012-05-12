@@ -2847,28 +2847,518 @@ group by x.psu_id;
 select * from non_interview_rpt where psu_id != 20000048;
 
 
+-- NIR_ID ---------------------------------------------------------------------------
+
+
+-- frequency
+select nir_id, count(*) n from non_interview_rpt group by nir_id;
+select nir_id, count(*) n from non_interview_rpt group by nir_id limit 40;
+
+
+-- multiple nir_ids
+
+select *
+from
+	(
+		select nir_id, count(*) n 
+		from non_interview_rpt 
+		group by nir_id
+	) r
+where r.n > 1;
+
+
+-- CONTACT_ID -----------------------------------------------------------------------
+
+-- contact_id frequency
+select contact_id, count(*) n from non_interview_rpt group by contact_id;
+
+
+-- multiple contact_ids
+
+select *
+from
+	(
+		select contact_id, count(*) n 
+		from non_interview_rpt 
+		group by contact_id
+	) r
+where r.n > 1;
+
+
+-- NIR ------------------------------------------------------------------------------
+
+
+-- nir frequency
+select nir, count(*) n from non_interview_rpt group by nir order by count(*) desc;
+-- TODO: nir by contact_id
+
+
+-- DU_ID ----------------------------------------------------------------------------
+
+-- du_id frequency
+select du_id, count(*) n from non_interview_rpt group by du_id order by count(*) desc;
+-- ISSUE: why are there 173 null du_id?
+
+
+-- PERSON_ID ------------------------------------------------------------------------
+
+
+-- person_id frequency
+select person_id, count(*) n from non_interview_rpt group by person_id order by count(*) desc;
+-- ISSUE: why are there 150,778 missing person_ids
+
+
+-- NIR_VAC_INFO & NIR_VAC_INFO_OTH --------------------------------------------------
+
+
+-- nir_vac_info code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'du_vacancy_info_source_cl1'
+order by value;
+
+
+-- nir_vac_info frequency
+
+select x.nir_vac_info as nir_vac_info_value,
+   d.label as nir_vac_info_description,
+   count(x.id) as n
+from non_interview_rpt x left outer join
+   xsd_enumeration_definition d on x.nir_vac_info = d.value
+where type_name = 'du_vacancy_info_source_cl1'
+group by x.nir_vac_info;
+
+
+-- nir_vac_info_oth frequency
+
+select nir_vac_info_oth, count(*) n from non_interview_rpt group by nir_vac_info_oth order by count(*) desc;
+
+
+-- NIR_NOACCESS & NIR_NOACCESS_OTH --------------------------------------------------
+
+
+-- nir_noaccess code list
+
+select *
+from xsd_enumeration_definition 
+where type_name = 'no_access_descr_cl1'
+order by value;
+
+
+-- nir_noaccess frequency
+
+select x.nir_noaccess as nir_noaccess_value,
+   d.label as nir_noaccess_description,
+   count(*) as n
+from non_interview_rpt x left outer join
+   xsd_enumeration_definition d on x.nir_noaccess = d.value
+where type_name = 'no_access_descr_cl1'
+group by x.nir_noaccess;
+
+
+-- nir_noaccess_oth
+
+select nir_noaccess_oth, count(*) n
+from non_interview_rpt 
+group by nir_noaccess_oth;
+
+
+-- NIR_ACCESS_ATTEMPT & NIR_ACCESS_ATTEMPT_OTH --------------------------------------
+
+
+-- nir_access_attempt code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'access_attempt_cl1'
+order by value;
+
+
+-- nir_access_attempt frequency
+select x.nir_access_attempt as nir_access_attempt_value,
+   d.label as nir_access_attempt_description,
+   count(*) as n
+from non_interview_rpt x left outer join
+   xsd_enumeration_definition d on x.nir_access_attempt = d.value
+where type_name = 'access_attempt_cl1'
+group by x.nir_access_attempt;
+
+
+-- nir_access_attempt_oth frequency
+
+select nir_access_attempt_oth, count(*) n
+from non_interview_rpt 
+group by nir_access_attempt_oth;
+
+
+-- NIR_TYPE_PERSON & NIR_TYPE_PERSON_OTH --------------------------------------------
+
+
+-- nir_type_person code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'nir_reason_person_cl1'
+order by value;
+
+
+-- nir_type_person frequency
+select x.nir_type_person as nir_type_person_value,
+   d.label as nir_type_person_description,
+   count(*) as n
+from non_interview_rpt x left outer join
+   xsd_enumeration_definition d on x.nir_type_person = d.value
+where type_name = 'nir_reason_person_cl1'
+group by x.nir_type_person;
+
+
+-- nir_type_person_oth frequency
+select nir_type_person_oth, count(*) n
+from non_interview_rpt 
+group by nir_type_person_oth;
+
+
+-- COG_INFORM_RELATION & COG_INFORM_RELATION_OTH ------------------------------------
+
+
+-- cog_inform_relation code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'nir_inform_relation_cl1'
+order by value;
+
+
+-- cog_inform_relation frequency
+select x.cog_inform_relation as cog_inform_relation_value,
+   d.label as cog_inform_relation_description,
+   count(*) as n
+from non_interview_rpt x left outer join
+   xsd_enumeration_definition d on x.cog_inform_relation = d.value
+where type_name = 'nir_inform_relation_cl1'
+group by x.cog_inform_relation;
+
+
+-- cog_inform_relation_oth frequency
+select cog_inform_relation_oth, count(*) n
+from non_interview_rpt 
+group by cog_inform_relation_oth;
+
+
+-- COG_DIS_DESC ---------------------------------------------------------------------
+
+select cog_dis_desc, count(*) n
+from non_interview_rpt 
+group by cog_dis_desc;
+
+
+-- PERM_DISABILITY ------------------------------------------------------------------
+
+
+-- perm_disability code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl10'
+order by value;
+
+
+-- perm_disability frequency
+select x.perm_disability as perm_disability_value,
+   d.label as perm_disability_description,
+   count(*) as n
+from non_interview_rpt x left outer join
+   xsd_enumeration_definition d on x.perm_disability = d.value
+where type_name = 'confirm_type_cl10'
+group by x.perm_disability;
+
+
+-- DECEASED_INFORM_RELATION & DECEASED_INFORM_OTH -----------------------------------
+
+
+-- deceased_inform_relation code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'nir_inform_relation_cl1'
+order by value;
+
+
+-- deceased_inform_relation frequency
+select x.deceased_inform_relation as deceased_inform_relation_value,
+   d.label as deceased_inform_relation_description,
+   count(*) as n
+from non_interview_rpt x left outer join
+   xsd_enumeration_definition d on x.deceased_inform_relation = d.value
+where type_name = 'nir_inform_relation_cl1'
+group by x.deceased_inform_relation;
+
+
+-- deceased_inform_oth frequency
+select deceased_inform_oth, count(*) n
+from non_interview_rpt 
+group by deceased_inform_oth;
+
+
+-- YOD ------------------------------------------------------------------------------
+
+-- yod frequency
+select yod, count(*) n
+from non_interview_rpt 
+group by yod;
+
+
+-- STATE_DEATH ----------------------------------------------------------------------
+
+
+-- state_death frequency
+select state_death, count(*) n
+from non_interview_rpt 
+group by state_death;
+
+
+-- WHO_REFUSED & WHO_REFUSED_OTH ----------------------------------------------------
+
+
+-- who_refused code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'nir_inform_relation_cl1'
+order by value;
+
+
+-- who_refused frequency
+select x.who_refused as who_refused_value,
+   d.label as who_refused_description,
+   count(*) as n
+from non_interview_rpt x left outer join
+   xsd_enumeration_definition d on x.who_refused = d.value
+where type_name = 'nir_inform_relation_cl1'
+group by x.who_refused;
+
+
+-- who_refused_oth frequency
+select who_refused_oth, count(*) n
+from non_interview_rpt 
+group by who_refused_oth;
+
+
+-- REFUSER_STRENGTH -----------------------------------------------------------------
+
+
+-- refuser_strength code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'refusal_intensity_cl1'
+order by value;
+
+
+-- refuser_strength frequency
+select x.refuser_strength as refuser_strength_value,
+   d.label as refuser_strength_description,
+   count(*) as n
+from non_interview_rpt x left outer join
+   xsd_enumeration_definition d on x.refuser_strength = d.value
+where type_name = 'refusal_intensity_cl1'
+group by x.refuser_strength;
+
+
+-- REF_ACTION -----------------------------------------------------------------------
+
+
+-- ref_action code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'refusal_action_cl1'
+order by value;
+
+
+-- refuser_strength frequency
+select x.ref_action as ref_action_value,
+   d.label as ref_action_description,
+   count(*) as n
+from non_interview_rpt x left outer join
+   xsd_enumeration_definition d on x.ref_action = d.value
+where type_name = 'refusal_action_cl1'
+group by x.ref_action;
+
+
+-- LT_ILLNESS_DESC ------------------------------------------------------------------
+
+
+-- lt_illness_desc frequency
+select lt_illness_desc, count(*) n
+from non_interview_rpt 
+group by lt_illness_desc;
+
+
+-- PERM_LTR -------------------------------------------------------------------------
+
+-- perm_ltr code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl10'
+order by value;
+
+
+-- perm_ltr frequency
+select x.perm_ltr as perm_ltr_value,
+   d.label as perm_ltr_description,
+   count(*) as n
+from non_interview_rpt x left outer join
+   xsd_enumeration_definition d on x.perm_ltr = d.value
+where type_name = 'confirm_type_cl10'
+group by x.perm_ltr;
+
+
+-- REASON_UNAVAIL & REASON_UNAVAIL_OTH ----------------------------------------------
+
+
+-- reason_unavail code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'unavailable_reason_cl1'
+order by value;
+
+
+-- reason_unavail frequency
+select x.reason_unavail as reason_unavail_value,
+   d.label as reason_unavail_description,
+   count(*) as n
+from non_interview_rpt x left outer join
+   xsd_enumeration_definition d on x.reason_unavail = d.value
+where type_name = 'unavailable_reason_cl1'
+group by x.reason_unavail;
+
+
+-- reason_unavail_oth frequency
+select reason_unavail_oth, count(*) n
+from non_interview_rpt 
+group by reason_unavail_oth;
+
+
+-- DATE_AVAILABLE -------------------------------------------------------------------
+
+select date_available, count(*) n
+from non_interview_rpt 
+group by date_available;
+
+
+-- DATE_MOVED -----------------------------------------------------------------------
+
+select date_moved, count(*) n
+from non_interview_rpt 
+group by date_moved;
+
+
+-- MOVED_LENGTH_TIME ----------------------------------------------------------------
+
+select moved_length_time, count(*) n
+from non_interview_rpt 
+group by moved_length_time;
+
+
+-- MOVED_UNIT -----------------------------------------------------------------------
+
+select moved_unit, count(*) n
+from non_interview_rpt 
+group by moved_unit;
+
+-- moved_unit frequency
+select x.moved_unit as moved_unit_value,
+   d.label as moved_unit_description,
+   count(*) as n
+from non_interview_rpt x left outer join
+   xsd_enumeration_definition d on x.moved_unit = d.value
+where type_name = 'time_unit_past_cl1'
+group by x.moved_unit;
+
+
+-- MOVED_INFORM_RELATION & MOVED_RELATION_OTH ---------------------------------------
+
+
+-- moved_inform_relation code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'moved_inform_relation_cl1'
+order by value;
+
+
+-- moved_inform_relation frequency
+select x.moved_inform_relation as moved_inform_relation_value,
+   d.label as moved_inform_relation_description,
+   count(*) as n
+from non_interview_rpt x left outer join
+   xsd_enumeration_definition d on x.moved_inform_relation = d.value
+where type_name = 'moved_inform_relation_cl1'
+group by x.moved_inform_relation;
+
+
+-- moved_relation_oth frequency
+select moved_relation_oth, count(*) n
+from non_interview_rpt 
+group by moved_relation_oth;
+
+
+-- NIR_OTH --------------------------------------------------------------------------
+
+
+-- nir_other frequency
+select nir_other, count(*) n
+from non_interview_rpt 
+group by nir_other;
+
+
+-- TRANSACTION_TYPE -----------------------------------------------------------------
+
+
+-- transaction_type frequency
+
+select transaction_type, count(*) n
+from non_interview_rpt
+group by transaction_type;
+
+
 
 /*************************************************************************************
  * table: non_interview_rpt_dutype
  *************************************************************************************/
 
+
+show columns from non_interview_rpt_dutype;
+select count(*) n from non_interview_rpt_dutype;
+
+-- NOTE: no date
+
  
+
 /*************************************************************************************
  * table: non_interview_rpt_noaccess
  *************************************************************************************/
+
+
+show columns from non_interview_rpt_noaccess;
+select count(*) n from non_interview_rpt_noaccess;
+
+-- NOTE: no date
+
+
  
 /*************************************************************************************
  * table: non_interview_rpt_refusal
  *************************************************************************************/
+
+
+show columns from non_interview_rpt_refusal;
+select count(*) n from non_interview_rpt_refusal;
+
+-- NOTE: no date
+
+
  
 /*************************************************************************************
  * table: non_interview_rpt_vacant
  *************************************************************************************/
 
+show columns from non_interview_rpt_vacant;
+select count(*) n from non_interview_rpt_vacant;
 
-
-
-
+-- NOTE: no date
 
 
 
