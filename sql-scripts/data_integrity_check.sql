@@ -4375,16 +4375,84 @@ select count(*) n from outreach_eval;
 
 -- OUTREACH_EVENT_EVAL_ID -----------------------------------------------------------
 
+-- outreach_event_eval_id frequency
+select outreach_event_eval_id, count(*) n 
+from outreach_eval 
+group by outreach_event_eval_id 
+order by outreach_event_eval_id;
+
+-- outreach_event_eval_id is unique?
+select *
+from
+	(
+		select outreach_event_eval_id, count(*) n 
+		from outreach_eval 
+		group by outreach_event_eval_id 
+		order by outreach_event_eval_id
+	) o
+where o.n > 1;
+
+-- outreach_event_eval_id is null
+select outreach_event_eval_id
+from outreach_eval 
+where outreach_event_eval_id is null;
 
 
 -- OUTREACH_EVENT_ID ----------------------------------------------------------------
+
+
+-- outreach_event_id frequency
+select outreach_event_id, count(*) n 
+from outreach_eval 
+group by outreach_event_id 
+order by outreach_event_id;
+
+-- outreach_event_id is unique?
+select *
+from
+	(
+		select outreach_event_id, count(*) n 
+		from outreach_eval 
+		group by outreach_event_id 
+		order by outreach_event_id
+	) o
+where o.n > 1;
+
+-- outreach_event_id is null
+select outreach_event_id
+from outreach_eval 
+where outreach_event_id is null;
+
+
 -- OUTREACH_EVAL & OUTREACH_EVAL_OTH ------------------------------------------------
+
+
+-- outreach_eval code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'outreach_eval_cl1'
+order by value;
+
+
+-- outreach_eval frequency
+select x.outreach_eval as outreach_eval,
+   d.label as outreach_eval_description,
+   count(*) as n
+from outreach_eval  x left outer join
+   xsd_enumeration_definition d on x.outreach_eval = d.value
+where type_name = 'outreach_eval_cl1'
+group by x.outreach_eval;
+
+
+-- outreach_eval_oth frequency
+select outreach_eval_oth, count(*) n 
+from outreach_eval 
+group by outreach_eval_oth 
+order by outreach_eval_oth;
+
 
 -- TRANSACTION_TYPE -----------------------------------------------------------------
 -- TODO (LOW-PRIORITY): get frequency
-
-
-
 
 
  
@@ -4398,13 +4466,85 @@ select count(*) n from outreach_lang2;
 -- PSU_ID ---------------------------------------------------------------------------
 -- TODO (LOW-PRIORITY): get frequency
 
+
 -- OUTREACH_LANG2_ID ----------------------------------------------------------------
+
+
+-- outreach_lang2_id frequency
+select outreach_lang2_id, count(*) n 
+from outreach_lang2
+group by outreach_lang2_id 
+order by outreach_lang2_id;
+
+
+-- outreach_lang2_id is unique?
+select *
+from
+	(
+		select outreach_lang2_id, count(*) n 
+		from outreach_lang2
+		group by outreach_lang2_id 
+		order by outreach_lang2_id
+	) o
+where o.n > 1;
+
+
+-- outreach_lang2_id is null
+select outreach_lang2_id
+from outreach_lang2 
+where outreach_lang2_id is null;
+
+
 -- OUTREACH_EVENT_ID ----------------------------------------------------------------
+
+
+-- outreach_event_id frequency
+select outreach_event_id, count(*) n 
+from outreach_lang2
+group by outreach_event_id 
+order by outreach_event_id;
+
+
+-- outreach_event_id is unique?
+select *
+from
+	(
+		select outreach_event_id, count(*) n 
+		from outreach_lang2
+		group by outreach_event_id 
+		order by outreach_event_id
+	) o
+where o.n > 1;
+
+
+-- outreach_event_id is null
+select outreach_event_id
+from outreach_lang2 
+where outreach_event_id is null;
+
+
 -- OUTREACH_LANG2 -------------------------------------------------------------------
+
+
+-- outreach_lang2 code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'language_cl2'
+order by value;
+
+
+-- outreach_lang2 frequency
+select x.outreach_lang2 as outreach_lang2,
+   d.label as outreach_lang2_description,
+   count(*) as n
+from outreach_lang2 x left outer join
+   xsd_enumeration_definition d on x.outreach_lang2 = d.value
+where type_name = 'language_cl2'
+group by x.outreach_lang2;
+
 
 -- TRANSACTION_TYPE -----------------------------------------------------------------
 -- TODO (LOW-PRIORITY): get frequency
-
 
 
  
@@ -4656,3 +4796,715 @@ group by x.outreach_target_ms;
 -- TRANSACTION_TYPE -----------------------------------------------------------------
 -- TODO (LOW-PRIORITY): get frequency
 
+
+
+/*************************************************************************************
+ *
+ * 		STAFF & WEEKLY STAFF EXPENSE
+ *
+ * 		Staff: 
+ * 				staff
+ * 				staff_cert_training
+ * 				staff_language
+ * 				
+ * 		Weekly Staff Expense: 
+ * 				staff_exp_data_cllctn_tasks, 
+ * 				staff_exp_mngmnt_tasks, 
+ * 				staff_weekly_expens
+ *
+ *************************************************************************************/
+
+
+
+/*************************************************************************************
+ * table: staff
+ *************************************************************************************/
+
+show columns from staff;
+select count(*) n from staff;
+
+
+-- PSU_ID ---------------------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+
+
+-- STAFF_ID -------------------------------------------------------------------------
+
+-- staff_id is null
+select *
+from staff 
+where staff_id is null;
+
+
+-- staff_id frequency
+select staff_id, count(*) n
+from staff 
+group by staff_id
+order by staff_id desc;
+
+
+-- staff_id is not unique
+select *
+from ( select staff_id, count(*) n from staff  group by staff_id ) o
+where o.n > 1;
+
+
+-- STAFF_TYPE & STAFF_TYPE_OTH ------------------------------------------------------
+-- (labor position)
+
+-- staff_type code list (-5 = Oher, -4 = Missing in Error)
+select * from xsd_enumeration_definition where type_name = 'study_staff_type_cl1' order by value;
+
+
+-- staff_type frequency
+select x.staff_type as staff_type_value,
+   d.label as staff_type_description,
+   count(*) as n
+from staff x left outer join
+   xsd_enumeration_definition d on x.staff_type = d.value
+where type_name = 'study_staff_type_cl1'
+group by x.staff_type;
+
+
+-- staff_type_oth frequency (-7 = NA)
+select staff_type_oth, 	count(*) n from staff group by staff_type_oth order by staff_type_oth desc;
+
+
+-- staff_id with no staff_type indicated
+select staff_id, staff_type from staff where staff_type is null;
+
+
+-- ANALYSIS: 
+
+-- staff_id with study_type = Other and staff_type_oth provided
+select x.staff_id, 
+	x.staff_type as staff_type_value,
+	d.label as staff_type_description, 
+	staff_type_oth	 
+from staff x left outer join
+   xsd_enumeration_definition d on x.staff_type = d.value
+where type_name = 'study_staff_type_cl1'
+	and x.staff_type = -5;
+
+
+-- staff_id with 'Missing in Error' study_type
+select x.staff_id, 
+	x.staff_type as staff_type_value,
+	d.label as staff_type_description, 
+	staff_type_oth	 
+from staff x left outer join
+   xsd_enumeration_definition d on x.staff_type = d.value
+where type_name = 'study_staff_type_cl1'
+	and x.staff_type < 0
+;
+-- ISSUE: 27 staff_ids with 'Missing in Error' staff_type
+
+
+-- SUBCONTRACTOR --------------------------------------------------------------------
+
+
+-- subcontractor code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl2'
+order by value;
+
+
+-- subcontractor frequency
+select x.subcontractor as subcontractor_value,
+   d.label as subcontractor_description,
+   count(*) as n
+from staff x left outer join
+   xsd_enumeration_definition d on x.subcontractor = d.value
+where type_name = 'confirm_type_cl2'
+group by x.subcontractor;
+
+
+-- STAFF_YOB ------------------------------------------------------------------------
+
+
+-- staff_id frequency
+select staff_yob, count(*) n
+from staff 
+group by staff_yob
+order by staff_yob desc;
+
+
+-- STAFF_AGE_RANGE ------------------------------------------------------------------
+
+
+-- staff_age_range code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'age_range_cl1'
+order by value;
+
+
+-- staff_age_range frequency
+select x.staff_age_range as staff_age_range_value,
+   d.label as staff_age_range_description,
+   count(*) as n
+from staff x left outer join
+   xsd_enumeration_definition d on x.staff_age_range = d.value
+where type_name = 'age_range_cl1'
+group by x.staff_age_range;
+
+
+-- STAFF_GENDER ---------------------------------------------------------------------
+
+
+-- staff_gender code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'gender_cl1'
+order by value;
+
+
+-- staff_gender frequency
+select x.staff_gender as staff_gender_value,
+   d.label as staff_gender_description,
+   count(*) as n
+from staff x left outer join
+   xsd_enumeration_definition d on x.staff_gender = d.value
+where type_name = 'gender_cl1'
+group by x.staff_gender;
+
+
+-- STAFF_RACE & STAFF_RACE_OTH ------------------------------------------------------
+
+
+-- staff_race code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'race_cl1'
+order by value;
+
+
+-- staff_staff_race frequency
+select x.staff_race as staff_race_value,
+   d.label as staff_race_description,
+   count(*) as n
+from staff x left outer join
+   xsd_enumeration_definition d on x.staff_race = d.value
+where type_name = 'race_cl1'
+group by x.staff_race;
+
+
+-- staff_race_oth frequency
+select staff_race_oth as staff_race_oth_value, 
+	case
+  	when staff_race_oth = -7 then 'Not Applicable'
+    else staff_race_oth
+	end as staff_race_oth_description,
+	count(*) n
+from staff 
+group by staff_race_oth
+order by staff_race_oth desc;
+
+
+-- STAFF_ZIP ------------------------------------------------------------------------
+
+
+select staff_zip as staff_zip_value, 
+	case
+  	when staff_zip = -7 then 'Not Applicable'
+    else staff_zip
+	end as staff_zip_description,
+	count(*) n
+from staff 
+group by staff_zip
+order by staff_zip desc;
+
+
+-- STAFF_ETHNICITY ------------------------------------------------------------------
+
+
+-- staff_ethnicity code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'ethnicity_cl1'
+order by value;
+
+
+-- staff_ethnicity frequency
+select x.staff_ethnicity as staff_ethnicity_value,
+   d.label as staff_ethnicity_description,
+   count(*) as n
+from staff x left outer join
+   xsd_enumeration_definition d on x.staff_ethnicity = d.value
+where type_name = 'ethnicity_cl1'
+group by x.staff_ethnicity;
+
+
+-- STAFF_EXP ------------------------------------------------------------------------
+
+
+-- staff_exp code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'experience_level_cl1'
+order by value;
+
+
+-- staff_exp frequency
+select x.staff_exp as staff_exp_value,
+   d.label as staff_exp_description,
+   count(*) as n
+from staff x left outer join
+   xsd_enumeration_definition d on x.staff_exp = d.value
+where type_name = 'experience_level_cl1'
+group by x.staff_exp;
+
+
+-- STAFF_COMMENT --------------------------------------------------------------------
+
+
+select staff_comment, count(*) n
+from staff 
+group by staff_comment
+order by staff_comment desc;
+
+
+-- TRANSACTION_TYPE -----------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+
+
+
+/*************************************************************************************
+ * table: staff_cert_training
+ *************************************************************************************/
+
+
+show columns from staff_cert_training;
+select count(*) n from staff_cert_training;
+
+
+-- PSU_ID ---------------------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+
+
+-- STAFF_CERT_LIST_ID ---------------------------------------------------------------
+
+select staff_cert_list_id, count(*) n
+from staff_cert_training
+group by staff_cert_list_id
+order by staff_cert_list_id desc;
+
+
+-- STAFF_ID -------------------------------------------------------------------------
+
+
+select staff_id, count(*) n
+from staff_cert_training
+group by staff_id
+order by staff_id desc;
+
+
+-- CERT_TRAIN_TYPE ------------------------------------------------------------------
+
+
+-- cert_train_type code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'certificate_type_cl1'
+order by value;
+
+
+-- cert_train_type frequency
+select x.cert_train_type as cert_train_type_value,
+   d.label as cert_train_type_description,
+   count(*) as n
+from staff_cert_training x left outer join
+   xsd_enumeration_definition d on x.cert_train_type = d.value
+where type_name = 'certificate_type_cl1'
+group by x.cert_train_type;
+
+
+-- CERT_COMPLETED -------------------------------------------------------------------
+
+
+-- cert_completed code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl2'
+order by value;
+
+
+-- cert_completed frequency
+select x.cert_completed as cert_completed_value,
+   d.label as cert_completed_description,
+   count(*) as n
+from staff_cert_training x left outer join
+   xsd_enumeration_definition d on x.cert_completed = d.value
+where type_name = 'confirm_type_cl2'
+group by x.cert_completed;
+
+
+-- CERT_DATE ------------------------------------------------------------------------
+
+select cert_date, count(*) n
+from staff_cert_training
+group by cert_date
+order by cert_date desc;
+
+
+-- STAFF_BGCHECK_LVL ----------------------------------------------------------------
+
+
+-- staff_bgcheck_lvl code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'background_chck_lvl_cl1'
+order by value;
+
+
+-- cert_train_type frequency
+select x.staff_bgcheck_lvl as staff_bgcheck_lvl_value,
+   d.label as staff_bgcheck_lvl_description,
+   count(*) as n
+from staff_cert_training x left outer join
+   xsd_enumeration_definition d on x.staff_bgcheck_lvl = d.value
+where type_name = 'background_chck_lvl_cl1'
+group by x.staff_bgcheck_lvl;
+
+
+-- CERT_TYPE_FREQUENCY --------------------------------------------------------------
+
+select cert_type_frequency, count(*) n
+from staff_cert_training
+group by cert_type_frequency
+order by cert_type_frequency desc;
+
+
+-- CERT_TYPE_EXP_DATE ---------------------------------------------------------------
+
+select cert_type_exp_date, count(*) n
+from staff_cert_training
+group by cert_type_exp_date
+order by cert_type_exp_date desc;
+
+
+-- CERT_COMMENT ---------------------------------------------------------------------
+
+select cert_comment, count(*) n
+from staff_cert_training
+group by cert_comment
+order by cert_comment desc;
+
+
+-- TRANSACTION_TYPE -----------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+
+
+
+/*************************************************************************************
+ * table: staff_language
+ *************************************************************************************/
+  
+
+show columns from staff_language;
+select count(*) n from staff_language;
+
+
+-- PSU_ID ---------------------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+
+
+-- STAFF_LANGUAGE_ID ----------------------------------------------------------------
+
+select staff_language_id, count(*) n
+from staff_language
+group by staff_language_id
+order by staff_language_id desc;
+
+
+-- STAFF_ID -------------------------------------------------------------------------
+
+select staff_id, count(*) n
+from staff_language
+group by staff_id
+order by staff_id desc;
+
+
+-- STAFF_LANG -----------------------------------------------------------------------
+
+
+-- staff_lang code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'language_cl2'
+order by value;
+
+
+-- staff_lang frequency
+select x.staff_lang as staff_lang_value,
+   d.label as staff_lang_description,
+   count(*) as n
+from staff_language x left outer join
+   xsd_enumeration_definition d on x.staff_lang = d.value
+where type_name = 'language_cl2'
+group by x.staff_lang;
+
+
+-- STAFF_LANG_OTH -------------------------------------------------------------------
+
+select staff_lang_oth, count(*) n
+from staff_language
+group by staff_lang_oth
+order by staff_lang_oth desc;
+
+
+-- TRANSACTION_TYPE -----------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+
+
+
+/*************************************************************************************
+ * table: staff_exp_data_cllctn_tasks
+ *************************************************************************************/
+
+show columns from staff_exp_data_cllctn_tasks;
+select count(*) n from staff_exp_data_cllctn_tasks;
+
+
+-- PSU_ID ---------------------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+
+
+-- STAFF_EXP_DATA_COLL_TASK_ID ------------------------------------------------------
+
+
+select staff_exp_data_coll_task_id, count(*) n
+from staff_exp_data_cllctn_tasks
+group by staff_exp_data_coll_task_id
+order by staff_exp_data_coll_task_id desc;
+
+
+-- STAFF_WEEKLY_EXPENSE_ID ----------------------------------------------------------
+
+select staff_weekly_expense_id, count(*) n
+from staff_exp_data_cllctn_tasks
+group by staff_weekly_expense_id
+order by staff_weekly_expense_id desc;
+
+
+-- DATA_COLL_TASK_TYPE --------------------------------------------------------------
+
+
+-- data_coll_task_type code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'study_data_cllctn_tsk_type_cl1'
+order by value;
+
+
+-- data_coll_task_type frequency
+select x.data_coll_task_type as data_coll_task_type_value,
+   d.label as data_coll_task_type_description,
+   count(*) as n
+from staff_exp_data_cllctn_tasks x left outer join
+   xsd_enumeration_definition d on x.data_coll_task_type = d.value
+where type_name = 'study_data_cllctn_tsk_type_cl1'
+group by x.data_coll_task_type;
+
+
+-- DATA_COLL_TASK_TYPE_OTH ----------------------------------------------------------
+
+select data_coll_task_type_oth, count(*) n
+from staff_exp_data_cllctn_tasks
+group by data_coll_task_type_oth
+order by data_coll_task_type_oth desc;
+
+
+-- DATA_COLL_TASKS_HRS --------------------------------------------------------------
+
+select data_coll_tasks_hrs, count(*) n
+from staff_exp_data_cllctn_tasks
+group by data_coll_tasks_hrs
+order by data_coll_tasks_hrs desc;
+
+
+-- DATA_COLL_TASK_CASES -------------------------------------------------------------
+
+select data_coll_task_cases, count(*) n
+from staff_exp_data_cllctn_tasks
+group by data_coll_task_cases
+order by data_coll_task_cases desc;
+
+
+-- DATA_COLL_TRANSMIT ---------------------------------------------------------------
+
+select data_coll_transmit, count(*) n
+from staff_exp_data_cllctn_tasks
+group by data_coll_transmit
+order by data_coll_transmit desc;
+
+
+-- DATA_COLL_TASK_COMMENT -----------------------------------------------------------
+
+select data_coll_task_comment, count(*) n
+from staff_exp_data_cllctn_tasks
+group by data_coll_task_comment
+order by data_coll_task_comment desc;
+
+
+-- TRANSACTION_TYPE -----------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+ 
+
+/*************************************************************************************
+ * table: staff_exp_mngmnt_tasks
+ *************************************************************************************/
+
+
+show columns from staff_exp_mngmnt_tasks;
+select count(*) n from staff_exp_mngmnt_tasks;
+
+
+-- PSU_ID ---------------------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+
+
+-- STAFF_EXP_MGMT_TASK_ID -----------------------------------------------------------
+
+select staff_exp_mgmt_task_id, count(*) n
+from staff_exp_mngmnt_tasks
+group by staff_exp_mgmt_task_id
+order by staff_exp_mgmt_task_id desc;
+
+
+-- STAFF_WEEKLY_EXPENSE_ID ----------------------------------------------------------
+
+select staff_weekly_expense_id, count(*) n
+from staff_exp_mngmnt_tasks
+group by staff_weekly_expense_id
+order by staff_weekly_expense_id desc;
+
+
+-- MGMT_TASK_TYPE -------------------------------------------------------------------
+
+
+-- mgmt_task_type code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'study_mngmnt_tsk_type_cl1'
+order by value;
+
+
+-- mgmt_task_type frequency
+select x.mgmt_task_type as mgmt_task_type_value,
+   d.label as mgmt_task_type_description,
+   count(*) as n
+from staff_exp_mngmnt_tasks x left outer join
+   xsd_enumeration_definition d on x.mgmt_task_type = d.value
+where type_name = 'study_mngmnt_tsk_type_cl1'
+group by x.mgmt_task_type;
+
+
+-- MGMT_TASK_TYPE_OTH ---------------------------------------------------------------
+
+select mgmt_task_type_oth, count(*) n
+from staff_exp_mngmnt_tasks
+group by mgmt_task_type_oth
+order by mgmt_task_type_oth desc;
+
+
+-- MGMT_TASK_HRS --------------------------------------------------------------------
+
+select mgmt_task_hrs, count(*) n
+from staff_exp_mngmnt_tasks
+group by mgmt_task_hrs
+order by mgmt_task_hrs desc;
+
+
+-- MGMT_TASK_COMMENT ----------------------------------------------------------------
+
+select mgmt_task_comment, count(*) n
+from staff_exp_mngmnt_tasks
+group by mgmt_task_comment
+order by mgmt_task_comment desc;
+
+
+-- TRANSACTION_TYPE -----------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+ 
+
+/*************************************************************************************
+ * table: staff_weekly_expense
+ *************************************************************************************/
+
+
+show columns from staff_weekly_expense;
+select count(*) n from staff_weekly_expense;
+
+
+-- PSU_ID ---------------------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+
+
+-- WEEKLY_EXP_ID --------------------------------------------------------------------
+
+select WEEKLY_EXP_ID, count(*) n
+from staff_weekly_expense
+group by WEEKLY_EXP_ID
+order by WEEKLY_EXP_ID desc;
+
+
+-- STAFF_ID -------------------------------------------------------------------------
+
+select STAFF_ID, count(*) n
+from staff_weekly_expense
+group by STAFF_ID
+order by STAFF_ID desc;
+
+
+-- WEEK_START_DATE ------------------------------------------------------------------
+
+select WEEK_START_DATE, count(*) n
+from staff_weekly_expense
+group by WEEK_START_DATE
+order by WEEK_START_DATE desc;
+
+
+-- STAFF_PAY ------------------------------------------------------------------------
+
+select STAFF_PAY, count(*) n
+from staff_weekly_expense
+group by STAFF_PAY
+order by STAFF_PAY desc;
+
+
+-- STAFF_HOURS ----------------------------------------------------------------------
+
+select STAFF_HOURS, count(*) n
+from staff_weekly_expense
+group by STAFF_HOURS
+order by STAFF_HOURS desc;
+
+
+-- STAFF_EXPENSES -------------------------------------------------------------------
+
+select STAFF_EXPENSES, count(*) n
+from staff_weekly_expense
+group by STAFF_EXPENSES
+order by STAFF_EXPENSES desc;
+
+
+-- STAFF_MILES ----------------------------------------------------------------------
+
+select STAFF_MILES, count(*) n
+from staff_weekly_expense
+group by STAFF_MILES
+order by STAFF_MILES desc;
+
+
+-- WEEKLY_EXPENSES_COMMENT ----------------------------------------------------------
+
+select WEEKLY_EXPENSES_COMMENT, count(*) n
+from staff_weekly_expense
+group by WEEKLY_EXPENSES_COMMENT
+order by WEEKLY_EXPENSES_COMMENT desc;
+
+
+-- TRANSACTION_TYPE -----------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
