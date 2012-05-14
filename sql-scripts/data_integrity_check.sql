@@ -18,14 +18,16 @@ select * from information_schema.tables where table_schema = 'ncs_mdes_prod';
 show columns from xsd_enumeration_definition;
 select * from xsd_enumeration_definition;
 
+-- ISSUE: mysql does not have a built in IsDate function. May need to build one or is this part of the import process since it is using grails?
+
 
 /*************************************************************************************
  *
  * 		PARTICIPANTS
  *
  * 		Person: 
- * 				link_person_participant
  * 				participant
+ * 				link_person_participant
  *				person
  * 				person_race,
  * 				
@@ -41,6 +43,395 @@ select * from xsd_enumeration_definition;
  *************************************************************************************/
 
 
+
+/*************************************************************************************
+ * table: participant
+ *************************************************************************************/
+
+show columns from participant;
+select count(*) n from participant;
+
+
+-- PSU_ID ---------------------------------------------------------------------------
+
+
+-- psu_id frequency
+select p.psu_id as psu_id_value,
+   d.label as psu_id_description,
+   count(p.id) as n
+from participant p left outer join
+   xsd_enumeration_definition d on p.psu_id = d.value
+where type_name = 'psu_cl1'
+group by p.psu_id;
+
+
+-- P_ID -----------------------------------------------------------------------------
+
+
+-- multiple p_ids? 
+select * 
+from 
+	( 
+		select p_id, count(*) n 
+		from participant 
+		group by p_id 
+	) p 
+where p.n > 1;	
+
+
+-- P_TYPE & P_TYPE_OTH --------------------------------------------------------------
+
+
+-- p_type code list
+
+select * from xsd_enumeration_definition where type_name = 'participant_type_cl1';
+
+
+-- p_type frequency
+
+select p.p_type as p_type_value,
+   d.label as p_type_description,
+   count(p.id) as n
+from participant p left outer join
+   xsd_enumeration_definition d on p.p_type = d.value
+where type_name = 'participant_type_cl1'
+group by p.p_type
+order by d.value;
+
+-- TODO: does participant.p_type = 'NCS Child)'(6) match up with link_person_participant.relation = 'Child' (8)
+-- TODO: how does participant.p_type (study eligibility) compare to ppg_details.ppg_pid_status?
+
+
+-- p_type_oth
+
+select p_type_oth as p_type_oth_value,
+   case when p_type_oth = -7 then 'Not Applicable' else p_type_oth end as p_type_oth_description,
+   count(*) n
+from participant
+group by p_type_oth;
+
+select p_type_oth, count(*) n
+from participant
+group by p_type_oth;
+
+
+-- ANALYSIS: p_type compreshensive list (p_type + p_type_oth)
+
+-- p_type + p_type_oth frequency 
+select p.p_type as p_type_value,
+	d.label as p_type_description,
+	p_type_oth as p_type_oth_value,
+	count(*) n
+from participant p left outer join
+   xsd_enumeration_definition d on p.p_type = d.value
+where type_name = 'participant_type_cl1'
+group by p.p_type,  p_type_oth 
+order by d.value;
+
+
+-- if P_TYPE is 'Other' or 'Missing in Error', replace with P_TYPE_OTH
+
+select p_type_value, p_type_description, count(* ) n
+from
+	(
+		select 
+			case 
+				when p_type < 0 then p_type_oth
+				else convert(p_type, char(2))
+			end as p_type_value,
+			case 
+				when p_type < 0 then 
+					(
+						case 
+							when p_type_oth = -7 then 'Not Applicable'
+							else p_type_oth
+						end
+					)
+				else d.label 
+			end as p_type_description
+		from participant p left outer join
+		   xsd_enumeration_definition d on p.p_type = d.value
+		where type_name = 'participant_type_cl1'
+		order by d.value
+	) p
+group by p_type_value, p_type_description;
+-- ISSUE: why 37 participants have a p_type of "Not Applicable" (-7)
+
+
+-- QC SUGGUSTION: any p-type code that is negative in comprehensive list (p_type + p_type_oth)
+
+
+-- STATUS_INFO_SOURCE & STATUS_INFO_SOURCE_OTH --------------------------------------
+
+
+-- status_info_source
+
+select p.status_info_source as status_info_source_value,
+   d.label as status_info_source_description,
+   count(p.id) as n
+from participant p left outer join
+   xsd_enumeration_definition d on p.status_info_source = d.value
+where type_name = 'information_source_cl4'
+group by p.status_info_source;
+
+
+-- status_info_source_oth
+
+select status_info_source_oth as status_info_source_oth_value,
+   case 
+        when status_info_source_oth = -7 then 'Not Applicable' 
+        else status_info_source_oth 
+    end as status_info_source_oth_description,
+    count(*) n
+from participant
+group by status_info_source_oth;
+
+
+-- ANALYSIS: status_info_source compreshensive list (status_info_source + status_info_source_oth)
+select status_info_source_value, status_info_source_description, count(* ) n
+from
+	(
+		select 
+			case 
+				when status_info_source < 0 then status_info_source_oth
+				else convert(status_info_source, char(2))
+			end as status_info_source_value,
+			case 
+				when status_info_source < 0 then 
+					(
+						case 
+							when status_info_source_oth = -7 then 'Not Applicable'
+							else status_info_source_oth
+						end
+					)
+				else d.label 
+			end as status_info_source_description
+		from participant p left outer join
+		   xsd_enumeration_definition d on p.status_info_source = d.value
+		where type_name = 'information_source_cl4'
+		order by d.value
+	) p
+group by status_info_source_value, status_info_source_description;
+
+
+-- QC SUGGUSTION: any status_info_source code that is negative in comprehensive list (status_info_source + status_info_source_oth)
+
+
+-- STATUS_INFO_MODE & STATUS_INFO_MODE_OTH -------------------------------------------
+
+
+-- status_info_mode
+
+select p.status_info_mode as status_info_mode_value,
+   d.label as status_info_mode_description,
+   count(p.id) as n
+from participant p left outer join
+   xsd_enumeration_definition d on p.status_info_mode = d.value
+where type_name = 'contact_type_cl1'
+group by p.status_info_mode;
+
+
+-- status_info_mode_oth
+
+select status_info_mode_oth as status_info_mode_oth_value,
+   case
+       when status_info_mode_oth = -7 then 'Not Applicable'
+       else status_info_mode_oth
+   end as status_info_mode_oth_description,
+   count(*) n
+from participant
+group by status_info_mode_oth;
+
+
+
+
+-- ANALYSIS: status_info_mode compreshensive list (status_info_mode + status_info_mode_oth)
+select status_info_mode_value, status_info_mode_description, count(* ) n
+from
+	(
+		select 
+			case 
+				when status_info_mode < 0 then status_info_mode_oth
+				else convert(status_info_mode, char(2))
+			end as status_info_mode_value,
+			case 
+				when status_info_mode < 0 then 
+					(
+						case 
+							when status_info_mode_oth = -7 then 'Not Applicable'
+							else status_info_mode_oth
+						end
+					)
+				else d.label 
+			end as status_info_mode_description
+		from participant p left outer join
+		   xsd_enumeration_definition d on p.status_info_mode = d.value
+		where type_name = 'contact_type_cl1'
+		order by d.value
+	) p
+group by status_info_mode_value, status_info_mode_description;
+
+
+-- QC SUGGUSTION: any status_info_mode code that is negative in comprehensive list (status_info_mode + status_info_mode_oth)
+
+
+-- STATUS_INFO_DATE -----------------------------------------------------------------
+
+select status_info_date, count(*) n 
+from participant 
+group by status_info_date 
+order by count(*) desc;
+
+
+-- QC SUGGESTION: which participant does not have a valid status_info_date?
+select pid
+from participant 
+where status_info_date is null;
+
+
+-- QC SUGGESTION: is the status_info_date a valid date?
+
+
+-- ENROLL_STATUS --------------------------------------------------------------------
+
+
+-- enroll_status code list
+select * 
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl2';
+
+
+-- enroll_status frequency
+select p.enroll_status as enroll_status_value,
+   d.label as enroll_status_description,
+   count(p.id) as n
+from participant p left outer join
+   xsd_enumeration_definition d on p.enroll_status = d.value
+where type_name = 'confirm_type_cl2'
+group by p.enroll_status;
+
+
+-- ENROLL_DATE ----------------------------------------------------------------------
+
+
+-- enroll_date frequency
+select enroll_date, count(*) n 
+from participant 
+group by enroll_date 
+order by count(*) desc;
+
+
+-- QC SUGGESTION: person with ENROLL_STATUS = yes, is missing a ENROLL_DATE or has a valid ENROLL_DATE
+select p_id, enroll_status, enroll_date 
+from participant 
+where enroll_status = 1 
+    and enroll_date is null;
+
+-- QC SUGGESTION: person with ENROLL_STATUS = no, has an ENROLL_DATE
+select p_id, enroll_status, enroll_date
+from participant 
+where enroll_status = 2
+    and not enroll_date is null;
+-- ISSUE: 1000 particiants who did not agree to enroll (enroll_status = 2) but have a enroll_date, and the date looks odd
+
+
+-- QC SUGGESTION: is the ENROLL_DATE a valid date?
+
+
+-- PID_ENTRY & PID_ENTRY_OTHER ------------------------------------------------------
+
+
+-- pid_entry frequency
+
+select p.pid_entry as pid_entry_value,
+   d.label as pid_entry_description,
+   count(p.id) as n
+from participant p left outer join
+   xsd_enumeration_definition d on p.pid_entry = d.value
+where type_name = 'study_entry_method_cl1'
+group by p.pid_entry;
+
+-- pid_entry_other frequency
+
+select pid_entry_other as pid_entry_other_value,
+   case
+       when pid_entry_other = -7 then 'Not Applicable'
+       else pid_entry_other
+   end as pid_entry_other_description,
+   count(*) n
+from participant
+group by pid_entry_other;
+
+
+-- ANALYSIS: pid_entry compreshensive list (pid_entry + pid_entry_other)
+select pid_entry_value, pid_entry_description, count(* ) n
+from
+	(
+		select 
+			case 
+				when pid_entry < 0 then pid_entry_other
+				else convert(pid_entry, char(2))
+			end as pid_entry_value,
+			case 
+				when pid_entry < 0 then 
+					(
+						case 
+							when pid_entry_other = -7 then 'Not Applicable'
+							else pid_entry_other
+						end
+					)
+				else d.label 
+			end as pid_entry_description
+		from participant p left outer join
+		   xsd_enumeration_definition d on p.pid_entry = d.value
+		where type_name = 'study_entry_method_cl1'
+		order by d.value
+	) p
+group by pid_entry_value, pid_entry_description;
+-- ISSUE: for 3778/3853 participants, their p_entry/p_entry_other is -7 (Not Applicable)
+
+
+-- PID_AGE_ELIG ---------------------------------------------------------------------
+
+-- pid_age_elig frequency
+select p.pid_age_elig as pid_age_elig_value,
+   d.label as pid_age_elig_description,
+   count(p.id) as n
+from participant p left outer join
+   xsd_enumeration_definition d on p.pid_age_elig = d.value
+where type_name = 'age_eligible_cl2'
+group by p.pid_age_elig
+order by count(p.id) desc;
+-- ISSUE: why do some participants pid_age_elig is 
+-- 'Not Applicable' (n=75), 
+-- 'Unknown' (n=16)
+-- 'Missing in Error' (n=15)
+-- 'Over Age 49' (n=3)
+-- 'Ineligible - Younger than age of Majority' (n=1)
+-- Is it because participant is not a pregnant women, but rather, the child, father, etc.
+
+
+-- TODO: particiapnts whose pid_age_elig is not "Age-Eligible"
+
+
+-- TODO: does participant's dob corroborate with PID_AGE_ELIG?
+
+
+-- PID_COMMENT ----------------------------------------------------------------------
+
+select pid_comment, count(*) n
+from participant
+group by pid_comment;
+
+
+-- TRANSACTION TYPE -----------------------------------------------------------------
+
+select transaction_type, count(*) n
+from participant
+group by transaction_type;
+
+
+
 /*************************************************************************************
  * table; link_person_participant
  *************************************************************************************/
@@ -51,7 +442,7 @@ select count(*) n from link_person_participant;
 
 -- PSU_ID ---------------------------------------------------------------------------
 
--- count
+-- count frequency
 select l.psu_id as psu_id_value,
    d.label as psu_id_description,
    count(l.id) as n
@@ -59,9 +450,6 @@ from link_person_participant l left outer join
    xsd_enumeration_definition d on l.psu_id = d.value
 where type_name = 'psu_cl1'
 group by l.psu_id;
-
--- psu_id  is not correct
-select * from link_person_participant where psu_id != 20000048;
 
 
 -- PERSON_PID_ID --------------------------------------------------------------------
@@ -142,188 +530,6 @@ group by l.is_active;
 
 select transaction_type, count(*) n
 from link_person_participant
-group by transaction_type;
-
-
-/*************************************************************************************
- * table: participant
- *************************************************************************************/
-
-show columns from participant;
-select count(*) n from participant;
-
-
--- PSU_ID ---------------------------------------------------------------------------
-
--- count
-select p.psu_id as psu_id_value,
-   d.label as psu_id_description,
-   count(p.id) as n
-from participant p left outer join
-   xsd_enumeration_definition d on p.psu_id = d.value
-where type_name = 'psu_cl1'
-group by p.psu_id;
-
--- psu_id  is not correct
-select * from participant where psu_id != 20000048;
-
-
--- P_ID -----------------------------------------------------------------------------
-
-select p_id, count(*) n
-from participant 
-group by p_id;
-
--- more than one p_id
-
-select * 
-from ( select p_id, count(*) n from participant group by p_id ) p
-where p.n > 1;	
-
-
--- P_TYPE & P_TYPE_OTH --------------------------------------------------------------
-
--- p_type
-
-select p.p_type as p_type_value,
-   d.label as p_type_description,
-   count(p.id) as n
-from participant p left outer join
-   xsd_enumeration_definition d on p.p_type = d.value
-where type_name = 'participant_type_cl1'
-group by p.p_type;
-
--- TODO: does participant.p_type = 'NCS Child)'(6) match up with link_person_participant.relation = 'Child' (8)
--- TODO: how does participant.p_type (study eligibility) compare to ppg_details.ppg_pid_status?
-
--- p_type_oth
-
-select p_type_oth as p_type_oth_value,
-   case when p_type_oth = -7 then 'Not Applicable' else p_type_oth end as p_type_oth_description,
-   count(*) n
-from participant
-group by p_type_oth;
-
-
--- STATUS_INFO_SOURCE, STATUS_INFO_SOURCE_OTH, STATUS_INFO_MODE, STATUS_INFO_MODE_OTH, STATUS_INFO_DATE
-
--- status_info_source
-
-select p.status_info_source as status_info_source_value,
-   d.label as status_info_source_description,
-   count(p.id) as n
-from participant p left outer join
-   xsd_enumeration_definition d on p.status_info_source = d.value
-where type_name = 'information_source_cl4'
-group by p.status_info_source;
-
--- status_info_source_oth
-
-select status_info_source_oth as status_info_source_oth_value,
-   case when status_info_source_oth = -7 then 'Not Applicable' else status_info_source_oth end as status_info_source_oth_description,
-   count(*) n
-from participant
-group by status_info_source_oth;
-
--- status_info_mode
-
-select p.status_info_mode as status_info_mode_value,
-   d.label as status_info_mode_description,
-   count(p.id) as n
-from participant p left outer join
-   xsd_enumeration_definition d on p.status_info_mode = d.value
-where type_name = 'contact_type_cl1'
-group by p.status_info_mode;
-
--- status_info_mode_oth
-
-select status_info_mode_oth as status_info_mode_oth_value,
-   case
-       when status_info_mode_oth = -7 then 'Not Applicable'
-       else status_info_mode_oth
-   end as status_info_mode_oth_description,
-   count(*) n
-from participant
-group by status_info_mode_oth;
-
--- status_info_date
-
-select status_info_date, count(*) n from participant group by status_info_date order by count(*) desc;
-
-
--- ENROLL_STAUTS & ENROLL_DATE ------------------------------------------------------
-
--- enroll_status
-
--- possible enroll status
-
-select * from xsd_enumeration_definition where type_name = 'confirm_type_cl2';
-
--- enroll_status count
-
-select p.enroll_status as enroll_status_value,
-   d.label as enroll_status_description,
-   count(p.id) as n
-from participant p left outer join
-   xsd_enumeration_definition d on p.enroll_status = d.value
-where type_name = 'confirm_type_cl2'
-group by p.enroll_status;
-
--- enroll_date
-
-select enroll_date, count(*) n from participant group by enroll_date order by count(*) desc;
-
--- TODO: does participant.enroll_status match up with participant.enroll_date?
-
-
--- PID_ENTRY & PID_ENTRY_OTHER ------------------------------------------------------
-
--- pid_entry
-
-select p.pid_entry as pid_entry_value,
-   d.label as pid_entry_description,
-   count(p.id) as n
-from participant p left outer join
-   xsd_enumeration_definition d on p.pid_entry = d.value
-where type_name = 'study_entry_method_cl1'
-group by p.pid_entry;
-
--- pid_entry_other
-
-select pid_entry_other as pid_entry_other_value,
-   case
-       when pid_entry_other = -7 then 'Not Applicable'
-       else pid_entry_other
-   end as pid_entry_other_description,
-   count(*) n
-from participant
-group by pid_entry_other;
-
-
--- PID_AGE_ELIG ---------------------------------------------------------------------
-
-select p.pid_age_elig as pid_age_elig_value,
-   d.label as pid_age_elig_description,
-   count(p.id) as n
-from participant p left outer join
-   xsd_enumeration_definition d on p.pid_age_elig = d.value
-where type_name = 'age_eligible_cl2'
-group by p.pid_age_elig;
-
--- TODO: how does participant.P_TYPE match up to participant.PID_AGE_ELIG?
-
-
--- PID_COMMENT ----------------------------------------------------------------------
-
-select pid_comment, count(*) n
-from participant
-group by pid_comment;
-
-
--- TRANSACTION TYPE -----------------------------------------------------------------
-
-select transaction_type, count(*) n
-from participant
 group by transaction_type;
 
 
