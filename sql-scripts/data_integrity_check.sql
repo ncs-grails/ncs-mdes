@@ -154,7 +154,8 @@ from
 		order by d.value
 	) p
 group by p_type_value, p_type_description;
--- ISSUE: why 37 participants have a p_type of "Not Applicable" (-7)
+-- ISSUE: why 37 participants have a p_type of "Not Applicable" (-7) 
+-- gms: why 488 unknown?
 
 
 -- QC SUGGUSTION: any p-type code that is negative in comprehensive list (p_type + p_type_oth)
@@ -317,11 +318,16 @@ from participant
 group by enroll_date 
 order by count(*) desc;
 
+-- gms: added below for sanity check
+select enroll_status, count(*) n 
+from participant 
+group by enroll_status 
+order by count(*) desc; 
 
 -- QC SUGGESTION: person with ENROLL_STATUS = yes, is missing a ENROLL_DATE or has a valid ENROLL_DATE
 select p_id, enroll_status, enroll_date 
 from participant 
-where enroll_status = 1 
+where enroll_status = 1
     and enroll_date is null;
 
 -- QC SUGGESTION: person with ENROLL_STATUS = no, has an ENROLL_DATE
@@ -333,6 +339,7 @@ where enroll_status = 2
 
 
 -- QC SUGGESTION: is the ENROLL_DATE a valid date?
+
 
 
 -- PID_ENTRY & PID_ENTRY_OTHER ------------------------------------------------------
@@ -385,7 +392,7 @@ from
 		order by d.value
 	) p
 group by pid_entry_value, pid_entry_description;
--- ISSUE: for 3778/3853 participants, their p_entry/p_entry_other is -7 (Not Applicable)
+-- ISSUE: for 3778/3853 participants, their p_entry/p_entry_other is -7 (Not Applicable) 
 
 
 -- PID_AGE_ELIG ---------------------------------------------------------------------
@@ -2430,6 +2437,8 @@ from contact
 group by contact_id 
 order by contact_id;
 -- ISSUE: contact_id of -3 and -7
+-- gms: nice!! I missed this one. It would alsso be nice to know what these different schemes meant, e.g., those that start with a '1' versus
+-- other number schemes. I do not that if there is a number that starts with '6' and ends with '0,' then that is a household contact.
 
 
 -- look for multiple counts
@@ -3232,6 +3241,7 @@ select du_id, count(*) n from non_interview_rpt group by du_id order by count(*)
 -- person_id frequency
 select person_id, count(*) n from non_interview_rpt group by person_id order by count(*) desc;
 -- ISSUE: why are there 150,778 missing person_ids
+-- gms: these are contacts with households... the person_id should be irrelevant
 
 
 -- NIR_VAC_INFO & NIR_VAC_INFO_OTH --------------------------------------------------
