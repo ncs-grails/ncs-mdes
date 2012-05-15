@@ -243,8 +243,6 @@ from participant
 group by status_info_mode_oth;
 
 
-
-
 -- ANALYSIS: status_info_mode compreshensive list (status_info_mode + status_info_mode_oth)
 select status_info_mode_value, status_info_mode_description, count(* ) n
 from
@@ -411,7 +409,38 @@ order by count(p.id) desc;
 -- Is it because participant is not a pregnant women, but rather, the child, father, etc.
 
 
--- TODO: particiapnts whose pid_age_elig is not "Age-Eligible"
+-- TODO: particiapnts whose pid_age_elig is not 'Age-Eligible'
+
+select a.p_type_value,
+	t.label as p_type_decription, 
+	a.pid_age_elig_value,
+	a.n
+from
+	(
+		select case when p_type < 0 then p_type_oth else convert(p_type, char(2)) end as p_type_value, 
+			pid_age_elig as pid_age_elig_value,
+			count(*) n
+		from participant
+		group by p_type
+	) a left outer join
+	xsd_enumeration_definition t on a.p_type_value = t.value
+where type_name = 'participant_type_cl1'
+;
+
+
+
+select p.p_type as p_type_value,
+   d.label as p_type_description,
+   count(p.id) as n
+from participant p left outer join
+   xsd_enumeration_definition d on p.p_type = d.value
+where type_name = 'participant_type_cl1'
+group by p.p_type
+order by d.value;
+
+
+;
+
 
 
 -- TODO: does participant's dob corroborate with PID_AGE_ELIG?
