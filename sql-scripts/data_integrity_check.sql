@@ -130,7 +130,6 @@ order by d.value;
 
 
 -- if P_TYPE is 'Other' or 'Missing in Error', replace with P_TYPE_OTH
-
 select p_type_value, p_type_description, count(* ) n
 from
 	(
@@ -270,7 +269,7 @@ from
 group by status_info_mode_value, status_info_mode_description;
 
 
--- QC SUGGUSTION: any status_info_mode code that is negative in comprehensive list (status_info_mode + status_info_mode_oth)
+-- QC SUGGUSTION: list any status_info_mode code that is negative in comprehensive list (status_info_mode + status_info_mode_oth)
 
 
 -- STATUS_INFO_DATE -----------------------------------------------------------------
@@ -399,7 +398,7 @@ from participant p left outer join
    xsd_enumeration_definition d on p.pid_age_elig = d.value
 where type_name = 'age_eligible_cl2'
 group by p.pid_age_elig
-order by count(p.id) desc;
+order by p.pid_age_elig;
 -- ISSUE: why do some participants pid_age_elig is 
 -- 'Not Applicable' (n=75), 
 -- 'Unknown' (n=16)
@@ -409,38 +408,25 @@ order by count(p.id) desc;
 -- Is it because participant is not a pregnant women, but rather, the child, father, etc.
 
 
--- TODO: particiapnts whose pid_age_elig is not 'Age-Eligible'
-
-select a.p_type_value,
-	t.label as p_type_decription, 
-	a.pid_age_elig_value,
-	a.n
+-- ANALYSIS: does participant's p_type corroborate with pid_age_elig (e.g., father would have pid_age_elig of "Not Applicable")
+select p.p_type, p_type_description,
+    p.pid_age_elig, d.label as pid_age_elig_description,
+    p.n
 from
-	(
-		select case when p_type < 0 then p_type_oth else convert(p_type, char(2)) end as p_type_value, 
-			pid_age_elig as pid_age_elig_value,
-			count(*) n
-		from participant
-		group by p_type
-	) a left outer join
-	xsd_enumeration_definition t on a.p_type_value = t.value
-where type_name = 'participant_type_cl1'
-;
-
-
-
-select p.p_type as p_type_value,
-   d.label as p_type_description,
-   count(p.id) as n
-from participant p left outer join
-   xsd_enumeration_definition d on p.p_type = d.value
-where type_name = 'participant_type_cl1'
-group by p.p_type
-order by d.value;
-
-
-;
-
+    (
+        select p.p_type, d.label as p_type_description, p.pid_age_elig, p.n
+        from
+            (
+                select p_type, pid_age_elig, count(p_id) n
+                from participant
+                group by p_type, pid_age_elig
+            ) p left outer join
+           xsd_enumeration_definition d on p.p_type = d.value
+        where d.type_name = 'participant_type_cl1'
+    ) p left outer join
+    xsd_enumeration_definition d on p.pid_age_elig = d.value
+where d.type_name = 'age_eligible_cl2'
+order by p.p_type, p.pid_age_elig;
 
 
 -- TODO: does participant's dob corroborate with PID_AGE_ELIG?
@@ -448,6 +434,8 @@ order by d.value;
 
 -- PID_COMMENT ----------------------------------------------------------------------
 
+
+-- pid_comment frequency
 select pid_comment, count(*) n
 from participant
 group by pid_comment;
@@ -455,7 +443,14 @@ group by pid_comment;
 
 -- TRANSACTION TYPE -----------------------------------------------------------------
 
-select transaction_type, count(*) n
+select transaction_type as transaction_type_value,
+    case 
+        when transaction_type = 'UP' then 'Upsert'
+        when transaction_type = 'D' then 'Delete'
+        when transaction_type = 'NA' then 'Not Applicable'
+        else 'ERROR -needs resolution'
+    end as transaction_type_description,
+    count(*) n
 from participant
 group by transaction_type;
 
@@ -472,9 +467,7 @@ select count(*) n from link_person_participant;
 -- PSU_ID ---------------------------------------------------------------------------
 
 -- count frequency
-select l.psu_id as psu_id_value,
-   d.label as psu_id_description,
-   count(l.id) as n
+select l.psu_id as psu_id_value, d.label as psu_id_description, count(l.id) as n
 from link_person_participant l left outer join
    xsd_enumeration_definition d on l.psu_id = d.value
 where type_name = 'psu_cl1'
@@ -483,36 +476,82 @@ group by l.psu_id;
 
 -- PERSON_PID_ID --------------------------------------------------------------------
 
--- count
+-- person_pid_id frequency
 select person_pid_id, count(*) n
 from link_person_participant 
 group by person_pid_id;
 
---  is not unique
+-- person_pid_id is not unique
 select *
-from ( select person_pid_id, count(*) n from link_person_participant  group by person_pid_id ) l
+from 
+    ( 
+        select person_pid_id, count(*) n 
+        from link_person_participant  
+        group by person_pid_id 
+    ) l
 where l.n > 1;
 
 
 -- P_ID -----------------------------------------------------------------------------
 
--- p_id count
-select p_id, count(*) n from link_person_participant group by p_id order by count(*) desc;
+
+-- p_id frequency
+select p_id, count(*) n 
+from link_person_participant 
+group by p_id 
+order by count(*) desc;
+
+
+-- p_id is not unique 
+select l.p_id, l.n
+from
+    (
+        select p_id, count(*) n 
+        from link_person_participant 
+        group by p_id 
+        order by count(*) desc
+    ) l
+where l.n > 1;
+
+-- p_id is null
+select p_id, count(*) n 
+from link_person_participant 
+where p_id is null
+group by p_id ;
 
 
 -- PERSON_ID ------------------------------------------------------------------------
 
--- person_id count
-select person_id, count(*) from link_person_participant group by person_id order by count(*) desc; 
+
+-- person_id frequency
+select person_id, count(*) n
+from link_person_participant 
+group by person_id 
+order by count(*) desc; 
+
 
 -- person_id is null
-select person_id, count(*) from link_person_participant where person_id is null group by person_id;
+select person_id
+from link_person_participant 
+where person_id is null
+order by person_id; 
+
+
+-- person_id is not unique
+select l.person_id, l.n
+from
+    (
+        select person_id, count(*) n
+        from link_person_participant 
+        group by person_id 
+    ) l
+where l.n > 1; 
 
 
 -- RELATION & RELATION_OTH ----------------------------------------------------------
 
--- relation
 
+-- relation
 select l.relation as relation_value,
    d.label as relation_description,
    count(l.id) as n
@@ -522,7 +561,6 @@ where type_name = 'person_partcpnt_reltnshp_cl1'
 group by l.relation;
 
 -- relation_oth
-
 select relation_oth as relation_oth_value,
    case
        when relation_oth = -7 then 'Not Applicable'
@@ -533,9 +571,38 @@ from link_person_participant
 group by relation_oth;
 
 
+-- ANALYSIS: relation compreshensive list (relation + relation_oth)
+select relation_value, relation_description, count(* ) n
+from
+	(
+		select 
+			case 
+				when relation < 0 then relation_oth
+				else convert(relation, char(2))
+			end as relation_value,
+			case 
+				when relation < 0 then 
+					(
+						case 
+							when relation_oth = -7 then 'Not Applicable'
+							else relation_oth
+						end
+					)
+				else d.label 
+			end as relation_description
+		from link_person_participant p left outer join
+		   xsd_enumeration_definition d on p.relation = d.value
+		where type_name = 'person_partcpnt_reltnshp_cl1'
+		order by d.value
+	) p
+group by relation_value, relation_description;
+-- ISSUE: 9 person to p_id relationship are 'Not Applicable'
+
+
 -- IS_ACTIVE ------------------------------------------------------------------------
 
--- count
+
+-- is_active frequency
 select l.is_active as is_active_value,
    d.label as relation_description,
    count(l.id) as n
@@ -544,7 +611,8 @@ from link_person_participant l left outer join
 where type_name = 'confirm_type_cl2'
 group by l.is_active;
 
--- inactive links
+
+-- person_participant link is NOT ACTIVE or NULL
 select l.is_active as is_active_value,
    d.label as relation_description,
    count(l.id) as n
@@ -557,10 +625,16 @@ group by l.is_active;
 
 -- TRANSACTION TYPE -----------------------------------------------------------------
 
-select transaction_type, count(*) n
+select transaction_type as transaction_type_value,
+    case 
+        when transaction_type = 'UP' then 'Upsert'
+        when transaction_type = 'D' then 'Delete'
+        when transaction_type = 'NA' then 'Not Applicable'
+        else 'ERROR -needs resolution'
+    end as transaction_type_description,
+    count(*) n
 from link_person_participant
 group by transaction_type;
-
 
 
 /*************************************************************************************
@@ -570,29 +644,32 @@ group by transaction_type;
 show columns from person;
 select count(*) n from person;
 
+-- ISSUE: according to Master Data Elements document, under the "Format Constraint" column, 
+-- the FIRST_NAME, LAST_NAME, mIDDLE_NAME, & MIDDLE_NAME "is considred PII and should be left NULL or contain the following values: -7 (Not Applicable)
+
 
 -- PSU_ID ---------------------------------------------------------------------------
 
--- count
-select p.psu_id as psu_id_value,
-   d.label as psu_id_description,
-   count(p.id) as n
+
+-- psu_id frequency
+select p.psu_id as psu_id_value, d.label as psu_id_description, count(p.id) as n
 from person p left outer join
    xsd_enumeration_definition d on p.psu_id = d.value
 where type_name = 'psu_cl1'
 group by p.psu_id;
 
 
--- psu_id  is not correct
-select * from person where psu_id != 20000048;
-
-
 -- PERSON_ID ------------------------------------------------------------------------
 
-select person_id, count(*) from person group by person_id;
+
+-- person_id frequency
+select person_id, count(*) 
+from person 
+group by person_id;
 -- ISSUE: 
 	-- odd person_ids (-3 and -7)
 	-- why are some ids numeric only (1958907), while others are alphanumeric with a date appended (C7312012-02-24)?
+
 
 -- person_id is not unique
 select *
@@ -606,6 +683,14 @@ where p.n > 1;
 
 -- PREFIX ---------------------------------------------------------------------------
 
+
+-- prefix code list
+select * 
+from xsd_enumeration_definition 
+where type_name = 'name_prefix_cl1';
+
+
+-- prefix frequency
 select p.prefix as prefix_value, 
 	d.label as prefix_description, 
 	count(p.id) as n
@@ -613,30 +698,38 @@ from person p left outer join
 	xsd_enumeration_definition d on p.prefix = d.value
 where d.type_name = 'name_prefix_cl1'
 group by prefix;
-
 -- ISSUE: all prefixes are "NA"
 
 
 -- FIRST_NAME -----------------------------------------------------------------------
+-- ISSUE: should quality checks only focus on names of persons listed in participant table?
 
--- count
-select first_name, count(*) n from person group by first_name order by first_name;
+-- first_name frequency
+select first_name, count(*) n 
+from person 
+group by first_name 
+order by first_name;
 -- ISSUES: firstnames that are
 	-- null (n=3900)
 	-- '-3' (n=22)
 	-- '26' (n=1)
 	-- '30' (n=1)
 
--- null first names
--- ISSUE: 390 rows with null first_name
-select count(*) 
-from person 
-where first_name is null;
 
--- ISSUE: of 390 null first names, most do not have a middle or last name
-select first_name, middle_name, last_name
+-- first_name is null
+select first_name, count(*) n
 from person 
 where first_name is null;
+-- ISSUE: 3900 rows with null first_name
+
+
+-- if first_name is null, what is person's middle and lastname
+select first_name, middle_name, last_name, count(*) n
+from person 
+where first_name is null
+group by middle_name, last_name;
+-- ISSUE: of 390 null first names, most do not have a middle or last name
+
 
 -- first names that have odd non-alpha characters (excludes single quote, hyphen, space)
 select p.first_name, count(*) n
@@ -649,46 +742,47 @@ from
 group by p.first_name;
 -- ISSUE: first names with parenthesis, period, comma, slash, and number
 
--- first names that have a period (suggesting person had middle name) but person also has a name provided in middle name column
+
+-- first names containing a period (suggesting person has middle name) yet person also has middle
 select id, first_name,  middle_name
 from person
 where  first_name REGEXP '[.]' and middle_name != -7;
 
--- TODO: how may of first name oddities are participants
-
 
 -- LAST_NAME ------------------------------------------------------------------------
 
--- count
+
+-- last_name frequency
 select last_name, count(*) n from person group by last_name;
 
--- null last names
-select count(*) from person  where last_name is null;
 
--- ISSUE: 3 null last names
-select first_name, middle_name, last_name from person where last_name is null;
+-- last name is null
+select person_id, last_name, first_name, middle_name from person where last_name is null;
+-- ISSUE: 3 last names that are null
 
--- last names that have other characters that are not alpha characters or a period
--- first names that have odd non-alpha characters (excludes single quote, hyphen, space)
+
+-- odd last names (excludes single quote, space and hypen)
 select p.last_name, count(*) n
 from
    (
-		select id, last_name
+		select person_id, last_name
 		from person
 		where last_name not REGEXP "^[A-Za-z\\'\\ \\-]+$" 
    ) p
 group by p.last_name;
 
--- TODO: how may of last name oddities are participants
-
 
 -- MIDDLE NAME ----------------------------------------------------------------------
 
--- count
+
+-- middle_name frequency
 select middle_name, count(*) n from person group by middle_name;
 
--- null middle names
-select count(*) from person  where middle_name is null;
+
+-- middle name is null
+select person_id, middle_name from person where middle_name is null;
+select count(*) n from person where middle_name is null;
+
 
 -- middle names that have odd non-alpha characters (excludes single quote, hyphen, space, period)
 select p.middle_name, count(*) n
@@ -700,8 +794,6 @@ from
    ) p
 group by p.middle_name;
 
-
--- TODO: Are any person with name abnomallies are participants?
 
 
 -- MAIDEN NAME ----------------------------------------------------------------------
