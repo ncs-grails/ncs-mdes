@@ -154,7 +154,8 @@ from
 		order by d.value
 	) p
 group by p_type_value, p_type_description;
--- ISSUE: why 37 participants have a p_type of "Not Applicable" (-7)
+-- ISSUE: why 37 participants have a p_type of "Not Applicable" (-7) 
+-- gms: why 488 unknown?
 
 
 -- QC SUGGUSTION: any p-type code that is negative in comprehensive list (p_type + p_type_oth)
@@ -317,11 +318,16 @@ from participant
 group by enroll_date 
 order by count(*) desc;
 
+-- gms: added below for sanity check
+select enroll_status, count(*) n 
+from participant 
+group by enroll_status 
+order by count(*) desc; 
 
 -- QC SUGGESTION: person with ENROLL_STATUS = yes, is missing a ENROLL_DATE or has a valid ENROLL_DATE
 select p_id, enroll_status, enroll_date 
 from participant 
-where enroll_status = 1 
+where enroll_status = 1
     and enroll_date is null;
 
 -- QC SUGGESTION: person with ENROLL_STATUS = no, has an ENROLL_DATE
@@ -333,6 +339,7 @@ where enroll_status = 2
 
 
 -- QC SUGGESTION: is the ENROLL_DATE a valid date?
+
 
 
 -- PID_ENTRY & PID_ENTRY_OTHER ------------------------------------------------------
@@ -385,7 +392,7 @@ from
 		order by d.value
 	) p
 group by pid_entry_value, pid_entry_description;
--- ISSUE: for 3778/3853 participants, their p_entry/p_entry_other is -7 (Not Applicable)
+-- ISSUE: for 3778/3853 participants, their p_entry/p_entry_other is -7 (Not Applicable) 
 
 
 -- PID_AGE_ELIG ---------------------------------------------------------------------
@@ -645,8 +652,12 @@ show columns from person;
 select count(*) n from person;
 
 -- ISSUE: according to Master Data Elements document, under the "Format Constraint" column, 
+<<<<<<< HEAD
     -- the FIRST_NAME, LAST_NAME, mIDDLE_NAME, & MIDDLE_NAME "is considred PII and should be left 
     -- NULL or contain the following values: -7 (Not Applicable) which is not the case in the database.
+=======
+-- the FIRST_NAME, LAST_NAME, mIDDLE_NAME, & MIDDLE_NAME "is considred PII and should be left NULL or contain the following values: -7 (Not Applicable)
+>>>>>>> 3d952df36d33e30f7a5c7d0db868ef6dbd6ecd1f
 
 
 -- PSU_ID ---------------------------------------------------------------------------
@@ -667,7 +678,13 @@ group by p.psu_id;
 select person_id, count(*) 
 from person 
 group by person_id;
+<<<<<<< HEAD
 -- ISSUE: odd person_ids (-3 and -7)
+=======
+-- ISSUE: 
+	-- odd person_ids (-3 and -7)
+	-- why are some ids numeric only (1958907), while others are alphanumeric with a date appended (C7312012-02-24)?
+>>>>>>> 3d952df36d33e30f7a5c7d0db868ef6dbd6ecd1f
 
 
 -- person_id is not unique
@@ -739,7 +756,11 @@ from
 		where first_name not REGEXP "^[A-Za-z\\'\\ \\-]+$" 
    ) p
 group by p.first_name;
+<<<<<<< HEAD
 -- ISSUE: first name has parenthesis, period, comma, slash, and number
+=======
+-- ISSUE: first names with parenthesis, period, comma, slash, and number
+>>>>>>> 3d952df36d33e30f7a5c7d0db868ef6dbd6ecd1f
 
 
 -- first name contains a period (suggesting person has middle name) yet person also has middle
@@ -2429,6 +2450,8 @@ from contact
 group by contact_id 
 order by contact_id;
 -- ISSUE: contact_id of -3 and -7
+-- gms: nice!! I missed this one. It would alsso be nice to know what these different schemes meant, e.g., those that start with a '1' versus
+-- other number schemes. I do not that if there is a number that starts with '6' and ends with '0,' then that is a household contact.
 
 
 -- look for multiple counts
@@ -3231,6 +3254,7 @@ select du_id, count(*) n from non_interview_rpt group by du_id order by count(*)
 -- person_id frequency
 select person_id, count(*) n from non_interview_rpt group by person_id order by count(*) desc;
 -- ISSUE: why are there 150,778 missing person_ids
+-- gms: these are contacts with households... the person_id should be irrelevant
 
 
 -- NIR_VAC_INFO & NIR_VAC_INFO_OTH --------------------------------------------------
