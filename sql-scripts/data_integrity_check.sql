@@ -645,7 +645,8 @@ show columns from person;
 select count(*) n from person;
 
 -- ISSUE: according to Master Data Elements document, under the "Format Constraint" column, 
--- the FIRST_NAME, LAST_NAME, mIDDLE_NAME, & MIDDLE_NAME "is considred PII and should be left NULL or contain the following values: -7 (Not Applicable)
+    -- the FIRST_NAME, LAST_NAME, mIDDLE_NAME, & MIDDLE_NAME "is considred PII and should be left 
+    -- NULL or contain the following values: -7 (Not Applicable) which is not the case in the database.
 
 
 -- PSU_ID ---------------------------------------------------------------------------
@@ -666,9 +667,7 @@ group by p.psu_id;
 select person_id, count(*) 
 from person 
 group by person_id;
--- ISSUE: 
-	-- odd person_ids (-3 and -7)
-	-- why are some ids numeric only (1958907), while others are alphanumeric with a date appended (C7312012-02-24)?
+-- ISSUE: odd person_ids (-3 and -7)
 
 
 -- person_id is not unique
@@ -731,7 +730,7 @@ group by middle_name, last_name;
 -- ISSUE: of 390 null first names, most do not have a middle or last name
 
 
--- first names that have odd non-alpha characters (excludes single quote, hyphen, space)
+-- first name has odd non-alpha characters (excludes single quote, hyphen, space)
 select p.first_name, count(*) n
 from
    (
@@ -740,10 +739,10 @@ from
 		where first_name not REGEXP "^[A-Za-z\\'\\ \\-]+$" 
    ) p
 group by p.first_name;
--- ISSUE: first names with parenthesis, period, comma, slash, and number
+-- ISSUE: first name has parenthesis, period, comma, slash, and number
 
 
--- first names containing a period (suggesting person has middle name) yet person also has middle
+-- first name contains a period (suggesting person has middle name) yet person also has middle
 select id, first_name,  middle_name
 from person
 where  first_name REGEXP '[.]' and middle_name != -7;
