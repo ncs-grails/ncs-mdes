@@ -83,12 +83,13 @@ where p.n > 1;
 
 
 -- p_type code list
-
-select * from xsd_enumeration_definition where type_name = 'participant_type_cl1';
+select * 
+from xsd_enumeration_definition 
+where type_name = 'participant_type_cl1'
+order by value;
 
 
 -- p_type frequency
-
 select p.p_type as p_type_value,
    d.label as p_type_description,
    count(p.id) as n
@@ -98,38 +99,19 @@ where type_name = 'participant_type_cl1'
 group by p.p_type
 order by d.value;
 
--- TODO: does participant.p_type = 'NCS Child)'(6) match up with link_person_participant.relation = 'Child' (8)
--- TODO: how does participant.p_type (study eligibility) compare to ppg_details.ppg_pid_status?
 
-
--- p_type_oth
-
+-- p_type_oth frequency
 select p_type_oth as p_type_oth_value,
-   case when p_type_oth = -7 then 'Not Applicable' else p_type_oth end as p_type_oth_description,
+   case 
+        when p_type_oth = -7 then 'Not Applicable' 
+        else p_type_oth 
+    end as p_type_oth_description,
    count(*) n
 from participant
 group by p_type_oth;
 
-select p_type_oth, count(*) n
-from participant
-group by p_type_oth;
 
-
--- ANALYSIS: p_type compreshensive list (p_type + p_type_oth)
-
--- p_type + p_type_oth frequency 
-select p.p_type as p_type_value,
-	d.label as p_type_description,
-	p_type_oth as p_type_oth_value,
-	count(*) n
-from participant p left outer join
-   xsd_enumeration_definition d on p.p_type = d.value
-where type_name = 'participant_type_cl1'
-group by p.p_type,  p_type_oth 
-order by d.value;
-
-
--- if P_TYPE is 'Other' or 'Missing in Error', replace with P_TYPE_OTH
+-- if P_TYPE < 0 ('Other' [-5] or 'Missing in Error' [-4]), replace with P_TYPE_OTH
 select p_type_value, p_type_description, count(* ) n
 from
 	(
@@ -154,18 +136,28 @@ from
 		order by d.value
 	) p
 group by p_type_value, p_type_description;
--- ISSUE: why 37 participants have a p_type of "Not Applicable" (-7) 
--- gms: why 488 unknown?
+-- ISSUE: p_type of 
+    -- NOT APPLICABLE (CODE = -7) (n=37)
+    -- UNKNOWN (n=488)
 
 
--- QC SUGGUSTION: any p-type code that is negative in comprehensive list (p_type + p_type_oth)
+-- TODO: does participant.p_type = 'NCS Child)'(6) match up with link_person_participant.relation = 'Child' (8)
+
+
+-- TODO: how does participant.p_type (study eligibility) compare to ppg_details.ppg_pid_status?
 
 
 -- STATUS_INFO_SOURCE & STATUS_INFO_SOURCE_OTH --------------------------------------
 
 
--- status_info_source
+-- status_info_source code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'information_source_cl4'
+order by value;
 
+
+-- status_info_source frequency
 select p.status_info_source as status_info_source_value,
    d.label as status_info_source_description,
    count(p.id) as n
@@ -175,8 +167,7 @@ where type_name = 'information_source_cl4'
 group by p.status_info_source;
 
 
--- status_info_source_oth
-
+-- status_info_source_oth frequency
 select status_info_source_oth as status_info_source_oth_value,
    case 
         when status_info_source_oth = -7 then 'Not Applicable' 
@@ -187,7 +178,7 @@ from participant
 group by status_info_source_oth;
 
 
--- ANALYSIS: status_info_source compreshensive list (status_info_source + status_info_source_oth)
+-- status_info_source comprehensive list (status_info_source + status_info_source_oth)
 select status_info_source_value, status_info_source_description, count(* ) n
 from
 	(
@@ -214,14 +205,20 @@ from
 group by status_info_source_value, status_info_source_description;
 
 
--- QC SUGGUSTION: any status_info_source code that is negative in comprehensive list (status_info_source + status_info_source_oth)
+-- TODO: participant with a negatove status (status_info_source + status_info_source_oth) 
 
 
 -- STATUS_INFO_MODE & STATUS_INFO_MODE_OTH -------------------------------------------
 
 
--- status_info_mode
+-- status_info_mode code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'contact_type_cl1'
+order by value;
 
+
+-- status_info_mode frequency
 select p.status_info_mode as status_info_mode_value,
    d.label as status_info_mode_description,
    count(p.id) as n
@@ -232,7 +229,6 @@ group by p.status_info_mode;
 
 
 -- status_info_mode_oth
-
 select status_info_mode_oth as status_info_mode_oth_value,
    case
        when status_info_mode_oth = -7 then 'Not Applicable'
@@ -243,7 +239,7 @@ from participant
 group by status_info_mode_oth;
 
 
--- ANALYSIS: status_info_mode compreshensive list (status_info_mode + status_info_mode_oth)
+-- status_info_mode compreshensive list (status_info_mode + status_info_mode_oth)
 select status_info_mode_value, status_info_mode_description, count(* ) n
 from
 	(
@@ -270,24 +266,23 @@ from
 group by status_info_mode_value, status_info_mode_description;
 
 
--- QC SUGGUSTION: list any status_info_mode code that is negative in comprehensive list (status_info_mode + status_info_mode_oth)
+-- TODO: list any status_info_mode code that is negative in comprehensive list (status_info_mode + status_info_mode_oth)
 
 
 -- STATUS_INFO_DATE -----------------------------------------------------------------
 
+
+-- status_info_date frequency
 select status_info_date, count(*) n 
 from participant 
 group by status_info_date 
 order by count(*) desc;
 
 
--- QC SUGGESTION: which participant does not have a valid status_info_date?
-select pid
+-- which participant does not have a status_info_date?
+select p_id
 from participant 
-where status_info_date is null;
-
-
--- QC SUGGESTION: is the status_info_date a valid date?
+where status_info_date is null or status_info_date = '';
 
 
 -- ENROLL_STATUS --------------------------------------------------------------------
@@ -296,7 +291,8 @@ where status_info_date is null;
 -- enroll_status code list
 select * 
 from xsd_enumeration_definition 
-where type_name = 'confirm_type_cl2';
+where type_name = 'confirm_type_cl2'
+order by value;
 
 
 -- enroll_status frequency
@@ -317,36 +313,35 @@ select enroll_date, count(*) n
 from participant 
 group by enroll_date 
 order by count(*) desc;
+-- ISSUE: 3485 with date of 9777-97-97
 
--- gms: added below for sanity check
-select enroll_status, count(*) n 
-from participant 
-group by enroll_status 
-order by count(*) desc; 
 
--- QC SUGGESTION: person with ENROLL_STATUS = yes, is missing a ENROLL_DATE or has a valid ENROLL_DATE
+-- TODO: verify that all ENROLL_DATE a legitimate date
+
+
+-- participant with ENROLL_STATUS = yes (1), is missing ENROLL_DATE or has an invalid ENROLL_DATE
 select p_id, enroll_status, enroll_date 
 from participant 
-where enroll_status = 1
-    and enroll_date is null;
+where enroll_status = 1 and (enroll_date is null or enroll_date = '' or enroll_date = '9777-97-97');
 
--- QC SUGGESTION: person with ENROLL_STATUS = no, has an ENROLL_DATE
+
+-- participant with ENROLL_STATUS = no (2), but has an ENROLL_DATE
 select p_id, enroll_status, enroll_date
 from participant 
-where enroll_status = 2
-    and not enroll_date is null;
--- ISSUE: 1000 particiants who did not agree to enroll (enroll_status = 2) but have a enroll_date, and the date looks odd
-
-
--- QC SUGGESTION: is the ENROLL_DATE a valid date?
-
+where enroll_status = 2 and (not enroll_date is null or enroll_date != '');
 
 
 -- PID_ENTRY & PID_ENTRY_OTHER ------------------------------------------------------
 
 
--- pid_entry frequency
+-- pid_entry code list
+select *
+from xsd_enumeration_definition d 
+where type_name = 'study_entry_method_cl1'
+order by value;
 
+
+-- pid_entry frequency
 select p.pid_entry as pid_entry_value,
    d.label as pid_entry_description,
    count(p.id) as n
@@ -354,6 +349,7 @@ from participant p left outer join
    xsd_enumeration_definition d on p.pid_entry = d.value
 where type_name = 'study_entry_method_cl1'
 group by p.pid_entry;
+
 
 -- pid_entry_other frequency
 
@@ -415,7 +411,7 @@ order by p.pid_age_elig;
 -- Is it because participant is not a pregnant women, but rather, the child, father, etc.
 
 
--- ANALYSIS: does participant's p_type corroborate with pid_age_elig (e.g., father would have pid_age_elig of "Not Applicable")
+-- does participant's p_type corroborate with pid_age_elig (e.g., father would have pid_age_elig of "Not Applicable")
 select p.p_type, p_type_description,
     p.pid_age_elig, d.label as pid_age_elig_description,
     p.n
@@ -578,7 +574,7 @@ from link_person_participant
 group by relation_oth;
 
 
--- ANALYSIS: relation compreshensive list (relation + relation_oth)
+-- relation compreshensive list (relation + relation_oth)
 select relation_value, relation_description, count(* ) n
 from
 	(
@@ -652,12 +648,8 @@ show columns from person;
 select count(*) n from person;
 
 -- ISSUE: according to Master Data Elements document, under the "Format Constraint" column, 
-<<<<<<< HEAD
-    -- the FIRST_NAME, LAST_NAME, mIDDLE_NAME, & MIDDLE_NAME "is considred PII and should be left 
+    -- the FIRST_NAME, LAST_NAME, MIDDLE_NAME, & MIDDLE_NAME "is considred PII and should be left 
     -- NULL or contain the following values: -7 (Not Applicable) which is not the case in the database.
-=======
--- the FIRST_NAME, LAST_NAME, mIDDLE_NAME, & MIDDLE_NAME "is considred PII and should be left NULL or contain the following values: -7 (Not Applicable)
->>>>>>> 3d952df36d33e30f7a5c7d0db868ef6dbd6ecd1f
 
 
 -- PSU_ID ---------------------------------------------------------------------------
@@ -678,13 +670,9 @@ group by p.psu_id;
 select person_id, count(*) 
 from person 
 group by person_id;
-<<<<<<< HEAD
--- ISSUE: odd person_ids (-3 and -7)
-=======
 -- ISSUE: 
 	-- odd person_ids (-3 and -7)
 	-- why are some ids numeric only (1958907), while others are alphanumeric with a date appended (C7312012-02-24)?
->>>>>>> 3d952df36d33e30f7a5c7d0db868ef6dbd6ecd1f
 
 
 -- person_id is not unique
@@ -735,7 +723,7 @@ order by first_name;
 -- first_name is null
 select first_name, count(*) n
 from person 
-where first_name is null;
+where first_name is null or first_name = '';
 -- ISSUE: 3900 rows with null first_name
 
 
@@ -756,11 +744,7 @@ from
 		where first_name not REGEXP "^[A-Za-z\\'\\ \\-]+$" 
    ) p
 group by p.first_name;
-<<<<<<< HEAD
 -- ISSUE: first name has parenthesis, period, comma, slash, and number
-=======
--- ISSUE: first names with parenthesis, period, comma, slash, and number
->>>>>>> 3d952df36d33e30f7a5c7d0db868ef6dbd6ecd1f
 
 
 -- first name contains a period (suggesting person has middle name) yet person also has middle
@@ -773,11 +757,15 @@ where  first_name REGEXP '[.]' and middle_name != -7;
 
 
 -- last_name frequency
-select last_name, count(*) n from person group by last_name;
+select last_name, count(*) n 
+from person 
+group by last_name;
 
 
 -- last name is null
-select person_id, last_name, first_name, middle_name from person where last_name is null;
+select person_id, last_name, first_name, middle_name 
+from person 
+where last_name is null;
 -- ISSUE: 3 last names that are null
 
 
@@ -793,15 +781,25 @@ group by p.last_name;
 
 
 -- MIDDLE NAME ----------------------------------------------------------------------
+-- (-7 means 'not applicable')
 
 
 -- middle_name frequency
-select middle_name, count(*) n from person group by middle_name;
+select middle_name, count(*) n 
+from person 
+group by middle_name;
 
 
 -- middle name is null
-select person_id, middle_name from person where middle_name is null;
-select count(*) n from person where middle_name is null;
+select count(*) n 
+from person 
+where middle_name is null;
+
+
+-- middle name is null (detailed list)
+select person_id, middle_name 
+from person 
+where middle_name is null;
 
 
 -- middle names that have odd non-alpha characters (excludes single quote, hyphen, space, period)
@@ -810,21 +808,35 @@ from
    (
 		select id, middle_name
 		from person
-		where middle_name not REGEXP "^[A-Za-z\\'\\ \\-\\.]+$" 
+		where middle_name not REGEXP "^[A-Za-z\\'\\ \\-\\.]+$" and middle_name != -7
    ) p
 group by p.middle_name;
 
 
 
 -- MAIDEN NAME ----------------------------------------------------------------------
+-- (-7 means 'not applicable')
 
--- count
-select case when maiden_name = -7 then 'not applicable' else maiden_name end as maiden_name, count(*) n from person group by maiden_name;
+-- maiden_name frequency 
+select 
+    case 
+        when maiden_name = -7 then 'not applicable' 
+        else maiden_name 
+    end as maiden_name, count(*) n 
+from person 
+group by maiden_name;
+
+
+-- maiden_name is null
+select maiden_name, count(*) n 
+from person 
+where maiden_name is null;
 
 
 -- SUFFIX ---------------------------------------------------------------------------
 
--- count
+
+-- suffix frequency 
 select suffix as suffix_value,
 	d.label as suffix_description, 
    	count(*) n
@@ -832,76 +844,181 @@ from person p left outer join
    xsd_enumeration_definition d on p.suffix = d.value
 where type_name = 'name_suffix_cl1'
 group by suffix;
--- ISSUE: all person.suffix are null
 
 
 -- TITLE ----------------------------------------------------------------------------
 
--- count
+
+-- title frequency
 select title as title_code,
-	case 
-		when title = -7 then 'NA' 
-		else title 
-	end as title_description,
+	case when title = -7 then 'Not Applicable' else title end as title_description,
 	count(*) n
 from person
 group by title;
--- ISSUE: all person.title are null
 
 
 -- SEX ------------------------------------------------------------------------------
 
--- count
-select p.sex, d.label, count(*) n
+
+-- sex frequency
+select p.sex as sex_value, 
+    d.label as sex_description, 
+    count(*) n
 from person p left outer join
    xsd_enumeration_definition d on p.sex = d.value
 where type_name = 'gender_cl1'
 group by p.sex, d.label;
 
--- TODO: do any of the participants have an UNKNOWN gender?
+
+-- participant has UNKNOWN gender
+select a.p_type_value, a.p_type_description, count(*) n
+from
+    (
+        select p.person_id, par.p_id, par.p_type_value, par.p_type_description, p.sex
+        from person p inner join
+            link_person_participant l on p.person_id = l.person_id inner join
+            (
+                select p.p_id, p.p_type as p_type_value,
+                   d.label as p_type_description
+                from participant p left outer join
+                   xsd_enumeration_definition d on p.p_type = d.value
+                where type_name = 'participant_type_cl1'
+            ) par on l.p_id = par.p_id 
+        where p.sex = -6
+    ) a
+group by a.p_type_value, a.p_type_description;
 
 
 -- AGE ------------------------------------------------------------------------------
 
--- count
-select age, count(*) n from person group by age;
 
--- odd or missing age
-select a.age age_value,
-   case
-       when a.age = -6 then 'unknown'
-       when a.age = -4 then 'Missing in Error'
-       when a.age = -1 then 'Refused'
-       else convert(a.age, char(2))
-   end as age_description,
-   a.n
+-- age frequency
+select a.age, 
+    case
+        when a.age = -6 then 'Unknown'
+        when a.age = -4 then 'Missing in Error'
+        when a.age = -1 then 'Refused'
+        else convert(a.age, char(2))
+    end as age_description, 
+    a.n
 from
-   (
-       select age, count(*) n
-       from person
-       where age < 0
-       group by age
-   ) a;
+    (
+        select age, count(*) n 
+        from person 
+        group by age
+    ) a
+;
+
+
+-- participant has 0 (zero) age
+select a.p_type_value, a.p_type_description, count(*) n
+from
+    (
+        select p.person_id, 
+            par.p_id, 
+            par.p_type as p_type_value, 
+            d.label as p_type_description, p.age
+        from person p inner join
+            link_person_participant l on p.person_id = l.person_id inner join
+            participant par on l.p_id = par.p_id left outer join
+            xsd_enumeration_definition d on par.p_type = d.value
+        where d.type_name = 'participant_type_cl1' and p.age = -1
+    ) a
+where a.age = 0
+group by a.p_type_value, a.p_type_description;
+
+
+-- participant that REFUSED age 
+select a.p_type_value, a.p_type_description, count(*) n
+from
+    (
+        select p.person_id, 
+            par.p_id, 
+            par.p_type as p_type_value, 
+            d.label as p_type_description, p.age
+        from person p inner join
+            link_person_participant l on p.person_id = l.person_id inner join
+            participant par on l.p_id = par.p_id left outer join
+            xsd_enumeration_definition d on par.p_type = d.value
+        where d.type_name = 'participant_type_cl1' and p.age = -1
+    ) a
+where a.age = -1
+group by a.p_type_value, a.p_type_description;
+-- ISSUE: the following participant p_type refused age
+    -- Other
+    -- Missing in Error
+    -- Age-eligible women, ineligible for pre-pregnancy visit - being followed
+    -- High_Trier - eligible for Pre-Pregnancy Visit
+
+
+-- participant has UNKNOWN age 
+select a.p_type_value, a.p_type_description, count(*) n
+from
+    (
+        select p.person_id, 
+            par.p_id, 
+            par.p_type as p_type_value, 
+            d.label as p_type_description, p.age
+        from person p inner join
+            link_person_participant l on p.person_id = l.person_id inner join
+            participant par on l.p_id = par.p_id left outer join
+            xsd_enumeration_definition d on par.p_type = d.value
+        where d.type_name = 'participant_type_cl1' and p.age = -1
+    ) a
+where a.age = -6
+group by a.p_type_value, a.p_type_description;
+
+
+-- participant has MISSING IN ERROR age
+select a.p_type_value, a.p_type_description, count(*) n
+from
+    (
+        select p.person_id, 
+            par.p_id, 
+            par.p_type as p_type_value, 
+            d.label as p_type_description, p.age
+        from person p inner join
+            link_person_participant l on p.person_id = l.person_id inner join
+            participant par on l.p_id = par.p_id left outer join
+            xsd_enumeration_definition d on par.p_type = d.value
+        where d.type_name = 'participant_type_cl1' and p.age = -1
+    ) a
+where a.age = -4
+group by a.p_type_value, a.p_type_description;
 
 
 -- AGE RANGE ------------------------------------------------------------------------
 
--- count
-select p.age_range, d.label, p.n
+
+-- age_range code list
+select * 
+from xsd_enumeration_definition 
+where type_name = 'age_range_cl1'
+order by value;
+
+
+-- age_range frequency
+select p.age_range as age_range_value, d.label as age_range_description, p.n
 from
    (
-       select age_range, count(*)  n
+       select age_range, count(*) n
        from person
        group by age_range
        order by age_range
    ) p left outer join
    xsd_enumeration_definition d on p.age_range = d.value
-where type_name = 'age_range_cl1';
+where type_name = 'age_range_cl1'
+order by p.age_range ;
+
+
+-- TODO: does age range corroborate with person's dob?
 
 
 -- PERSON_DOB -----------------------------------------------------------------------
 
-select person_dob, count(*) n from person;
+select person_dob, count(*) n 
+from person;
+-- ISSUE: everyone's DOB is UNKNOWN
 
 
 -- TODO: COMPARE AGE, AGE_RAGE AND PERSON_DOB ----------------------------------------
@@ -909,7 +1026,16 @@ select person_dob, count(*) n from person;
 
 -- DECEASED -------------------------------------------------------------------------
 
-select p.deceased as deceased_value, d.label as deceased_description, p.n
+-- deceased code list
+select *
+from xsd_enumeration_definition
+where type_name = 'confirm_type_cl2';
+
+
+-- deceased frequency
+select p.deceased as deceased_value, 
+    d.label as deceased_description, 
+    p.n
 from
    (
        select deceased, count(*) n
@@ -920,15 +1046,28 @@ from
 where type_name = 'confirm_type_cl2';
 
 
+-- TODO: of those decesed and UNKNOWN deceased, which are participants.
+
+
 -- ETHNIC GROUP ---------------------------------------------------------------------
 
+
+-- ethnic_group code list
+select * 
+from xsd_enumeration_definition 
+where type_name = 'ethnicity_cl1'
+order by value;
+
+
+-- ethnic_group frequency
 select p.ethnic_group as ethnic_group_value,
    d.label as ethnic_group_description,
    count(p.id) as n
 from person p left outer join
-   xsd_enumeration_definition d on p.age_range = d.value
-where type_name = 'ethnicity_cl1'
+   xsd_enumeration_definition d on p.ethnic_group = d.value
+where d.type_name = 'ethnicity_cl1'
 group by p.ethnic_group;
+-- ISSUE: is 66% (6270/9515) UNKNOWN acceptable for ethnic group
 
 
 -- PERSON_LANG ----------------------------------------------------------------------
@@ -944,9 +1083,14 @@ group by p.person_lang;
 
 -- PERSON_LANG_OTH ------------------------------------------------------------------
 
-select person_lang_oth, count(*)
+select case 
+        when person_lang_oth = -7 then 'NOT APPLICABLE'
+        else person_lang_oth 
+    end as person_lang_oth_value, 
+    count(*)
 from person
 group by person_lang_oth;
+-- ISSUE: what is person_lang_oth = -2
 
 
 -- TODO: PERSON_LANG & PERSON_LANG_OTH comparison -----------------------------------
@@ -954,27 +1098,49 @@ group by person_lang_oth;
 
 -- MARISTAT & MARISTAT_OTH ----------------------------------------------------------
 
--- maristat
 
+-- maristat code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'marital_status_cl1'
+order by value;
+
+
+-- maristat frequency
 select p.maristat as maristat_value,
    d.label as maristat_description,
    count(p.id) as n
 from person p left outer join
    xsd_enumeration_definition d on p.maristat = d.value
 where type_name = 'marital_status_cl1'
-group by p.maristat;
+group by p.maristat
+order by p.maristat;
 
--- maristat_oth
 
+-- maristat_oth frequency
 select maristat_oth as maristat_oth_value,
-   case when maristat_oth = -7 then 'Not Applicable' else maristat_oth end as maristat_oth_description,
-   count(*) n
+    case 
+        when maristat_oth = -7 then 'Not Applicable' 
+        else maristat_oth end as maristat_oth_description,
+    count(*) n
 from person
 group by maristat_oth;
 
 
+-- TODO: what is maristat + maristat_oth of participants
+
+
 -- PREF_CONTACT & PREF_CONTACT_OTH --------------------------------------------------
 
+
+-- pref_contact code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'contact_type_cl1'
+order by value;
+
+
+-- pref_contact frequency
 select p.pref_contact as pref_contact_value,
    d.label as pref_contact_description,
    count(p.id) as n
@@ -983,16 +1149,29 @@ from person p left outer join
 where type_name = 'contact_type_cl1'
 group by p.pref_contact;
 
+
+-- pref_contact_oth frequency
 select pref_contact_oth as pref_contact_oth_value,
-   case when pref_contact_oth = -7 then 'Not Applicable' else pref_contact_oth end as pref_contact_oth_description,
-   count(*) n
+    case 
+        when pref_contact_oth = -7 then 'Not Applicable' 
+        else pref_contact_oth 
+    end as pref_contact_oth_description,
+    count(*) n
 from person
 group by pref_contact_oth;
 
 
 -- PLAN_MOVE, MOVE_INFO, NEW_ADDRESS_ID, WHEN_MOVE ----------------------------------
 
--- plan_move
+
+-- plan_move code list 
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl1'
+order by value;
+
+
+-- plan_move frequncy
 select p.plan_move as plan_move_value,
    d.label as plan_move_description,
    count(p.id) as n
@@ -1001,7 +1180,15 @@ from person p left outer join
 where type_name = 'confirm_type_cl1'
 group by p.plan_move;
 
--- move_info
+
+-- move_info code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'moving_plan_cl1'
+order by value;
+
+
+-- move_info frequncy
 select p.move_info as move_info_value,
    d.label as move_info_description,
    count(p.id) as n
@@ -1010,10 +1197,13 @@ from person p left outer join
 where type_name = 'moving_plan_cl1'
 group by p.move_info;
 
+
 -- new_address_id
 select new_address_id, count(*) n
 from person
 group by new_address_id;
+
+
 
 -- when_move
 select p.when_move as when_move_value,
@@ -2443,15 +2633,15 @@ select * from link_contact where psu_id != 20000048;
 -- CONTACT_ID -----------------------------------------------------------------------
 
 
--- count
-
+-- contact_id frequency
 select contact_id, count(*) n
 from contact 
 group by contact_id 
 order by contact_id;
 -- ISSUE: contact_id of -3 and -7
--- gms: nice!! I missed this one. It would alsso be nice to know what these different schemes meant, e.g., those that start with a '1' versus
--- other number schemes. I do not that if there is a number that starts with '6' and ends with '0,' then that is a household contact.
+-- gms: nice!! I missed this one. It would also be nice to know what these different schemes meant, 
+    -- e.g., those that start with a '1' versus other number schemes. I do not that if there is a number that starts with '6' 
+    -- and ends with '0,' then that is a household contact.
 
 
 -- look for multiple counts
