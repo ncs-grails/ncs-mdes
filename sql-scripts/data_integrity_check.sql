@@ -19,7 +19,7 @@ show columns from xsd_enumeration_definition;
 select * from xsd_enumeration_definition;
 
 -- ISSUE: mysql does not have a built in IsDate function. May need to build one or is this part of the import process since it is using grails?
-
+-- SUGGUESTIONS: build views for comprehensives lists
 
 /*************************************************************************************
  *
@@ -5385,12 +5385,15 @@ order by staff_id desc;
 
 -- staff_id is not unique
 select *
-from ( select staff_id, count(*) n from staff  group by staff_id ) o
+from ( 
+    select staff_id, count(*) n 
+    from staff  group by staff_id 
+) o
 where o.n > 1;
 
 
 -- STAFF_TYPE & STAFF_TYPE_OTH ------------------------------------------------------
--- (labor position)
+-- (aka labor position)
 
 -- staff_type code list (-5 = Oher, -4 = Missing in Error)
 select * from xsd_enumeration_definition where type_name = 'study_staff_type_cl1' order by value;
@@ -5408,6 +5411,34 @@ group by x.staff_type;
 
 -- staff_type_oth frequency (-7 = NA)
 select staff_type_oth, 	count(*) n from staff group by staff_type_oth order by staff_type_oth desc;
+
+
+-- comprehensive staff_type list (staff_type & staff_type_oth)
+select staff_type_value, staff_type_description, count(* ) n
+from
+	(
+		select 
+			case 
+				when x.staff_type < 0 then x.staff_type_oth
+				else convert(x.staff_type, char(2))
+			end as staff_type_value,
+			case 
+				when x.staff_type < 0 then 
+					(
+						case 
+							when x.staff_type_oth = -7 then 'Not Applicable'
+							else x.staff_type_oth
+						end
+					)
+				else d.label 
+			end as staff_type_description
+		from staff x left outer join
+		   xsd_enumeration_definition d on x.staff_type = d.value
+		where type_name = 'study_staff_type_cl1'
+	) p
+group by staff_type_value, staff_type_description
+order by staff_type_description;
+
 
 
 -- staff_id with no staff_type indicated
@@ -6048,3 +6079,38 @@ order by WEEKLY_EXPENSES_COMMENT desc;
 
 -- TRANSACTION_TYPE -----------------------------------------------------------------
 -- TODO (LOW-PRIORITY): get frequency
+
+
+
+
+/*************************************************************************************
+ *
+ * 		CREATE VIEWS
+ *
+ *************************************************************************************/
+
+-- STAFF TYPE
+-- combined list of staff_type & staff_type_oth
+create view staffType as
+select staff_id,
+    case 
+        when x.staff_type < 0 then x.staff_type_oth
+        else convert(x.staff_type, char(2))
+    end as staff_type_value,
+    case 
+        when x.staff_type < 0 then 
+            (
+                case 
+                    when x.staff_type_oth = -7 then 'Not Applicable'
+                    else x.staff_type_oth
+                end
+            )
+        else d.label 
+    end as staff_type_description
+from ncs_mdes_prod.staff x left outer join
+   ncs_mdes_prod.xsd_enumeration_definition d on x.staff_type = d.value
+where type_name = 'study_staff_type_cl1';
+
+-- select * from staffType;
+-- drop view staffType;
+
