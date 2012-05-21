@@ -5395,11 +5395,14 @@ where o.n > 1;
 -- STAFF_TYPE & STAFF_TYPE_OTH ------------------------------------------------------
 -- (aka labor position)
 
--- staff_type code list (-5 = Oher, -4 = Missing in Error)
-select * from xsd_enumeration_definition where type_name = 'study_staff_type_cl1' order by value;
+-- staff_type code list (-5 = Other, -4 = Missing in Error)
+select * 
+from xsd_enumeration_definition 
+where type_name = 'study_staff_type_cl1' 
+order by value;
 
 
--- staff_type frequency
+-- staff_type frequency (-5 = Other, -4 = Missing in Error)
 select x.staff_type as staff_type_value,
    d.label as staff_type_description,
    count(*) as n
@@ -5409,66 +5412,30 @@ where type_name = 'study_staff_type_cl1'
 group by x.staff_type;
 
 
--- staff_type_oth frequency (-7 = NA)
-select staff_type_oth, 	count(*) n from staff group by staff_type_oth order by staff_type_oth desc;
+-- staff_type_oth frequency (-7 = Not Applicable)
+select staff_type_oth, 
+    count(*) n 
+from staff 
+group by staff_type_oth 
+order by staff_type_oth;
 
 
--- comprehensive staff_type list (staff_type & staff_type_oth)
-select staff_type_value, staff_type_description, count(* ) n
-from
-	(
-		select 
-			case 
-				when x.staff_type < 0 then x.staff_type_oth
-				else convert(x.staff_type, char(2))
-			end as staff_type_value,
-			case 
-				when x.staff_type < 0 then 
-					(
-						case 
-							when x.staff_type_oth = -7 then 'Not Applicable'
-							else x.staff_type_oth
-						end
-					)
-				else d.label 
-			end as staff_type_description
-		from staff x left outer join
-		   xsd_enumeration_definition d on x.staff_type = d.value
-		where type_name = 'study_staff_type_cl1'
-	) p
-group by staff_type_value, staff_type_description
-order by staff_type_description;
-
-
+-- comprehensive staff_type list (staff_type & staff_type_oth) frequency 
+select staff_type_value, 
+    staff_type_description,
+    count(staff_id) n
+from staffType
+group by staff_type_value, 
+    staff_type_description
+order by staff_type_value;
 
 -- staff_id with no staff_type indicated
-select staff_id, staff_type from staff where staff_type is null;
-
-
--- ANALYSIS: 
-
--- staff_id with study_type = Other and staff_type_oth provided
-select x.staff_id, 
-	x.staff_type as staff_type_value,
-	d.label as staff_type_description, 
-	staff_type_oth	 
-from staff x left outer join
-   xsd_enumeration_definition d on x.staff_type = d.value
-where type_name = 'study_staff_type_cl1'
-	and x.staff_type = -5;
-
-
--- staff_id with 'Missing in Error' study_type
-select x.staff_id, 
-	x.staff_type as staff_type_value,
-	d.label as staff_type_description, 
-	staff_type_oth	 
-from staff x left outer join
-   xsd_enumeration_definition d on x.staff_type = d.value
-where type_name = 'study_staff_type_cl1'
-	and x.staff_type < 0
-;
--- ISSUE: 27 staff_ids with 'Missing in Error' staff_type
+select s.staff_id, 
+    t.staff_type_value, 
+    t.staff_type_description
+from staff s left outer join 
+    staffType t on s.staff_id = t.staff_id 
+where t.staff_id is null or t.staff_id = '';
 
 
 -- SUBCONTRACTOR --------------------------------------------------------------------
@@ -5481,57 +5448,62 @@ where type_name = 'confirm_type_cl2'
 order by value;
 
 
--- subcontractor frequency
+-- subcontractor frequency (-4 = Missing in Error)
 select x.subcontractor as subcontractor_value,
    d.label as subcontractor_description,
    count(*) as n
 from staff x left outer join
    xsd_enumeration_definition d on x.subcontractor = d.value
 where type_name = 'confirm_type_cl2'
-group by x.subcontractor;
+group by x.subcontractor
+order by d.value;
 
 
 -- STAFF_YOB ------------------------------------------------------------------------
 
 
--- staff_id frequency
+-- staff_yob frequency
 select staff_yob, count(*) n
 from staff 
 group by staff_yob
 order by staff_yob desc;
+-- MDES ISSUE: what does a year of that 9666 (n=29) mean?
+
 
 
 -- STAFF_AGE_RANGE ------------------------------------------------------------------
 
 
--- staff_age_range code list
+-- staff_age_range code list (-6 = Unknown, -4 = Missing in Error, -1 = Refused)
 select *
 from xsd_enumeration_definition 
 where type_name = 'age_range_cl1'
 order by value;
 
 
--- staff_age_range frequency
+-- staff_age_range frequency (-6 = Unknown, -4 = Missing in Error, -1 = Refused)
 select x.staff_age_range as staff_age_range_value,
    d.label as staff_age_range_description,
    count(*) as n
 from staff x left outer join
    xsd_enumeration_definition d on x.staff_age_range = d.value
 where type_name = 'age_range_cl1'
-group by x.staff_age_range;
+group by x.staff_age_range
+order by d.value;
+-- DATA ISSUE: is 'Missing in Error' staff_age_range (n=25) acceptable?
 
 
 -- STAFF_GENDER ---------------------------------------------------------------------
 
 
--- staff_gender code list
+-- staff_gender code list (-6 = Unknown, -4 = Missing in Error)
 select *
 from xsd_enumeration_definition 
 where type_name = 'gender_cl1'
 order by value;
 
 
--- staff_gender frequency
+-- staff_gender frequency (-6 = Unknown, -4 = Missing in Error)
 select x.staff_gender as staff_gender_value,
    d.label as staff_gender_description,
    count(*) as n
@@ -5539,19 +5511,20 @@ from staff x left outer join
    xsd_enumeration_definition d on x.staff_gender = d.value
 where type_name = 'gender_cl1'
 group by x.staff_gender;
+-- DATA ISSUE: is 'Missing in Error" staff_gender (n=25) acceptable?
 
 
 -- STAFF_RACE & STAFF_RACE_OTH ------------------------------------------------------
 
 
--- staff_race code list
+-- staff_race code list (-6 = Unknown, -5 = Other, -4 = Missing in Error, -1 = Refused)
 select *
 from xsd_enumeration_definition 
 where type_name = 'race_cl1'
 order by value;
 
 
--- staff_staff_race frequency
+-- staff_race frequency (-6 = Unknown, -5 = Other, -4 = Missing in Error, -1 = Refused)
 select x.staff_race as staff_race_value,
    d.label as staff_race_description,
    count(*) as n
@@ -5559,9 +5532,10 @@ from staff x left outer join
    xsd_enumeration_definition d on x.staff_race = d.value
 where type_name = 'race_cl1'
 group by x.staff_race;
+-- DATA ISSUE: what is the difference between UNKNOWN and MISSING IN ERROR staff_race?  
 
 
--- staff_race_oth frequency
+-- staff_race_oth frequency (-7 = Not Applicable)
 select staff_race_oth as staff_race_oth_value, 
 	case
   	when staff_race_oth = -7 then 'Not Applicable'
@@ -5571,6 +5545,15 @@ select staff_race_oth as staff_race_oth_value,
 from staff 
 group by staff_race_oth
 order by staff_race_oth desc;
+
+help;
+
+select staff_race_value, staff_race_description, count(*) n
+from staffRace
+group by staff_race_value, staff_race_description;
+
+
+
 
 
 -- STAFF_ZIP ------------------------------------------------------------------------
@@ -6089,12 +6072,17 @@ order by WEEKLY_EXPENSES_COMMENT desc;
  *
  *************************************************************************************/
 
--- STAFF TYPE
--- combined list of staff_type & staff_type_oth
+show full tables;
+select table_name from information_schema.views;
+
+-- STAFF TYPE 
+-- combined list of:
+--  staff_type (-5 = Other, -4 = Missing in Error)  
+--  staff_type_oth (-7 = Not Applicable)
 create view staffType as
 select staff_id,
     case 
-        when x.staff_type < 0 then x.staff_type_oth
+        when x.staff_type = -5 OR x.staff_type = -4 then x.staff_type_oth
         else convert(x.staff_type, char(2))
     end as staff_type_value,
     case 
@@ -6107,10 +6095,36 @@ select staff_id,
             )
         else d.label 
     end as staff_type_description
-from ncs_mdes_prod.staff x left outer join
-   ncs_mdes_prod.xsd_enumeration_definition d on x.staff_type = d.value
+from staff x left outer join
+   exitxsd_enumeration_definition d on x.staff_type = d.value
 where type_name = 'study_staff_type_cl1';
 
--- select * from staffType;
--- drop view staffType;
+select * from staffType;
+drop view staffType;
 
+-- STAFF RACE 
+-- combined list of:
+--  staff_race (-6 = Unknown, -5 = Other, -4 = Missing in Error, -1 = Refused)
+--  staff_race_oth (-7 = Not Applicable)
+create view staffRace as
+select staff_id,
+    case 
+        when x.staff_race = -6 or x.staff_race = -4 then x.staff_race_oth
+        else convert(x.staff_race, char(2))
+    end as staff_race_value,
+    case 
+        when x.staff_race < 0 then 
+            (
+                case 
+                    when x.staff_race_oth = -7 then 'Not Applicable'
+                    else x.staff_race_oth
+                end
+            )
+        else d.label 
+    end as staff_race_description
+from staff x left outer join
+   xsd_enumeration_definition d on x.staff_race = d.value
+where type_name = 'race_cl1';
+
+select * from staffRace;
+drop view staffRace;
