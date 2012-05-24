@@ -19,7 +19,7 @@ show columns from xsd_enumeration_definition;
 select * from xsd_enumeration_definition;
 
 -- ISSUE: mysql does not have a built in IsDate function. May need to build one or is this part of the import process since it is using grails?
--- SUGGUESTIONS: build views for comprehensives lists
+
 
 /*************************************************************************************
  *
@@ -68,7 +68,7 @@ group by p.psu_id;
 -- P_ID -----------------------------------------------------------------------------
 
 
--- multiple p_ids? 
+-- multiple p_ids
 select * 
 from 
 	( 
@@ -90,6 +90,9 @@ order by value;
 
 
 -- p_type frequency
+-- NOTE: p_type values we don't want in our data
+    -- Other = -5
+    -- Missing in Error = -4
 select p.p_type as p_type_value,
    d.label as p_type_description,
    count(p.id) as n
@@ -111,7 +114,7 @@ from participant
 group by p_type_oth;
 
 
--- if P_TYPE < 0 ('Other' [-5] or 'Missing in Error' [-4]), replace with P_TYPE_OTH
+-- if P_TYPE is of concern -- that is, 'Other' (-5) or 'Missing in Error' (-4) --, replace with P_TYPE_OTH
 select p_type_value, p_type_description, count(* ) n
 from
 	(
@@ -285,6 +288,12 @@ from participant
 where status_info_date is null or status_info_date = '';
 
 
+-- TODO: status_info_date is not valid
+select p_id
+from participant 
+where status_info_date is null or status_info_date = '';
+
+
 -- ENROLL_STATUS --------------------------------------------------------------------
 
 
@@ -316,32 +325,27 @@ order by count(*) desc;
 -- ISSUE: 3485 with date of 9777-97-97
 
 
--- TODO: verify that all ENROLL_DATE a legitimate date
-
-
--- participant with ENROLL_STATUS = yes (1), is missing ENROLL_DATE or has an invalid ENROLL_DATE
-select p_id, enroll_status, enroll_date 
+-- participant with ENROLL_STATUS = yes (1), is missing a ENROLL_DATE or does not have a legitimate ENROLL_DATE
+select enroll_status, enroll_date, count(p_id) n
 from participant 
-where enroll_status = 1 and (enroll_date is null or enroll_date = '' or enroll_date = '9777-97-97');
+where enroll_status = 1
+    and enroll_date is null or enroll_date = '' or enroll_date = '9777-97-97';
 
 
 -- participant with ENROLL_STATUS = no (2), but has an ENROLL_DATE
-select p_id, enroll_status, enroll_date
+select enroll_status, enroll_date, count(p_id) n
 from participant 
-where enroll_status = 2 and (not enroll_date is null or enroll_date != '');
+where enroll_status = 2 and (not enroll_date is null or enroll_date = '');
+
+
+-- TODO: ENROLL_DATE a legitimate date?
 
 
 -- PID_ENTRY & PID_ENTRY_OTHER ------------------------------------------------------
 
 
--- pid_entry code list
-select *
-from xsd_enumeration_definition d 
-where type_name = 'study_entry_method_cl1'
-order by value;
-
-
 -- pid_entry frequency
+
 select p.pid_entry as pid_entry_value,
    d.label as pid_entry_description,
    count(p.id) as n
@@ -349,7 +353,6 @@ from participant p left outer join
    xsd_enumeration_definition d on p.pid_entry = d.value
 where type_name = 'study_entry_method_cl1'
 group by p.pid_entry;
-
 
 -- pid_entry_other frequency
 
@@ -411,7 +414,7 @@ order by p.pid_age_elig;
 -- Is it because participant is not a pregnant women, but rather, the child, father, etc.
 
 
--- does participant's p_type corroborate with pid_age_elig (e.g., father would have pid_age_elig of "Not Applicable")
+-- ANALYSIS: does participant's p_type corroborate with pid_age_elig (e.g., father would have pid_age_elig of "Not Applicable")
 select p.p_type, p_type_description,
     p.pid_age_elig, d.label as pid_age_elig_description,
     p.n
@@ -574,7 +577,7 @@ from link_person_participant
 group by relation_oth;
 
 
--- relation compreshensive list (relation + relation_oth)
+-- ANALYSIS: relation compreshensive list (relation + relation_oth)
 select relation_value, relation_description, count(* ) n
 from
 	(
@@ -723,7 +726,7 @@ order by first_name;
 -- first_name is null
 select first_name, count(*) n
 from person 
-where first_name is null or first_name = '';
+where first_name is null;
 -- ISSUE: 3900 rows with null first_name
 
 
@@ -745,6 +748,7 @@ from
    ) p
 group by p.first_name;
 -- ISSUE: first name has parenthesis, period, comma, slash, and number
+-- ISSUE: first names with parenthesis, period, comma, slash, and number
 
 
 -- first name contains a period (suggesting person has middle name) yet person also has middle
@@ -4527,6 +4531,7 @@ select count(*) n from participant_rvis;
 
 show columns from outreach;
 select count(*) n from outreach;
+select * from outreach;
 
 
 -- PSU_ID ---------------------------------------------------------------------------
@@ -4535,17 +4540,35 @@ select count(*) n from outreach;
 
 -- TSU_ID ---------------------------------------------------------------------------
 
-select tsu_id, count(*) n from outreach group by tsu_id order by count(*);
 
-select tsu_id from outreach where tsu_id is null;
+-- tsu_id frequency
+select tsu_id, count(*) n 
+from outreach 
+group by tsu_id 
+order by count(*);
+-- DATA ISSUE: all tsu_id = -9. What does -9 mean?
+
+-- tsu_id is null/blank
+select tsu_id 
+from outreach 
+where tsu_id is null or tsu_id = '';
 
 
 -- SSU_ID ---------------------------------------------------------------------------
 
-select ssu_id, count(*) n from outreach group by ssu_id order by count(*);
--- ISSUE: why is there ssu_id = -7 (n=3)
 
-select ssu_id from outreach where ssu_id is null;
+-- ssu_id frequency
+select ssu_id, count(*) n 
+from outreach 
+group by ssu_id 
+order by ssu_id;
+-- ISSUE: what is ssu_id of -7 (n=3)?
+
+
+-- ssu_id is null/blank
+select ssu_id 
+from outreach 
+where ssu_id is null;
 
 
 -- OUTREACH_EVENT_ID ----------------------------------------------------------------
@@ -5340,17 +5363,17 @@ group by x.outreach_target_ms;
 
 /*************************************************************************************
  *
- *         STAFF & WEEKLY STAFF EXPENSE
+ * 		STAFF & WEEKLY STAFF EXPENSE
  *
- *         Staff:
- *                 staff
- *                 staff_language
- *                 staff_cert_training
- *
- *         Weekly Staff Expense:
- *                 staff_exp_mngmnt_tasks,
- *                 staff_exp_data_cllctn_tasks,
- *                 staff_weekly_expens
+ * 		Staff: 
+ * 				staff
+ * 				staff_cert_training
+ * 				staff_language
+ * 				
+ * 		Weekly Staff Expense: 
+ * 				staff_exp_data_cllctn_tasks, 
+ * 				staff_exp_mngmnt_tasks, 
+ * 				staff_weekly_expens
  *
  *************************************************************************************/
 
@@ -5370,84 +5393,74 @@ select count(*) n from staff;
 
 -- STAFF_ID -------------------------------------------------------------------------
 
+-- staff_id is null
+select *
+from staff 
+where staff_id is null;
+
+
 -- staff_id frequency
 select staff_id, count(*) n
-from staff
+from staff 
 group by staff_id
 order by staff_id desc;
 
 
--- staff_id is null
-select *
-from staff
-where staff_id is null or staff_id = '' ;
-
-
 -- staff_id is not unique
 select *
-from (
-   select staff_id, count(*) n
-   from staff
-   group by staff_id
-) o
+from ( select staff_id, count(*) n from staff  group by staff_id ) o
 where o.n > 1;
 
 
 -- STAFF_TYPE & STAFF_TYPE_OTH ------------------------------------------------------
--- (aka labor position)
+-- (labor position)
 
--- staff_type code list (-5 = Other, -4 = Missing in Error)
-select *
-from xsd_enumeration_definition
-where type_name = 'study_staff_type_cl1'
-order by value;
+-- staff_type code list (-5 = Oher, -4 = Missing in Error)
+select * from xsd_enumeration_definition where type_name = 'study_staff_type_cl1' order by value;
 
 
--- staff_type combine list (staff_type & staff_type_oth) frequency
-   -- staff_type (-5 = Other, -4 = Missing in Error)
-   -- staff_type_oth (-7 = Not Applicable)
+-- staff_type frequency
 select x.staff_type as staff_type_value,
-  d.label as staff_type_description,
-  if(x.staff_type_oth = -7, 'Not Applicable', x.staff_type_oth) as staff_type_oth,
-  count(*) as n
-from staff x left outer join
-  xsd_enumeration_definition d on x.staff_type = d.value
-where type_name = 'study_staff_type_cl1'
-group by x.staff_type
-order by x.staff_type;
-
-
--- staff_type view
-   -- staff_type (-5 = Other, -4 = Missing in Error)
-   -- staff_type_oth (-7 = Not Applicable)
-create view staffType as
-select x.staff_id,
-   if(x.staff_type < 0 and x.staff_type_oth != -7, x.staff_type_oth, convert(x.staff_type, char)) as staff_type_value,
-   if(x.staff_type < 0 and x.staff_type_oth != -7, x.staff_type_oth, d.label) as staff_type_description,
- staff_type_oth
+   d.label as staff_type_description,
+   count(*) as n
 from staff x left outer join
    xsd_enumeration_definition d on x.staff_type = d.value
-where type_name = 'study_staff_type_cl1';
--- drop view staffType
+where type_name = 'study_staff_type_cl1'
+group by x.staff_type;
 
 
--- staff_type integrated list (staff_type & staff_type_oth) frequency
-select staff_type_value,
-   staff_type_description,
-   staff_type_oth,
-   count(*) n
-from staffType
-group by staff_type_value, staff_type_oth
-order by staff_type_description;
+-- staff_type_oth frequency (-7 = NA)
+select staff_type_oth, 	count(*) n from staff group by staff_type_oth order by staff_type_oth desc;
 
 
 -- staff_id with no staff_type indicated
-select s.staff_id,
-   t.staff_type_value,
-   t.staff_type_description
-from staff s left outer join
-   staffType t on s.staff_id = t.staff_id
-where t.staff_type_value is null or t.staff_type_value = '';
+select staff_id, staff_type from staff where staff_type is null;
+
+
+-- ANALYSIS: 
+
+-- staff_id with study_type = Other and staff_type_oth provided
+select x.staff_id, 
+	x.staff_type as staff_type_value,
+	d.label as staff_type_description, 
+	staff_type_oth	 
+from staff x left outer join
+   xsd_enumeration_definition d on x.staff_type = d.value
+where type_name = 'study_staff_type_cl1'
+	and x.staff_type = -5;
+
+
+-- staff_id with 'Missing in Error' study_type
+select x.staff_id, 
+	x.staff_type as staff_type_value,
+	d.label as staff_type_description, 
+	staff_type_oth	 
+from staff x left outer join
+   xsd_enumeration_definition d on x.staff_type = d.value
+where type_name = 'study_staff_type_cl1'
+	and x.staff_type < 0
+;
+-- ISSUE: 27 staff_ids with 'Missing in Error' staff_type
 
 
 -- SUBCONTRACTOR --------------------------------------------------------------------
@@ -5455,131 +5468,113 @@ where t.staff_type_value is null or t.staff_type_value = '';
 
 -- subcontractor code list
 select *
-from xsd_enumeration_definition
+from xsd_enumeration_definition 
 where type_name = 'confirm_type_cl2'
 order by value;
 
 
--- subcontractor frequency (-4 = Missing in Error)
+-- subcontractor frequency
 select x.subcontractor as subcontractor_value,
-  d.label as subcontractor_description,
-  count(*) as n
+   d.label as subcontractor_description,
+   count(*) as n
 from staff x left outer join
-  xsd_enumeration_definition d on x.subcontractor = d.value
+   xsd_enumeration_definition d on x.subcontractor = d.value
 where type_name = 'confirm_type_cl2'
-group by x.subcontractor
-order by d.value;
+group by x.subcontractor;
 
 
 -- STAFF_YOB ------------------------------------------------------------------------
 
 
--- staff_yob frequency
+-- staff_id frequency
 select staff_yob, count(*) n
-from staff
+from staff 
 group by staff_yob
 order by staff_yob desc;
--- MDES ISSUE: what does a year of that 9666 (n=29) mean?
 
 
 -- STAFF_AGE_RANGE ------------------------------------------------------------------
 
 
--- staff_age_range code list (-6 = Unknown, -4 = Missing in Error, -1 = Refused)
+-- staff_age_range code list
 select *
-from xsd_enumeration_definition
+from xsd_enumeration_definition 
 where type_name = 'age_range_cl1'
 order by value;
 
 
--- staff_age_range frequency (-6 = Unknown, -4 = Missing in Error, -1 = Refused)
+-- staff_age_range frequency
 select x.staff_age_range as staff_age_range_value,
-  d.label as staff_age_range_description,
-  count(*) as n
+   d.label as staff_age_range_description,
+   count(*) as n
 from staff x left outer join
-  xsd_enumeration_definition d on x.staff_age_range = d.value
+   xsd_enumeration_definition d on x.staff_age_range = d.value
 where type_name = 'age_range_cl1'
-group by x.staff_age_range
-order by d.value;
--- DATA ISSUE: is 'Missing in Error' staff_age_range (n=25) acceptable?
+group by x.staff_age_range;
 
 
 -- STAFF_GENDER ---------------------------------------------------------------------
 
 
--- staff_gender code list (-6 = Unknown, -4 = Missing in Error)
+-- staff_gender code list
 select *
-from xsd_enumeration_definition
+from xsd_enumeration_definition 
 where type_name = 'gender_cl1'
 order by value;
 
 
--- staff_gender frequency (-6 = Unknown, -4 = Missing in Error)
+-- staff_gender frequency
 select x.staff_gender as staff_gender_value,
-  d.label as staff_gender_description,
-  count(*) as n
+   d.label as staff_gender_description,
+   count(*) as n
 from staff x left outer join
-  xsd_enumeration_definition d on x.staff_gender = d.value
+   xsd_enumeration_definition d on x.staff_gender = d.value
 where type_name = 'gender_cl1'
 group by x.staff_gender;
--- DATA ISSUE: is 'Missing in Error" staff_gender (n=25) acceptable?
 
 
 -- STAFF_RACE & STAFF_RACE_OTH ------------------------------------------------------
 
 
--- staff_race code list (-6 = Unknown, -5 = Other, -4 = Missing in Error, -1 = Refused)
+-- staff_race code list
 select *
-from xsd_enumeration_definition
+from xsd_enumeration_definition 
 where type_name = 'race_cl1'
 order by value;
--- DATA ISSUE: what is the difference between UNKNOWN and MISSING IN ERROR staff_race?
 
 
--- staff_race combined list (staff_race + staff_race_oth)
-   -- staff_race: -6 = Unknown, -5 = Other, -4 = Missing in Error, -1 = Refused
-   -- staff_race_oth: -7 = Not Applicable
+-- staff_staff_race frequency
 select x.staff_race as staff_race_value,
-  d.label as staff_race_description,
-  if(x.staff_race_oth = -7, 'Not Applicable', x.staff_race_oth) as staff_race_oth,
-  count(*) as n
-from staff x left outer join
-  xsd_enumeration_definition d on x.staff_race = d.value
-where type_name = 'race_cl1'
-group by x.staff_race
-order by x.staff_race;
-
-
--- staff_race view
-   -- staff_race: -6 = Unknown, -5 = Other, -4 = Missing in Error, -1 = Refused
-   -- staff_race_oth: -7 = Not Applicable
-create view staffRace as
-select x.staff_id,
-   if(x.staff_race < -1 and x.staff_race_oth != -7, x.staff_race_oth, convert(x.staff_race, char)) as staff_race_value,
-   if(x.staff_race < -1 and x.staff_race_oth != -7, x.staff_race_oth, d.label) as staff_race_description,
- staff_race_oth
+   d.label as staff_race_description,
+   count(*) as n
 from staff x left outer join
    xsd_enumeration_definition d on x.staff_race = d.value
-where type_name = 'race_cl1';
--- drop view staffType
+where type_name = 'race_cl1'
+group by x.staff_race;
 
 
--- staff_race integrated list (staff_race & staff_race_oth) frequency
-select staff_race_value,
-   staff_race_description,
-   staff_race_oth,
-   count(*) n
-from staffRace
-group by staff_race_value, staff_race_oth
-order by staff_race_description;
+-- staff_race_oth frequency
+select staff_race_oth as staff_race_oth_value, 
+	case
+  	when staff_race_oth = -7 then 'Not Applicable'
+    else staff_race_oth
+	end as staff_race_oth_description,
+	count(*) n
+from staff 
+group by staff_race_oth
+order by staff_race_oth desc;
 
 
 -- STAFF_ZIP ------------------------------------------------------------------------
 
 
-select if(staff_zip = -7, 'Not Applicable', staff_zip) staff_zip,
-   count(*) n
-from staff
+select staff_zip as staff_zip_value, 
+	case
+  	when staff_zip = -7 then 'Not Applicable'
+    else staff_zip
+	end as staff_zip_description,
+	count(*) n
+from staff 
 group by staff_zip
 order by staff_zip desc;
 
@@ -5589,18 +5584,17 @@ order by staff_zip desc;
 
 -- staff_ethnicity code list
 select *
-from xsd_enumeration_definition
+from xsd_enumeration_definition 
 where type_name = 'ethnicity_cl1'
 order by value;
--- MDES ISSUE: what is the difference between staff_ethnicity UNKNOWN and MISSING IN ERROR
 
 
 -- staff_ethnicity frequency
 select x.staff_ethnicity as staff_ethnicity_value,
-  d.label as staff_ethnicity_description,
-  count(*) as n
+   d.label as staff_ethnicity_description,
+   count(*) as n
 from staff x left outer join
-  xsd_enumeration_definition d on x.staff_ethnicity = d.value
+   xsd_enumeration_definition d on x.staff_ethnicity = d.value
 where type_name = 'ethnicity_cl1'
 group by x.staff_ethnicity;
 
@@ -5610,17 +5604,17 @@ group by x.staff_ethnicity;
 
 -- staff_exp code list
 select *
-from xsd_enumeration_definition
+from xsd_enumeration_definition 
 where type_name = 'experience_level_cl1'
 order by value;
 
 
 -- staff_exp frequency
 select x.staff_exp as staff_exp_value,
-  d.label as staff_exp_description,
-  count(*) as n
+   d.label as staff_exp_description,
+   count(*) as n
 from staff x left outer join
-  xsd_enumeration_definition d on x.staff_exp = d.value
+   xsd_enumeration_definition d on x.staff_exp = d.value
 where type_name = 'experience_level_cl1'
 group by x.staff_exp;
 
@@ -5629,7 +5623,7 @@ group by x.staff_exp;
 
 
 select staff_comment, count(*) n
-from staff
+from staff 
 group by staff_comment
 order by staff_comment desc;
 
@@ -5646,7 +5640,6 @@ order by staff_comment desc;
 
 show columns from staff_cert_training;
 select count(*) n from staff_cert_training;
-select * from staff_cert_training;
 
 
 -- PSU_ID ---------------------------------------------------------------------------
@@ -5655,25 +5648,10 @@ select * from staff_cert_training;
 
 -- STAFF_CERT_LIST_ID ---------------------------------------------------------------
 
-
--- staff_cert_list_id frequency
 select staff_cert_list_id, count(*) n
 from staff_cert_training
 group by staff_cert_list_id
 order by staff_cert_list_id desc;
--- DATA QUESTION: the prefixe of a staff_cert_list_id is the staff_id, what does the rest of the id represent.
-
-
--- staff_cert_list_id is not unique
-select *
-from
-   (
-       select staff_cert_list_id, count(*) n
-       from staff_cert_training
-       group by staff_cert_list_id
-       order by staff_cert_list_id desc
-   ) c
-where n > 1    ;
 
 
 -- STAFF_ID -------------------------------------------------------------------------
@@ -5688,27 +5666,21 @@ order by staff_id desc;
 -- CERT_TRAIN_TYPE ------------------------------------------------------------------
 
 
--- cert_train_type code list (-4 = Missing in Error)
+-- cert_train_type code list
 select *
-from xsd_enumeration_definition
+from xsd_enumeration_definition 
 where type_name = 'certificate_type_cl1'
 order by value;
 
 
 -- cert_train_type frequency
 select x.cert_train_type as cert_train_type_value,
-  d.label as cert_train_type_description,
-  count(*) as n
+   d.label as cert_train_type_description,
+   count(*) as n
 from staff_cert_training x left outer join
-  xsd_enumeration_definition d on x.cert_train_type = d.value
+   xsd_enumeration_definition d on x.cert_train_type = d.value
 where type_name = 'certificate_type_cl1'
 group by x.cert_train_type;
-
-
--- cert_train_type is missing
-select *
-from staff_cert_training
-where cert_train_type is null or cert_train_type = '';
 
 
 -- CERT_COMPLETED -------------------------------------------------------------------
@@ -5716,103 +5688,63 @@ where cert_train_type is null or cert_train_type = '';
 
 -- cert_completed code list
 select *
-from xsd_enumeration_definition
+from xsd_enumeration_definition 
 where type_name = 'confirm_type_cl2'
 order by value;
 
 
 -- cert_completed frequency
 select x.cert_completed as cert_completed_value,
-  d.label as cert_completed_description,
-  count(*) as n
+   d.label as cert_completed_description,
+   count(*) as n
 from staff_cert_training x left outer join
-  xsd_enumeration_definition d on x.cert_completed = d.value
+   xsd_enumeration_definition d on x.cert_completed = d.value
 where type_name = 'confirm_type_cl2'
 group by x.cert_completed;
 
 
--- cert_completed is missing
-select *
-from staff_cert_training
-where cert_completed is null or cert_completed = '';
-
-
 -- CERT_DATE ------------------------------------------------------------------------
 
-
--- Missing cert_date when cert_completed = 1 (Yes)
-select *
+select cert_date, count(*) n
 from staff_cert_training
-where (cert_completed = 1) and (cert_date is null or cert_date = '');
+group by cert_date
+order by cert_date desc;
 
 
 -- STAFF_BGCHECK_LVL ----------------------------------------------------------------
 
 
--- staff_bgcheck_lvl code list (-4 = Missing in Error)
+-- staff_bgcheck_lvl code list
 select *
-from xsd_enumeration_definition
+from xsd_enumeration_definition 
 where type_name = 'background_chck_lvl_cl1'
 order by value;
 
 
--- staff_bgcheck_lvl frequency
+-- cert_train_type frequency
 select x.staff_bgcheck_lvl as staff_bgcheck_lvl_value,
-  d.label as staff_bgcheck_lvl_description,
-  count(*) as n
+   d.label as staff_bgcheck_lvl_description,
+   count(*) as n
 from staff_cert_training x left outer join
-  xsd_enumeration_definition d on x.staff_bgcheck_lvl = d.value
+   xsd_enumeration_definition d on x.staff_bgcheck_lvl = d.value
 where type_name = 'background_chck_lvl_cl1'
 group by x.staff_bgcheck_lvl;
--- DATA ISSUE: is staff_bgcheck_lvl of MISSING IN ERROR (n=506) appropriate?
-
-
--- cert_train_type that do have staff_bgcheck_lvl
-select b.cert_train_type_value,
-   d.label as cert_train_type_description,
-   b.staff_bgcheck_lvl_value,
-   b.staff_bgcheck_lvl_description
-from
-   (
-       select x.cert_train_type as cert_train_type_value,
-           x.staff_bgcheck_lvl as staff_bgcheck_lvl_value,
-           d.label as staff_bgcheck_lvl_description
-       from staff_cert_training x left outer join
-          xsd_enumeration_definition d on x.staff_bgcheck_lvl = d.value
-       where d.type_name = 'background_chck_lvl_cl1' and x.staff_bgcheck_lvl != -4
-       group by x.cert_train_type, x.staff_bgcheck_lvl
-   ) b left outer join
-   xsd_enumeration_definition d on b.cert_train_type_value = d.value
-where d.type_name = 'certificate_type_cl1';
--- DATA ISSUE: is it possible that a cert_train_type can have multiple staff_bgcheck_lvl?
 
 
 -- CERT_TYPE_FREQUENCY --------------------------------------------------------------
 
-
--- cert_type_frequency frequency
 select cert_type_frequency, count(*) n
 from staff_cert_training
 group by cert_type_frequency
 order by cert_type_frequency desc;
 
 
--- cert_train_type that do have a cert_type_frequency
-select cert_train_type, cert_type_frequency
-from staff_cert_training
-where cert_type_frequency != 'NA'
-group by cert_train_type, cert_type_frequency;
-
-
 -- CERT_TYPE_EXP_DATE ---------------------------------------------------------------
 
-
--- cert_type_exp_date of '2050-01-01' means certification does not expeire
 select cert_type_exp_date, count(*) n
 from staff_cert_training
 group by cert_type_exp_date
 order by cert_type_exp_date desc;
--- DATA ISSUE: what does a cert_type_exp_date of '9777-97-97' mean?
 
 
 -- CERT_COMMENT ---------------------------------------------------------------------
@@ -5831,11 +5763,10 @@ order by cert_comment desc;
 /*************************************************************************************
  * table: staff_language
  *************************************************************************************/
-
+  
 
 show columns from staff_language;
 select count(*) n from staff_language;
-select * from staff_language;
 
 
 -- PSU_ID ---------------------------------------------------------------------------
@@ -5844,225 +5775,46 @@ select * from staff_language;
 
 -- STAFF_LANGUAGE_ID ----------------------------------------------------------------
 
-
--- staff_language_id frequency
--- looks like staff_language_id comprise of staff_id + psu_id + staff_lang
 select staff_language_id, count(*) n
 from staff_language
 group by staff_language_id
 order by staff_language_id desc;
 
 
--- staff_language_id is not unique
-select *
-from
-   (
-       select staff_language_id, count(*) n
-       from staff_language
-       group by staff_language_id
-   ) l
-where l.n > 1;
-
-
 -- STAFF_ID -------------------------------------------------------------------------
 
--- staff_id frequency
 select staff_id, count(*) n
 from staff_language
 group by staff_id
 order by staff_id desc;
 
 
--- staff_id listed more than once
+-- STAFF_LANG -----------------------------------------------------------------------
+
+
+-- staff_lang code list
 select *
-from
-   (
-       select staff_id, count(*) n
-       from staff_language
-       group by staff_id
-       order by staff_id desc
-   ) l
-where l.n > 1;
-
--- are there any duplicated staff_id, staff_lang?
-select *
-from
-   (
-       select staff_id, staff_lang, count(*) n
-       from staff_language
-       group by staff_id, staff_lang
-       order by staff_id desc
-   ) l
-where l.n > 1;
-
-
--- STAFF_LANG & STAFF_LANG_OTH ------------------------------------------------------
-
-
--- staff_lang code list (-6 = Unknown, -5 = Other, -4 = Missing in Error, -1 = Refused)
-select *
-from xsd_enumeration_definition
+from xsd_enumeration_definition 
 where type_name = 'language_cl2'
 order by value;
 
 
--- staff_lang combine list (staff_lang & staff_lang_oth) frequency
-   -- staff_lang (-6 = Unknown, -5 = Other, -4 = Missing in Error, -1 = Refused)
-   -- staff_lang_oth (-7 = Not Applicable)
+-- staff_lang frequency
 select x.staff_lang as staff_lang_value,
-  d.label as staff_lang_description,
-  x.staff_lang_oth,
-  count(*) as n
-from staff_language x left outer join
-  xsd_enumeration_definition d on x.staff_lang = d.value
-where d.type_name = 'language_cl2'
-group by x.staff_lang, x.staff_lang_oth;
-
-
--- staff_lang view
-   -- staff_lang (-6 = Unknown, -5 = Other, -4 = Missing in Error, -1 = Refused)
-   -- staff_lang_oth (-7 = Not Applicable)
-create view staffLang as
-select x.staff_id,
-   if(x.staff_lang < -1 and x.staff_lang_oth != -7, x.staff_lang_oth, convert(x.staff_lang, char)) as staff_lang_value,
-   if(x.staff_lang < -1 and x.staff_lang_oth != -7, x.staff_lang_oth, d.label) as staff_lang_description,
- staff_lang_oth
+   d.label as staff_lang_description,
+   count(*) as n
 from staff_language x left outer join
    xsd_enumeration_definition d on x.staff_lang = d.value
-where d.type_name = 'language_cl2';
--- drop view staffLang
+where type_name = 'language_cl2'
+group by x.staff_lang;
 
 
--- staff_lang integrated list (staff_type & staff_type_oth) frequency
-select staff_lang_value, staff_lang_description, staff_lang_oth, count(*)
-from staffLang
-group by staff_lang_value, staff_lang_description, staff_lang_oth;
+-- STAFF_LANG_OTH -------------------------------------------------------------------
 
-
--- TRANSACTION_TYPE -----------------------------------------------------------------
--- TODO (LOW-PRIORITY): get frequency
-
-
-/*************************************************************************************
- * table: staff_weekly_expense
- *************************************************************************************/
-
-
-show columns from staff_weekly_expense;
-select count(*) n from staff_weekly_expense;
-select * from staff_weekly_expense;
-
-
--- PSU_ID ---------------------------------------------------------------------------
--- TODO (LOW-PRIORITY): get frequency
-
-
--- WEEKLY_EXP_ID --------------------------------------------------------------------
-
-
--- weekly_exp_id frequency
-select weekly_exp_id, count(*) n
-from staff_weekly_expense
-group by weekly_exp_id
-order by weekly_exp_id desc;
--- DATA ISSUE: weekly_exp_id does not follow the same convention.
-   -- There seems to be two convention types: 20000048_995 and 20000048_NCS3LS13_2010-10-17,
-   -- the later being the psu + staff_id + week_start_date
-
-
--- weekly_exp_id is not unique
-select *
-from
-   (
-       select weekly_exp_id, count(*) n
-       from staff_weekly_expense
-       group by weekly_exp_id
-   ) e
-where e.n > 1;
-
-
--- STAFF_ID -------------------------------------------------------------------------
-
-
--- staff_id frequency
-select staff_id, count(*) n
-from staff_weekly_expense
-group by staff_id
-order by count(*) desc;
-
-
--- The same staff is listed more than once for the same weekly_exp_id
-select *
-from
-   (
-       select weekly_exp_id, staff_id, count(*) n
-       from staff_weekly_expense
-       group by weekly_exp_id, staff_id
-   ) e
-where e.n > 1;
-
-
--- WEEK_START_DATE ------------------------------------------------------------------
-
-
--- week_start_date frequency
-select week_start_date, count(*) n
-from staff_weekly_expense
-group by week_start_date
-order by week_start_date;
-
-
--- TODO: all week_start_date values are legitimate dates
-
-
--- STAFF_PAY ------------------------------------------------------------------------
-
-
--- staff_pay frequency
-select staff_pay, count(*) n
-from staff_weekly_expense
-group by staff_pay
-order by staff_pay desc;
-
-
--- STAFF_HOURS ----------------------------------------------------------------------
-
-
--- staff_hours frequency
-select staff_hours, count(*) n
-from staff_weekly_expense
-group by staff_hours
-order by staff_hours desc;
--- DATA ISSUE: is it possibe to have zero staff_hours here (n=12)?
-
--- STAFF_EXPENSES -------------------------------------------------------------------
-
-
--- staff_expenses
-select staff_expenses, count(*) n
-from staff_weekly_expense
-group by staff_expenses
-order by staff_expenses desc;
--- DATA ISSUE: is it possible to have zero staff_expenses (n=6796)?
-
-
--- STAFF_MILES ----------------------------------------------------------------------
-
-
--- staff_miles
-select staff_miles, count(*) n
-from staff_weekly_expense
-group by staff_miles
-order by staff_miles desc;
-
-
--- WEEKLY_EXPENSES_COMMENT ----------------------------------------------------------
-
-select weekly_expenses_comment, count(*) n
-from staff_weekly_expense
-group by weekly_expenses_comment
-order by weekly_expenses_comment desc;
--- DATA ISSUE: what does weekly_expenses_comment of -7 mean?
+select staff_lang_oth, count(*) n
+from staff_language
+group by staff_lang_oth
+order by staff_lang_oth desc;
 
 
 -- TRANSACTION_TYPE -----------------------------------------------------------------
@@ -6076,7 +5828,6 @@ order by weekly_expenses_comment desc;
 
 show columns from staff_exp_data_cllctn_tasks;
 select count(*) n from staff_exp_data_cllctn_tasks;
-select * from staff_exp_data_cllctn_tasks;
 
 
 -- PSU_ID ---------------------------------------------------------------------------
@@ -6085,116 +5836,55 @@ select * from staff_exp_data_cllctn_tasks;
 
 -- STAFF_EXP_DATA_COLL_TASK_ID ------------------------------------------------------
 
--- DATA ISSUE: how is the staff (staff_id) linked data in this table?
--- DATA ISSUE: what is the makeup of the staff_exp_data_coll_task_id (psu_id + staff_id + what date?)?
 
-
--- staff_exp_data_coll_task_id frequency
 select staff_exp_data_coll_task_id, count(*) n
 from staff_exp_data_cllctn_tasks
 group by staff_exp_data_coll_task_id
 order by staff_exp_data_coll_task_id desc;
--- DATA ISSUE: what is the makeup of the staff_weekly_expense_id because it does not seem consistent (e.g., 20000048_RCSU90_2011-09-11, 20000048_1020)
-
-
--- staff_exp_data_coll_task_id is not unique
-select *
-from
-   (
-       select staff_exp_data_coll_task_id, count(*) n
-       from staff_exp_data_cllctn_tasks
-       group by staff_exp_data_coll_task_id
-       order by staff_exp_data_coll_task_id desc
-   ) t
-where t.n > 1;
 
 
 -- STAFF_WEEKLY_EXPENSE_ID ----------------------------------------------------------
 
-
--- staff_weekly_expense_id frequency
 select staff_weekly_expense_id, count(*) n
 from staff_exp_data_cllctn_tasks
 group by staff_weekly_expense_id
 order by staff_weekly_expense_id desc;
--- DATA ISSUE: what is the makeup of the staff_weekly_expense_id because it does not seem consistent (e.g., 20000048_RCSU90_2011-09-11, 20000048_1020)
 
 
--- staff_exp_data_coll_task_id compared to staff_weekly_expense_id
-select staff_exp_data_coll_task_id, staff_weekly_expense_id
-from staff_exp_data_cllctn_tasks
-where staff_exp_data_coll_task_id = staff_weekly_expense_id
-group by staff_exp_data_coll_task_id, staff_weekly_expense_id
-order by count(*) desc;
--- DATA ISSUE: why is select staff_exp_data_coll_task_id the same as the staff_weekly_expense_id?
+-- DATA_COLL_TASK_TYPE --------------------------------------------------------------
 
 
--- DATA_COLL_TASK_TYPE & DATA_COLL_TASK_TYPE_OTH ------------------------------------
-
-
--- data_coll_task_type code list (-5 = Other, -4 = Missing in Error)
+-- data_coll_task_type code list
 select *
-from xsd_enumeration_definition
+from xsd_enumeration_definition 
 where type_name = 'study_data_cllctn_tsk_type_cl1'
 order by value;
 
 
--- data_coll_task_type combine list (data_coll_task_type & data_coll_task_type_oth) frequency
-   -- data_coll_task_type (-5 = Other, -4 = Missing in Error)
-   -- data_coll_task_type_oth (-7 = Not Applicable)
+-- data_coll_task_type frequency
 select x.data_coll_task_type as data_coll_task_type_value,
-  d.label as data_coll_task_type_description,
-  data_coll_task_type_oth,
-  count(*) as n
-from staff_exp_data_cllctn_tasks x left outer join
-  xsd_enumeration_definition d on x.data_coll_task_type = d.value
-where d.type_name = 'study_data_cllctn_tsk_type_cl1'
-group by x.data_coll_task_type, data_coll_task_type_oth
-order by x.data_coll_task_type;
--- DATA ISSUE: what is the difference between data_coll_task_type_oth 'Administrative task' versus 'Administrative tasks', and 'Trainimg' and 'Training'
--- MDES ISSUE: what does data_coll_task_type_oth = -4 mean?
-
-
--- data_coll_task_type view
-   -- data_coll_task_type (-5 = Other, -4 = Missing in Error)
-   -- data_coll_task_type_oth (-7 = Not Applicable)
-alter view dataCollTaskType as
-select x.staff_exp_data_coll_task_id,
-   if(x.data_coll_task_type < 0 and x.data_coll_task_type_oth != -7, x.data_coll_task_type_oth, convert(x.data_coll_task_type, char)) as data_coll_task_type_value,
-   if(x.data_coll_task_type < 0 and x.data_coll_task_type_oth != -7, x.data_coll_task_type_oth, d.label) as data_coll_task_type_description,
-   data_coll_task_type_oth
+   d.label as data_coll_task_type_description,
+   count(*) as n
 from staff_exp_data_cllctn_tasks x left outer join
    xsd_enumeration_definition d on x.data_coll_task_type = d.value
-where d.type_name = 'study_data_cllctn_tsk_type_cl1';
+where type_name = 'study_data_cllctn_tsk_type_cl1'
+group by x.data_coll_task_type;
 
 
--- data_coll_task_type integrated list (data_coll_task_type & data_coll_task_type_oth) frequency
-   -- data_coll_task_type (-5 = Other, -4 = Missing in Error)
-   -- data_coll_task_type_oth (-7 = Not Applicable)
-select data_coll_task_type_value,
-   data_coll_task_type_description,
-   data_coll_task_type_oth,
-   count(*) n
-from dataCollTaskType
-group by data_coll_task_type_value, data_coll_task_type_oth
-order by data_coll_task_type_value;
+-- DATA_COLL_TASK_TYPE_OTH ----------------------------------------------------------
+
+select data_coll_task_type_oth, count(*) n
+from staff_exp_data_cllctn_tasks
+group by data_coll_task_type_oth
+order by data_coll_task_type_oth desc;
 
 
 -- DATA_COLL_TASKS_HRS --------------------------------------------------------------
 
-
--- data_coll_tasks_hrs frequency
 select data_coll_tasks_hrs, count(*) n
 from staff_exp_data_cllctn_tasks
 group by data_coll_tasks_hrs
-order by data_coll_tasks_hrs;
--- DATA ISSUE: what data_coll_tasks_hrs = -4 mean?
-
-
--- which staff_exp_data_coll_task_id does not have reported data_coll_tasks_hrs?
-select *
-from staff_exp_data_cllctn_tasks
-where data_coll_tasks_hrs is null or data_coll_tasks_hrs = '';
+order by data_coll_tasks_hrs desc;
 
 
 -- DATA_COLL_TASK_CASES -------------------------------------------------------------
@@ -6203,7 +5893,6 @@ select data_coll_task_cases, count(*) n
 from staff_exp_data_cllctn_tasks
 group by data_coll_task_cases
 order by data_coll_task_cases desc;
--- DATA ISSUE: what does data_coll_task_cases = -4 mean?
 
 
 -- DATA_COLL_TRANSMIT ---------------------------------------------------------------
@@ -6212,7 +5901,6 @@ select data_coll_transmit, count(*) n
 from staff_exp_data_cllctn_tasks
 group by data_coll_transmit
 order by data_coll_transmit desc;
--- DATA ISSUE: what does data_coll_transmit = -7 mean?
 
 
 -- DATA_COLL_TASK_COMMENT -----------------------------------------------------------
@@ -6221,12 +5909,11 @@ select data_coll_task_comment, count(*) n
 from staff_exp_data_cllctn_tasks
 group by data_coll_task_comment
 order by data_coll_task_comment desc;
--- DATA ISSUE: what does data_coll_task_comment = -7 mean?
 
 
 -- TRANSACTION_TYPE -----------------------------------------------------------------
 -- TODO (LOW-PRIORITY): get frequency
-
+ 
 
 /*************************************************************************************
  * table: staff_exp_mngmnt_tasks
@@ -6235,7 +5922,6 @@ order by data_coll_task_comment desc;
 
 show columns from staff_exp_mngmnt_tasks;
 select count(*) n from staff_exp_mngmnt_tasks;
-select * from staff_exp_mngmnt_tasks;
 
 
 -- PSU_ID ---------------------------------------------------------------------------
@@ -6244,89 +5930,50 @@ select * from staff_exp_mngmnt_tasks;
 
 -- STAFF_EXP_MGMT_TASK_ID -----------------------------------------------------------
 
-
--- staff_exp_mgmt_task_id frequency
 select staff_exp_mgmt_task_id, count(*) n
 from staff_exp_mngmnt_tasks
 group by staff_exp_mgmt_task_id
 order by staff_exp_mgmt_task_id desc;
--- DATA ISSUE: staff_exp_mgmt_task_id does not consistently follow the same convention
-
-
--- staff_exp_mgmt_task_id is not unique
-select *
-from
-   (
-       select staff_exp_mgmt_task_id, count(*) n
-       from staff_exp_mngmnt_tasks
-       group by staff_exp_mgmt_task_id
-   ) mt
-where mt.n > 1;
 
 
 -- STAFF_WEEKLY_EXPENSE_ID ----------------------------------------------------------
 
-
--- staff_weekly_expense_id frequency
 select staff_weekly_expense_id, count(*) n
 from staff_exp_mngmnt_tasks
 group by staff_weekly_expense_id
 order by staff_weekly_expense_id desc;
--- DATA ISSUE: staff_weekly_expense_id does not consistently follow the same convention
 
 
--- MGMT_TASK_TYPE & MGMT_TASK_TYPE_OTH ----------------------------------------------
+-- MGMT_TASK_TYPE -------------------------------------------------------------------
 
 
--- mgmt_task_type code list (-5 = Other, -4 = Missing in Error)
+-- mgmt_task_type code list
 select *
-from xsd_enumeration_definition
+from xsd_enumeration_definition 
 where type_name = 'study_mngmnt_tsk_type_cl1'
 order by value;
 
 
--- mgmt_task_type combine list (mgmt_task_type & mgmt_task_type_oth) frequency
-   -- mgmt_task_type (-5 = Other, -4 = Missing in Error)
-   -- mgmt_task_type_oth (-7 = Not Applicable)
+-- mgmt_task_type frequency
 select x.mgmt_task_type as mgmt_task_type_value,
-  d.label as mgmt_task_type_description,
-  mgmt_task_type_oth,
-  count(*) as n
-from staff_exp_mngmnt_tasks x left outer join
-  xsd_enumeration_definition d on x.mgmt_task_type = d.value
-where d.type_name = 'study_mngmnt_tsk_type_cl1'
-group by x.mgmt_task_type, mgmt_task_type_oth
-order by count(*) desc;
--- DATA ISSUE: what is mgmt_task_type_oth of -4 (n=44)?
-
-
--- mgmt_task_type view
-   -- mgmt_task_type (-5 = Other, -4 = Missing in Error)
-   -- mgmt_task_type_oth (-7 = Not Applicable)
-alter view mgmtTaskType as
-select x.staff_exp_mgmt_task_id,
-   if(x.mgmt_task_type < 0 and x.mgmt_task_type_oth != -4 and x.mgmt_task_type_oth != -7, x.mgmt_task_type_oth, convert(x.mgmt_task_type, char)) as mgmt_task_type_value,
-   if(x.mgmt_task_type < 0 and x.mgmt_task_type_oth != -4 and x.mgmt_task_type_oth != -7, x.mgmt_task_type_oth, d.label) as mgmt_task_type_description,
- mgmt_task_type_oth
+   d.label as mgmt_task_type_description,
+   count(*) as n
 from staff_exp_mngmnt_tasks x left outer join
    xsd_enumeration_definition d on x.mgmt_task_type = d.value
-where d.type_name = 'study_mngmnt_tsk_type_cl1';
+where type_name = 'study_mngmnt_tsk_type_cl1'
+group by x.mgmt_task_type;
 
 
--- mgmt_task_type integrated list (mgmt_task_type & mgmt_task_type_oth) frequency
-select mgmt_task_type_value,
-   mgmt_task_type_description,
-   mgmt_task_type_oth,
-   count(*) n
-from mgmtTaskType
-group by mgmt_task_type_value, mgmt_task_type_oth
-order by mgmt_task_type_description;
+-- MGMT_TASK_TYPE_OTH ---------------------------------------------------------------
+
+select mgmt_task_type_oth, count(*) n
+from staff_exp_mngmnt_tasks
+group by mgmt_task_type_oth
+order by mgmt_task_type_oth desc;
 
 
 -- MGMT_TASK_HRS --------------------------------------------------------------------
 
-
--- mgmt_task_hrs freqency
 select mgmt_task_hrs, count(*) n
 from staff_exp_mngmnt_tasks
 group by mgmt_task_hrs
@@ -6335,17 +5982,92 @@ order by mgmt_task_hrs desc;
 
 -- MGMT_TASK_COMMENT ----------------------------------------------------------------
 
-
--- mgmt_task_comment freqency
 select mgmt_task_comment, count(*) n
 from staff_exp_mngmnt_tasks
 group by mgmt_task_comment
 order by mgmt_task_comment desc;
--- DATA ISSUE: what does a mgmt_task_comment of -7 mean?
 
 
 -- TRANSACTION_TYPE -----------------------------------------------------------------
 -- TODO (LOW-PRIORITY): get frequency
+ 
+
+/*************************************************************************************
+ * table: staff_weekly_expense
+ *************************************************************************************/
 
 
+show columns from staff_weekly_expense;
+select count(*) n from staff_weekly_expense;
 
+
+-- PSU_ID ---------------------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+
+
+-- WEEKLY_EXP_ID --------------------------------------------------------------------
+
+select WEEKLY_EXP_ID, count(*) n
+from staff_weekly_expense
+group by WEEKLY_EXP_ID
+order by WEEKLY_EXP_ID desc;
+
+
+-- STAFF_ID -------------------------------------------------------------------------
+
+select STAFF_ID, count(*) n
+from staff_weekly_expense
+group by STAFF_ID
+order by STAFF_ID desc;
+
+
+-- WEEK_START_DATE ------------------------------------------------------------------
+
+select WEEK_START_DATE, count(*) n
+from staff_weekly_expense
+group by WEEK_START_DATE
+order by WEEK_START_DATE desc;
+
+
+-- STAFF_PAY ------------------------------------------------------------------------
+
+select STAFF_PAY, count(*) n
+from staff_weekly_expense
+group by STAFF_PAY
+order by STAFF_PAY desc;
+
+
+-- STAFF_HOURS ----------------------------------------------------------------------
+
+select STAFF_HOURS, count(*) n
+from staff_weekly_expense
+group by STAFF_HOURS
+order by STAFF_HOURS desc;
+
+
+-- STAFF_EXPENSES -------------------------------------------------------------------
+
+select STAFF_EXPENSES, count(*) n
+from staff_weekly_expense
+group by STAFF_EXPENSES
+order by STAFF_EXPENSES desc;
+
+
+-- STAFF_MILES ----------------------------------------------------------------------
+
+select STAFF_MILES, count(*) n
+from staff_weekly_expense
+group by STAFF_MILES
+order by STAFF_MILES desc;
+
+
+-- WEEKLY_EXPENSES_COMMENT ----------------------------------------------------------
+
+select WEEKLY_EXPENSES_COMMENT, count(*) n
+from staff_weekly_expense
+group by WEEKLY_EXPENSES_COMMENT
+order by WEEKLY_EXPENSES_COMMENT desc;
+
+
+-- TRANSACTION_TYPE -----------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
