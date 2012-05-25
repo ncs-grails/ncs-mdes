@@ -50,6 +50,7 @@ select * from xsd_enumeration_definition;
 
 show columns from participant;
 select count(*) n from participant;
+select * from participant;
 
 
 -- PSU_ID ---------------------------------------------------------------------------
@@ -82,61 +83,46 @@ where p.n > 1;
 -- P_TYPE & P_TYPE_OTH --------------------------------------------------------------
 
 
--- p_type code list
+-- p_type code list (-5 = Other, -4 = Missing in Error) 
 select * 
 from xsd_enumeration_definition 
 where type_name = 'participant_type_cl1'
 order by value;
 
 
--- p_type frequency
-select p.p_type as p_type_value,
+-- p_type combine list (p_type & p_type_oth) frequency
+    -- p_type code (-5 = Other, -4 = Missing in Error)
+    -- p_type_oth (-7 = 'Not Applicable')
+select x.p_type as p_type_value,
    d.label as p_type_description,
-   count(p.id) as n
-from participant p left outer join
-   xsd_enumeration_definition d on p.p_type = d.value
-where type_name = 'participant_type_cl1'
-group by p.p_type
-order by d.value;
+   p_type_oth,
+   count(*) as n
+from participant x left outer join
+   xsd_enumeration_definition d on x.p_type = d.value
+where d.type_name = 'participant_type_cl1'
+group by x.p_type, p_type_oth
+order by x.p_type;
 
 
--- p_type_oth frequency
-select p_type_oth as p_type_oth_value,
-   case 
-        when p_type_oth = -7 then 'Not Applicable' 
-        else p_type_oth 
-    end as p_type_oth_description,
-   count(*) n
-from participant
-group by p_type_oth;
+-- p_type view
+    -- p_type code (-5 = Other, -4 = Missing in Error)
+    -- p_type_oth (-7 = 'Not Applicable')
+alter view pType as
+select x.p_id,
+    if(x.p_type < 0 and x.p_type_oth != -7, x.p_type_oth, convert(x.p_type, char)) as p_type_value,
+    if(x.p_type < 0 and x.p_type_oth != -7, x.p_type_oth, d.label) as p_type_description,
+  p_type_oth
+from participant x left outer join
+    xsd_enumeration_definition d on x.p_type = d.value
+where d.type_name = 'participant_type_cl1';
 
 
--- if P_TYPE < 0 ('Other' [-5] or 'Missing in Error' [-4]), replace with P_TYPE_OTH
-select p_type_value, p_type_description, count(* ) n
-from
-	(
-		select 
-			case 
-				when p_type < 0 then p_type_oth
-				else convert(p_type, char(2))
-			end as p_type_value,
-			case 
-				when p_type < 0 then 
-					(
-						case 
-							when p_type_oth = -7 then 'Not Applicable'
-							else p_type_oth
-						end
-					)
-				else d.label 
-			end as p_type_description
-		from participant p left outer join
-		   xsd_enumeration_definition d on p.p_type = d.value
-		where type_name = 'participant_type_cl1'
-		order by d.value
-	) p
-group by p_type_value, p_type_description;
--- ISSUE: p_type of 
+-- p_type integrated list (p_type & p_type_oth) frequency
+select p_type_value, p_type_description, p_type_oth, count(*) n
+from pType
+group by p_type_value, p_type_oth
+order by p_type_value;
+-- DATA ISSUE: p_type of 
     -- NOT APPLICABLE (CODE = -7) (n=37)
     -- UNKNOWN (n=488)
 
@@ -205,7 +191,7 @@ from
 group by status_info_source_value, status_info_source_description;
 
 
--- TODO: participant with a negatove status (status_info_source + status_info_source_oth) 
+-- TODO: participant with a negative status (status_info_source + status_info_source_oth) 
 
 
 -- STATUS_INFO_MODE & STATUS_INFO_MODE_OTH -------------------------------------------
@@ -1016,10 +1002,18 @@ order by p.age_range ;
 
 -- PERSON_DOB -----------------------------------------------------------------------
 
-select person_dob, count(*) n 
-from person;
--- ISSUE: everyone's DOB is UNKNOWN
+-- person_dob (-1 = Refused, -6 Unknown) frequency
+select person_dob, count(*) n
+from person
+group by person_dob;
 
+
+-- TODO: which participants have an UNKNOWN person_dob
+select *
+from person
+where person_dob like '%96%'
+-- where person_dob REGEXP '96+'
+; 
 
 -- TODO: COMPARE AGE, AGE_RAGE AND PERSON_DOB ----------------------------------------
 
