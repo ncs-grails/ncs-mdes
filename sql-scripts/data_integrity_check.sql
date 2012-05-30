@@ -2212,6 +2212,7 @@ group by transaction_type;
 
 show columns from ppg_details;
 select count(*) n from ppg_details;
+select * from ppg_details;
 
 
 -- PSU_ID ---------------------------------------------------------------------------
@@ -2227,26 +2228,64 @@ where type_name = 'psu_cl1'
 group by p.psu_id;
 
 
--- psu_id  is not correct
+-- psu_id is not correct
 select * from ppg_details where psu_id != 20000048;
 
 
 -- PPG_DETAILS_ID -------------------------------------------------------------------
 
-select ppg_details_id, count(*) n from ppg_details group by ppg_details_id order by count(*) desc;
+
+-- ppg_details_id frequency
+select ppg_details_id, count(*) n 
+from ppg_details 
+group by ppg_details_id 
+order by count(*) desc;
+
+
+-- ppg_details_id is not unique
+select * 
+from 
+	(
+		select ppg_details_id, count(*) n 
+		from ppg_details 
+		group by ppg_details_id 
+		order by count(*) desc
+	) ppg
+where ppg.n > 1;
 
 
 -- P_ID -----------------------------------------------------------------------------
 
+-- p_id freuqency
 select p_id, count(*) n 
 from ppg_details 
 group by p_id 
 order by count(*) desc;
 
--- PPG_PID_STATUS & PPG_FIRST -------------------------------------------------------
 
--- ppg_pid_status
+-- ppg_details_id is not unique
+select * 
+from 
+	(
+		select p_id, count(*) n 
+		from ppg_details 
+		group by p_id 
+		order by count(*) desc
+	) ppg
+where ppg.n > 1;
 
+
+-- PPG_PID_STATUS -------------------------------------------------------------------
+
+
+-- ppg_pid_status code list (-4 = Missing in Error)
+select *
+from xsd_enumeration_definition
+where type_name = 'participant_status_cl1'
+order by value;
+
+
+-- ppg_pid_status frequency
 select p.ppg_pid_status as ppg_pid_status_value,
    d.label as ppg_pid_status_description,
    count(p.id) as n
@@ -2255,8 +2294,18 @@ from ppg_details p left outer join
 where type_name = 'participant_status_cl1'
 group by p.ppg_pid_status;
 
--- ppg_first
 
+-- PPG_FIRST ------------------------------------------------------------------------
+
+
+-- ppg_first code list (-4= Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'ppg_status_cl1'
+order by value;
+
+
+-- ppg_first frequency
 select p.ppg_first as ppg_first_value,
    d.label as ppg_first_description,
    count(p.id) as n
@@ -2266,28 +2315,89 @@ where type_name = 'ppg_status_cl1'
 group by p.ppg_first;
 
 
--- ORIG_DUE_DATE, DUE_DATE_2, DUE_DATE_3 --------------------------------------------
+-- TODO: ppg_pid_status by ppg_first frequency
 
--- orig_due_date
 
+-- ORIG_DUE_DATE --------------------------------------------------------------------
+
+
+-- orig_due_date (1 = Refused, 6 = Unknown) frequency
 select orig_due_date, count(*) n
 from ppg_details 
 group by orig_due_date
 order by orig_due_date;
 
--- due_date_2
 
+-- orig_due_date that are UNKNOWN
+select orig_due_date, count(*) n
+from ppg_details 
+where orig_due_date like '%96%'
+group by orig_due_date
+order by orig_due_date;
+
+
+-- odd orig_due_date
+select orig_due_date, count(*) n
+from ppg_details 
+where (orig_due_date REGEXP '^9' or orig_due_date REGEXP '-9+') 
+	and (orig_due_date not like '%96%' and orig_due_date not like '%91%')
+group by orig_due_date
+order by orig_due_date;
+-- DATA ISSUE: what is a orig_due_date that has 92, 97?
+
+
+-- DUE_DATE_2 -----------------------------------------------------------------------
+
+
+-- due_date_2 (6 = Unknown)
 select due_date_2, count(*) n
 from ppg_details 
 group by due_date_2
 order by due_date_2;
 
--- due_date_3
 
+-- due_date_2 that are UNKNOWN
+select due_date_2, count(*) n
+from ppg_details 
+where due_date_2 like '%96%'
+group by due_date_2
+order by due_date_2;
+
+
+-- odd due_date_2
+select due_date_2, count(*) n
+from ppg_details 
+where (due_date_2 REGEXP '^9' or due_date_2 REGEXP '-9+') and (due_date_2 not like '%96%')
+group by due_date_2
+order by due_date_2;
+-- DATA ISSUE: what is a due_date_2 that has 97?
+
+
+-- DUE_DATE_3 -----------------------------------------------------------------------
+
+
+-- due_date_3 (6 = Unknown)
 select due_date_3, count(*) n
 from ppg_details 
 group by due_date_3
 order by due_date_3;
+
+
+-- due_date_3 that are UNKNOWN
+select due_date_3, count(*) n
+from ppg_details 
+where due_date_3 like '%96%'
+group by due_date_3
+order by due_date_3;
+
+
+-- odd due_date_3
+select due_date_3, count(*) n
+from ppg_details 
+where (due_date_3 REGEXP '^9' or due_date_2 REGEXP '-9+') and (due_date_2 not like '%96%')
+group by due_date_3
+order by due_date_3;
+-- DATA ISSUE: what is a due_date_3 that has 97?
 
 
 -- TRANSACTION TYPE -----------------------------------------------------------------
@@ -2303,6 +2413,7 @@ group by transaction_type;
 
 show columns from ppg_status_history;
 select count(*) n from ppg_status_history;
+select * from ppg_status_history;
 
 
 -- PSU_ID ---------------------------------------------------------------------------
@@ -2323,10 +2434,25 @@ select * from ppg_status_history where psu_id != 20000048;
 
 -- PPG_HISTORY_ID -------------------------------------------------------------------
 
+
+-- ppg_history_id frequency
 select ppg_history_id, count(*) n 
 from ppg_status_history
 group by ppg_history_id 
 order by count(*) desc;
+-- DATA ISSUE: the value of ppg_history_id comprise of p_id + ? + ppg_status_date.  What is the middle data?
+
+
+-- ppg_history_id is not unique
+select *
+from
+	(
+		select ppg_history_id, count(*) n 
+		from ppg_status_history
+		group by ppg_history_id 
+		order by count(*) desc
+	) h
+where h.n > 1;
 
 
 -- P_ID -----------------------------------------------------------------------------
@@ -2336,70 +2462,85 @@ from ppg_status_history
 group by p_id 
 order by count(*) desc;
 
+
 -- PGG_STATUS & PGG_STATUS_DATE -----------------------------------------------------
 
--- ppg_status
 
+-- ppg_status code list (-4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'ppg_status_cl1'
+order by value;
+
+
+-- ppg_status frequency
 select p.ppg_status as ppg_status_value,
    d.label as ppg_status_description,
    count(p.id) as n
 from ppg_status_history p left outer join
    xsd_enumeration_definition d on p.ppg_status = d.value
 where type_name = 'ppg_status_cl1'
-group by p.ppg_status;
+group by p.ppg_status
+order by p.ppg_status;
 
--- ppg_status_date
 
+-- ppg_status_date frequency
 select ppg_status_date, count(*) n
 from ppg_status_history
 group by ppg_status_date;
 
+
+-- odd ppg_status_date
+select ppg_status_date, count(*) n
+from ppg_status_history
+where (ppg_status_date REGEXP '^9' or ppg_status_date REGEXP '-9+') 
+group by ppg_status_date
+order by ppg_status_date;
+
+
 -- PPG_INFO_SOURCE & PPG_INFO_SOURCE_OTH --------------------------------------------
 
--- ppg_info_source
 
+-- ppg_info_source code list (-5 = Other, -4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'information_source_cl3'
+order by value;
+
+
+-- ppg_info_source combine list frequency 
+	-- ppg_info_source (-5 = Other, -4 = Missing in Error)
+	-- ppg_info_source_oth (-7 = 'Not Applicable')
 select p.ppg_info_source as ppg_info_source_value,
    d.label as ppg_info_source_description,
+   ppg_info_source_oth,
    count(p.id) as n
 from ppg_status_history p left outer join
    xsd_enumeration_definition d on p.ppg_info_source = d.value
 where type_name = 'information_source_cl3'
 group by p.ppg_info_source;
 
--- ppg_info_source_oth
-
-select ppg_info_source_oth as ppg_info_source_oth_value,
-   case
-       when ppg_info_source_oth = -7 then 'Not Applicable'
-       else ppg_info_source_oth
-   end as ppg_info_source_oth_description,
-   count(*) n
-from ppg_status_history
-group by ppg_info_source_oth;
-
 
 -- PPG_INFO_MODE & PPG_INFO_MODE_OTH ------------------------------------------------
 
--- ppg_info_mode
+-- ppg_info_mode code list (-5 = Other, -4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'contact_type_cl1'
+order by value;
 
+
+-- ppg_info_mode combine list frequency 
+	-- ppg_info_mode (-5 = Other, -4 = Missing in Error)
+	-- ppg_info_mode_oth (-7 = 'Not Applicable')
 select p.ppg_info_mode as ppg_info_mode_value,
    d.label as ppg_info_mode_description,
+   ppg_info_mode_oth,
    count(p.id) as n
 from ppg_status_history p left outer join
    xsd_enumeration_definition d on p.ppg_info_mode = d.value
 where type_name = 'contact_type_cl1'
 group by p.ppg_info_mode;
-
--- ppg_info_mode_oth
-
-select ppg_info_mode_oth as ppg_info_mode_oth_value,
-   case
-       when ppg_info_mode_oth = -7 then 'Not Applicable'
-       else ppg_info_mode_oth
-   end as ppg_info_mode_oth_description,
-   count(*) n
-from ppg_status_history
-group by ppg_info_mode_oth;
 
 
 -- PPG_COMMENT ----------------------------------------------------------------------
@@ -2448,12 +2589,14 @@ group by transaction_type;
  *************************************************************************************/
 
 
+
 /*************************************************************************************
  * table: link_contact
  *************************************************************************************/
  
 show columns from link_contact;
 select count(*) n from link_contact;
+select * from link_contact limit 0,100;
 
 
 -- PSU_ID ---------------------------------------------------------------------------
@@ -2472,124 +2615,98 @@ group by x.psu_id;
 select * from ppg_status_history where psu_id != 20000048;
 
 
-/*************************************************************************************
- * table: link_contact
- *************************************************************************************/
-
-show columns from link_contact;
-select count(*) n from link_contact;
-
-
--- PSU_ID ---------------------------------------------------------------------------
-
-select psu_id, count(*) from link_contact group by psu_id;
-
-select x.psu_id as psu_id_value,
-   d.label as psu_id_description,
-   count(x.id) as n
-from link_contact x left outer join
-   xsd_enumeration_definition d on x.psu_id = d.value
-where type_name = 'psu_cl1'
-group by x.psu_id;
-
--- psu_id  is not correct
-select * from link_contact where psu_id != 20000048;
-
-
 -- CONTACT_ID -----------------------------------------------------------------------
 
--- count
-select *
-from 
-	(
-		select contact_id, count(*) n
-		from link_contact 
-		group by contact_id 
-	) l
-where l.n > 1;
--- ISSUE: can the same contact_id have multiple rows here?
+
+-- contact_id frequency
+select contact_id, count(*) n
+from link_contact 
+group by contact_id 
+order by count(*) desc;
+-- DATA ISSUE: what is the contact_id convention because some are 7-digits long while others are digits followed by a date and time?
+
+-- select *
+-- from link_contact 
+-- where contact_id = 114000013;
 
 
 -- CONTACT_LINK_ID ------------------------------------------------------------------
 
--- count
+
+-- contact_link_id frequency
+select contact_link_id, count(*) n
+from link_contact 
+group by contact_link_id 
+order by contact_link_id desc;
+-- DATA ISSUE: what does a contact_link_id link to?
+
+-- contact_id with no contact_link_id
+-- Note: for every contact_id there should be at least one link record (contact_link_id)
 select *
-from 
-	(
-		select contact_link_id, count(*) n
-		from link_contact 
-		group by contact_link_id 
-	) l
-where l.n > 1;
+from link_contact
+where contact_link_id is null or contact_link_id = '';
 
 
 -- EVENT_ID -------------------------------------------------------------------------
 
-select *
-from 
-	(
-		select event_id, count(*) n
-		from link_contact 
-		group by event_id 
-	) l
-where l.n > 1
-order by event_id;
 
--- ISSUE: 173 null event_id
+-- event_id frequency
+select event_id, count(*) n
+from link_contact 
+group by event_id
+order by count(*) desc;
+-- ISSUE: 173 null event_id. Shouldn't there be at least one event_id, per conact_id?
 
 
 -- INSTRUMENT_ID --------------------------------------------------------------------
 
+
+-- instrument_id frequency
+select instrument_id, count(*) n
+from link_contact 
+group by instrument_id 
+order by count(*) desc;
+
+
+-- contact_id with no instrument_id
 select *
-from 
-	(
-		select instrument_id, count(*) n
-		from link_contact 
-		group by instrument_id 
-	) l
-where l.n > 1
-order by instrument_id;
--- ISSUE: 168,027 null values
+from link_contact 
+where instrument_id is null or instrument_id = '';
 
 
 -- STAFF_ID -------------------------------------------------------------------------
 
+
+-- staff_id frequency
+select staff_id, count(*) n
+from link_contact 
+group by staff_id 
+order by count(*) desc;
+
+
+-- contact_id with no staff_id
 select *
-from 
-	(
-		select staff_id, count(*) n
-		from link_contact 
-		group by staff_id 
-	) l
-where l.n > 1
-order by staff_id;
+from link_contact 
+where staff_id is null or staff_id = '';
 
 
 -- PERSON_ID ------------------------------------------------------------------------
 
-select *
-from 
-	(
-		select person_id, count(*) n
-		from link_contact 
-		group by person_id 
-	) l
-where l.n > 1
-order by person_id;
--- ISSUE: 164,132 with person_id of -7
+
+-- person_id frequency
+select person_id, count(*) n
+from link_contact 
+group by person_id 
+order by count(*) desc;
+-- DATA ISSUE: 164,132 with person_id of -7
+
 
 -- PRIVIDER_ID ----------------------------------------------------------------------
-
-select *
-from 
-	(
-		select provider_id, count(*) n
-		from link_contact 
-		group by provider_id 
-	) l
-where l.n > 1
-order by provider_id;
--- ISSUE: provider code is either: null OR -7
+select provider_id, count(*) n
+from link_contact 
+group by provider_id 
+order by count(*);
+-- DATA ISSUE: provider_id is either: null OR -7.  Is that correct?
 
 
 -- TRANSACTION_TYPE -----------------------------------------------------------------
@@ -2603,9 +2720,9 @@ group by transaction_type;
  * table: contact
  *************************************************************************************/
 
-
 show columns from contact;
 select count(*) n from contact;
+select * from contact limit 0, 100;
 
 
 -- PSU_ID ---------------------------------------------------------------------------
@@ -2638,7 +2755,7 @@ order by contact_id;
     -- and ends with '0,' then that is a household contact.
 
 
--- look for multiple counts
+-- contact_id is not unique
 select *
 from 
 	(
@@ -2655,7 +2772,7 @@ select contact_disp, count(*) n
 from contact 
 group by contact_disp 
 order by contact_disp;
--- ISSUE: where is "Value from Disposition Codes on Event Disp Codes worksheet of this document" (code list)
+-- MDES ISSUE: where is "Value from Disposition Codes on Event Disp Codes worksheet of this document" (code list)
 
 
 -- CONTACT_TYPE & CONTACT_TYPE_OTH --------------------------------------------------
@@ -2910,6 +3027,7 @@ group by transaction_type;
 
 show columns from event;
 select count(*) n from event;
+select * from event;
 
 
 -- PSU_ID ---------------------------------------------------------------------------
@@ -2936,11 +3054,11 @@ select * from event where psu_id != 20000048;
 -- EVENT_ID -------------------------------------------------------------
 
 
--- frequency
+-- event_id frequency
 select event_id, count(*) n from event group by event_id;
 
 
--- multiple event_ids
+-- event_id is not unique
 select * 
 from
 	(
@@ -2954,16 +3072,18 @@ where e.n > 1 ;
 -- PARTICIPANT_ID -------------------------------------------------------------
 
 
--- frequency
-select participant_id, count(*) n from event group by participant_id;
--- ISSUE: why are there 27242 rows with no participant_ids?
+-- participant_id frequency
+select participant_id, count(*) n 
+from event 
+group by participant_id
+order by count(*) desc;
+-- ISSUE: is it possible to have an event_id with no participant_id (n=27242)?
 
 
 -- EVENT_TYPE & EVENT_TYPE_OTH ------------------------------------------------
 
 
--- event code list
-
+-- event_type code list (-5 = Other, -4 = Missing in Error)
 select value as event_type_value, 
 	label as event_type_description
 from xsd_enumeration_definition
@@ -2971,41 +3091,44 @@ where type_name = 'event_type_cl1'
 order by value;
 
 
--- event_type
-
+-- event_type combine list (event_type & event_type_oth) frequency
+	-- event_type (-5 = Other, -4 = Missing in Error)
+	-- event_type_oth (-7 = 'Not Applicable')
 select x.event_type as event_type_value,
    d.label as event_type_description,
+   event_type_oth, 
    count(x.id) as n
 from event x left outer join
    xsd_enumeration_definition d on x.event_type = d.value
-where type_name = 'event_type_cl1'
-group by x.event_type;
-
-
--- event_type_oth
-
-select event_type_oth, 
-   case
-       when event_type_oth = -7 then 'Not Applicable'
-       else event_type_oth
-   end as event_type_oth_description,
-	count(*) n
-from event
-group by event_type_oth
-order by event_type_oth;
+where d.type_name = 'event_type_cl1'
+group by x.event_type
+order by x.event_type;
 
 
 -- EVENT_REPEAT_KEY -----------------------------------------------------------
 
-select event_repeat_key, count(*) n from event group by event_repeat_key;
+-- event_repeat_key frequency
+select event_repeat_key, count(*) n 
+from event 
+group by event_repeat_key;
 
 
 -- EVENT_DISP & EVENT_DISP_CAT ------------------------------------------------
 
 
 -- event_disp frequency
-select event_disp, count(*) n from event group by event_disp;
--- ISSUE: where is the event_disp code?
+select event_disp, count(*) n 
+from event 
+group by event_disp
+order by count(*) desc;
+-- DATA ISSUE: where is the event_disp code?
+
+
+-- event_disp_cat code list (-4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'event_dspstn_cat_cl1'
+order by value;
 
 
 -- event_disp_cat frequency
@@ -3014,26 +3137,91 @@ select x.event_disp_cat as event_disp_cat_value,
    count(x.id) as n
 from event x left outer join
    xsd_enumeration_definition d on x.event_disp_cat = d.value
-where type_name = 'event_dspstn_cat_cl1'
-group by x.event_disp_cat;
+where d.type_name = 'event_dspstn_cat_cl1'
+group by x.event_disp_cat
+order by x.event_disp_cat;
 
 
 -- EVENT_START_DATE & EVENT_START_TIME ----------------------------------------
 
+
+-- event_start_date frequency
+select event_start_date, count(*)
+from event
+group by event_start_date
+order by event_start_date;
+
+
+-- odd event_start_date
+select *
+from event
+where (event_start_date REGEXP '^9' or event_start_date REGEXP '-9+');
+-- DATA ISSUE: what does event_start_date of 96 and 92 mean?
+
+
+-- event_start_time frequency
+select event_start_time, count(*)
+from event
+group by event_start_time
+order by event_start_time;
+
+
+-- odd event_start_time
+select event_start_time, count(*) n
+from event
+where (event_start_time REGEXP '^9' or event_start_time REGEXP ':9+')
+group by event_start_time;
+-- DATA ISSUE: what does event_start_time of 96 mean?
+
+
 -- either event_start_date or event_start_time is null
 select id, event_start_date, event_start_time
 from event
-where event_start_date is null
-	 or event_start_time is null;
+where event_start_date is null 
+	or event_start_date = ''
+	or event_start_time is null
+	or event_start_time = '';
 
 
 -- EVENT_END_DATE & EVENT_END_TIME --------------------------------------------
 
+
+-- event_end_date frequency
+select event_end_date, count(*)
+from event
+group by event_end_date
+order by event_end_date;
+-- DATA ISSUE: what does event_end_date of 96 (n=44) and 97 (n=23,164) mean?
+
+
+-- odd event_end_date
+select *
+from event
+where (event_end_date REGEXP '^9' or event_end_date REGEXP '-9+');
+
+
+-- event_end_date frequency
+select event_end_time, count(*)
+from event
+group by event_end_time
+order by event_end_time;
+-- DATA ISSUE: what does event_end_time of 96 (n=172) and 97 (n=23,167) mean?
+-- DATA ISSUE: there's an event_end_time of 00:22. Does that make sense?
+
+-- odd event_end_time
+select event_end_time, count(*) n
+from event
+where (event_end_time REGEXP '^9' or event_end_time REGEXP ':9+')
+group by event_end_time;
+
+
 -- either event_end_date or event_end_time is null
 select id, event_end_date, event_end_time
 from event
-where event_start_date is null
-	 or event_start_time is null;
+where event_end_date is null 
+	or event_end_date = ''
+	or event_end_time is null
+	or event_end_time = '';
 
 
 -- EVENT_BREAKOFF -------------------------------------------------------------
