@@ -18,8 +18,10 @@ select * from information_schema.tables where table_schema = 'ncs_mdes_prod';
 show columns from xsd_enumeration_definition;
 select * from xsd_enumeration_definition;
 
--- ISSUE: mysql does not have a built in IsDate function. May need to build one or is this part of the import process since it is using grails?
--- SUGGUESTIONS: build views for comprehensives lists
+-- DATA ISSUE: mysql does not have a built in IsDate function. May need to build one or is this part of the import process since it is using grails?
+-- SUGGUESTIONS: 
+    -- build views for comprehensives lists
+    -- check links to other tables
 
 /*************************************************************************************
  *
@@ -122,7 +124,7 @@ select p_type_value, p_type_description, p_type_oth, count(*) n
 from pType
 group by p_type_value, p_type_oth
 order by p_type_value;
--- DATA ISSUE: p_type of 
+-- DATA ISSUE (reported): p_type of 
     -- NOT APPLICABLE (CODE = -7) (n=37)
     -- UNKNOWN (n=488)
 
@@ -299,7 +301,7 @@ select enroll_date, count(*) n
 from participant 
 group by enroll_date 
 order by count(*) desc;
--- ISSUE: 3485 with date of 9777-97-97
+-- DATA ISSUE (reported): 3485 with date of 9777-97-97
 
 
 -- TODO: verify that all ENROLL_DATE a legitimate date
@@ -374,7 +376,7 @@ from
 		order by d.value
 	) p
 group by pid_entry_value, pid_entry_description;
--- ISSUE: for 3778/3853 participants, their p_entry/p_entry_other is -7 (Not Applicable) 
+-- DATA ISSUE (reported): for 3778/3853 participants, their p_entry/p_entry_other is -7 (Not Applicable) 
 
 
 -- PID_AGE_ELIG ---------------------------------------------------------------------
@@ -388,7 +390,7 @@ from participant p left outer join
 where type_name = 'age_eligible_cl2'
 group by p.pid_age_elig
 order by p.pid_age_elig;
--- ISSUE: why do some participants pid_age_elig is 
+-- DATA ISSUE: why do some participants pid_age_elig is 
 -- 'Not Applicable' (n=75), 
 -- 'Unknown' (n=16)
 -- 'Missing in Error' (n=15)
@@ -585,7 +587,7 @@ from
 		order by d.value
 	) p
 group by relation_value, relation_description;
--- ISSUE: 9 person to p_id relationship are 'Not Applicable'
+-- DATA ISSUE (reported): 9 person to p_id relationship are 'Not Applicable'
 
 
 -- IS_ACTIVE ------------------------------------------------------------------------
@@ -633,7 +635,7 @@ group by transaction_type;
 show columns from person;
 select count(*) n from person;
 
--- ISSUE: according to Master Data Elements document, under the "Format Constraint" column, 
+-- DATA ISSUE: according to Master Data Elements document, under the "Format Constraint" column, 
     -- the FIRST_NAME, LAST_NAME, MIDDLE_NAME, & MIDDLE_NAME "is considred PII and should be left 
     -- NULL or contain the following values: -7 (Not Applicable) which is not the case in the database.
 
@@ -656,7 +658,7 @@ group by p.psu_id;
 select person_id, count(*) 
 from person 
 group by person_id;
--- ISSUE: 
+-- DATA ISSUE (reported): 
 	-- odd person_ids (-3 and -7)
 	-- why are some ids numeric only (1958907), while others are alphanumeric with a date appended (C7312012-02-24)?
 
@@ -688,7 +690,7 @@ from person p left outer join
 	xsd_enumeration_definition d on p.prefix = d.value
 where d.type_name = 'name_prefix_cl1'
 group by prefix;
--- ISSUE: all prefixes are "NA"
+-- DATA ISSUE (reported): all prefixes are "NA"
 
 
 -- FIRST_NAME -----------------------------------------------------------------------
@@ -699,7 +701,7 @@ select first_name, count(*) n
 from person 
 group by first_name 
 order by first_name;
--- ISSUES: firstnames that are
+-- DATA ISSUES (reported): firstnames that are
 	-- null (n=3900)
 	-- '-3' (n=22)
 	-- '26' (n=1)
@@ -710,7 +712,7 @@ order by first_name;
 select first_name, count(*) n
 from person 
 where first_name is null or first_name = '';
--- ISSUE: 3900 rows with null first_name
+-- DATA ISSUE (reported): 3900 rows with null first_name
 
 
 -- if first_name is null, what is person's middle and lastname
@@ -718,7 +720,7 @@ select first_name, middle_name, last_name, count(*) n
 from person 
 where first_name is null
 group by middle_name, last_name;
--- ISSUE: of 390 null first names, most do not have a middle or last name
+-- DATA ISSUE: of 390 null first names, most do not have a middle or last name
 
 
 -- first name has odd non-alpha characters (excludes single quote, hyphen, space)
@@ -730,7 +732,7 @@ from
 		where first_name not REGEXP "^[A-Za-z\\'\\ \\-]+$" 
    ) p
 group by p.first_name;
--- ISSUE: first name has parenthesis, period, comma, slash, and number
+-- DATA ISSUE (reported): first name has parenthesis, period, comma, slash, and number
 
 
 -- first name contains a period (suggesting person has middle name) yet person also has middle
@@ -752,7 +754,7 @@ group by last_name;
 select person_id, last_name, first_name, middle_name 
 from person 
 where last_name is null;
--- ISSUE: 3 last names that are null
+-- DATA ISSUE (reported): 3 last names that are null
 
 
 -- odd last names (excludes single quote, space and hypen)
@@ -930,7 +932,7 @@ from
     ) a
 where a.age = -1
 group by a.p_type_value, a.p_type_description;
--- ISSUE: the following participant p_type refused age
+-- DATA ISSUE: the following participant p_type refused age
     -- Other
     -- Missing in Error
     -- Age-eligible women, ineligible for pre-pregnancy visit - being followed
@@ -1061,7 +1063,7 @@ from person p left outer join
    xsd_enumeration_definition d on p.ethnic_group = d.value
 where d.type_name = 'ethnicity_cl1'
 group by p.ethnic_group;
--- ISSUE: is 66% (6270/9515) UNKNOWN acceptable for ethnic group
+-- DATA ISSUE (reported): is 66% (6270/9515) UNKNOWN acceptable for ethnic group
 
 
 -- PERSON_LANG ----------------------------------------------------------------------
@@ -1084,7 +1086,7 @@ select case
     count(*)
 from person
 group by person_lang_oth;
--- ISSUE: what is person_lang_oth = -2
+-- DATA ISSUE (reported): what is person_lang_oth = -2
 
 
 -- TODO: PERSON_LANG & PERSON_LANG_OTH comparison -----------------------------------
@@ -1331,46 +1333,75 @@ group by transaction_type;
 
 show columns from link_person_household;
 select count(*) n from link_person_household;
+select * from link_person_household;
 
 
 -- PSU_ID ---------------------------------------------------------------------------
 
+
+-- psu_id frequency
 select psu_id, count(*) n
 from link_person_household
 group by psu_id
 order by count(*) desc;
 
--- psu_id  is not correct
-select * from
-link_person_household
-where psu_id != 20000048;
+
+-- PERSON_HH_ID ---------------------------------------------------------------------
+
+
+-- person_hh_id is not unique
+select *
+from
+    (
+        select person_hh_id, count(*) n
+        from link_person_household
+        group by person_hh_id
+        order by count(*) desc
+    ) l
+where l.n > 1;
+
+
 
 -- PERSON_ID ------------------------------------------------------------------------
 
-select person_id, count(*)
-from link_person_household
-group by person_id
-order by count(*) desc;
+
+-- does person live in multiple households?
+select *
+from
+    (
+        select person_id, count(distinct hh_id) nhh_id
+        from link_person_household
+        group by person_id
+        order by count(distinct hh_id) desc
+    ) lph
+where lph.nhh_id > 1;
 
 
 -- HH_ID ---------------------------------------------------------------------
 
-select hh_id, count(*)
-from link_person_household
-group by hh_id
-order by count(*) desc;
 
-
--- PERSON_HH_ID ---------------------------------------------------------------------
-
-select person_hh_id, count(*)
-from link_person_household
-group by person_hh_id
-order by count(*) desc;
+-- does household have multiple person_ids?
+select *
+from 
+    (
+        select hh_id, person_id, count(*) n
+        from link_person_household
+        group by hh_id, person_id
+    ) lph
+where lph.n > 1;
 
 
 -- IS_ACTIVE ------------------------------------------------------------------------
 
+
+-- is_active code list (-4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl2'
+order by value;
+
+
+-- is_active frequency
 select l.is_active as is_active_value,
    d.label as is_active_description,
    count(l.id) as n
@@ -1382,26 +1413,26 @@ group by l.is_active;
 
 -- HH_RANK & HH_RANK_oth ------------------------------------------------------------
 
--- hh_rank
 
+-- hh_rank code list (-5 = Other, -4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'communication_rank_cl1'
+order by value;
+
+
+-- hh_rank frequency
+    -- hh_rank (-5 = Other, -4 = Missing in Error)
+    -- hh_rank_oth (-7 = Not Applicable)
 select l.hh_rank as hh_rank_value,
-   d.label as hh_rank_description,
-   count(l.id) as n
+    d.label as hh_rank_description,
+    hh_rank_oth, 
+    count(l.id) as n
 from link_person_household l left outer join
    xsd_enumeration_definition d on l.hh_rank = d.value
 where type_name = 'communication_rank_cl1'
-group by l.hh_rank;
-
--- hh_rank_oth
-
-select hh_rank_oth as hh_rank_oth_value,
-   case
-       when hh_rank_oth = -7 then 'Not Applicable'
-       else hh_rank_oth
-   end as hh_rank_oth_description,
-   count(*) n
-from link_person_household
-group by hh_rank_oth;
+group by l.hh_rank
+order by l.hh_rank;
 
 
 -- TRANSACTION TYPE -----------------------------------------------------------------
@@ -1417,6 +1448,7 @@ group by transaction_type;
 
 show columns from address;
 select count(*) n from address;
+select * from address limit 0,100;
 
 
 -- PSU_ID ---------------------------------------------------------------------------
@@ -1438,132 +1470,196 @@ group by a.psu_id;
 select * from address where psu_id != 20000048;
 
 
--- PERSON_ID ------------------------------------------------------------------------
-
-select person_id, count(*) n from address group by person_id order by count(*) desc;
-
-
 -- ADDRESS_ID -----------------------------------------------------------------------
 
-select address_id, count(*) n from address group by address_id order by count(*) desc;
+
+-- address_id frequency
+select address_id, count(*) n 
+from address 
+group by address_id 
+order by count(*) desc;
+
+-- address_id is not unique
+select * 
+from
+    (
+        select address_id, count(*) n 
+        from address 
+        group by address_id 
+    ) a
+where a.n > 1;
+
+
+-- PERSON_ID ------------------------------------------------------------------------
+
+-- person_id in not unique
+select *
+from
+    (
+        select person_id, count(*) n 
+        from address 
+        group by person_id 
+        order by count(*) desc
+    ) a
+where a.n > 1;
+-- DATA ISSUE: is it possible for an address_id not linked to a person_id (30,752 have a null person_id)
+
+-- select * from address where person_id = '60695801';
+
+
+-- TODO: link person_id to external table
 
 
 -- INSTITUTE_ID ---------------------------------------------------------------------
 
-select institute_id, count(*) n from address group by institute_id order by count(*) desc;
+
+-- institute_id frequency
+select institute_id, count(*) n 
+from address 
+group by institute_id 
+order by count(*) desc;
 
 
 -- PROVIDER_ID ---------------------------------------------------------------------
 
--- ISSUE: no provider code list provded
-select provider_id, count(*) n from address group by provider_id order by count(*) desc;
+select provider_id, count(*) n 
+from address 
+group by provider_id 
+order by count(*) desc;
+-- DATA ISSUE (reported): what does provider_id of -3 and -7?
+
+
+-- TODO: link provider_id to external table
 
 
 -- DU_ID ----------------------------------------------------------------------------
 
-select du_id, count(*) n from address group by du_id order by count(*) desc;
+select du_id, count(*) n 
+from address 
+group by du_id 
+order by count(*) desc;
+-- MDES ISSUE: what does a du_id of -7 (n=3900) mean?
+
+
+-- TODO: link du_id to external table
 
 
 -- ADDRESS_RANK & ADDRESS_RANK_OTH --------------------------------------------------
 
--- address_rank
 
+-- address_rank code list (-5 = Other, -4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'communication_rank_cl1'
+order by value;
+
+
+-- address_rank frequency
+    -- address_rank (-5 = Other, -4 = Missing in Error)
+    -- address_rank_oth (-7 = Not Applicable)
 select a.address_rank as address_rank_value,
    d.label as address_rank_description,
+    address_rank_oth, 
    count(a.id) as n
 from address a left outer join
    xsd_enumeration_definition d on a.address_rank = d.value
 where type_name = 'communication_rank_cl1'
-group by a.address_rank;
-
--- address_rank_oth
-
-select address_rank_oth as address_rank_oth_value,
-   case
-       when address_rank_oth = -7 then 'Not Applicable'
-       else address_rank_oth
-   end as address_rank_oth_description,
-   count(*) n
-from address
-group by address_rank_oth;
+group by a.address_rank
+order by a.address_rank;
 
 
 -- ADDRESS_INFO_SOURCE & ADDRESS_INFO_SOURCE_OTH ------------------------------------
 
--- address_info_source
 
+-- address_info_source code list (-5 = Other, -4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'information_source_cl1'
+order by value;
+
+
+-- address_info_source frequency
+    -- address_info_source (-5 = Other, -4 = Missing in Error)
+    -- address_info_oth (-7 = Not Applicable)
 select a.address_info_source as address_info_source_value,
    d.label as address_info_source_description,
+    address_info_source_oth,
    count(a.id) as n
 from address a left outer join
    xsd_enumeration_definition d on a.address_info_source = d.value
 where type_name = 'information_source_cl1'
 group by a.address_info_source;
 
--- address_info_source_oth
-
-select address_info_source_oth as address_info_source_oth_value,
-   case
-       when address_info_source_oth = -7 then 'Not Applicable'
-       else address_info_source_oth
-   end as address_info_source_oth_description,
-   count(*) n
-from address
-group by address_info_source_oth;
-
 
 -- ADDRESS_INFO_MODE & ADDRESS_INFO_MODE_OTH ----------------------------------------
 
--- address_info_mode
 
+-- address_info_mode code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'contact_type_cl1'
+order by value;
+
+
+-- address_info_mode frequency
+    -- address_info_mode (-5 = Other, -4 = Missing in Error)
+    -- address_info_mode_oth (-7 = Not Applicable)
 select a.address_info_mode as address_info_mode_value,
    d.label as address_info_mode_description,
+    address_info_mode_oth, 
    count(a.id) as n
 from address a left outer join
    xsd_enumeration_definition d on a.address_info_mode = d.value
 where type_name = 'contact_type_cl1'
 group by a.address_info_mode;
 
--- address_info_mode_oth
-
-select address_info_mode_oth as address_info_mode_oth_value,
-   case
-       when address_info_mode_oth = -7 then 'Not Applicable'
-       else address_info_mode_oth
-   end as address_info_mode_oth_description,
-   count(*) n
-from address
-group by address_info_mode_oth;
-
 
 -- ADDRESS_INFO_DATE & ADDRESS_INFO_UPDATE ------------------------------------------
 
--- address_info_date
 
+-- address_info_date frequency
 select address_info_date, count(*) n
 from address
 group by address_info_date
-order by count(*) desc;
+order by address_info_date;
 
--- address_info_update
 
+-- odd address_info_date
+select address_info_date, count(*) n
+from address
+where address_info_date regexp '^9' or address_info_date regexp '-9+'
+group by address_info_date
+order by address_info_date;
+-- DATA ISSUE: what is an address_info_date of 92 (n=1) and 97 (n=2) mean?
+
+
+-- address_info_update frequency
 select address_info_update, count(*) n
 from address
 group by address_info_update
-order by count(*) desc;
+order by address_info_update;
+
+
+-- odd address_info_update
+select address_info_update, count(*) n
+from address
+where address_info_update regexp '^9' or address_info_update regexp '-9+'
+group by address_info_update
+order by address_info_update;
+-- DATA ISSUE: what is an address_info_update of 92 and 97 mean?
 
 
 -- ADDRESS_START_DATE & ADDRESS_END_DATE --------------------------------------------
 
--- address_start_date
 
+-- address_start_date frequency (6 = Unknown, 4 = Missing in Error)
 select address_start_date, count(*) n
 from address
 group by address_start_date
 order by count(*) desc;
 
--- address_end_date
 
+-- address_end_date (6 = Unknown)
 select address_end_date, count(*) n
 from address
 group by address_end_date
@@ -1572,71 +1668,81 @@ order by count(*) desc;
 
 -- ADDRESS_TYPE & ADDRESS_TYPE_OTH --------------------------------------------------
 
--- address_type
 
+-- address_type code list (-6 = Unknown, -5 = Other, -4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'address_category_cl1'
+order by value;
+
+
+-- address_type frequency
+    -- address_type (-6 = Unknown, -5 = Other, -4 = Missing in Error)
+    -- address_type_oth (-7  = Not Applicable)
 select a.address_type as address_type_value,
    d.label as address_type_description,
+    address_type_oth, 
    count(a.id) as n
 from address a left outer join
    xsd_enumeration_definition d on a.address_type = d.value
 where type_name = 'address_category_cl1'
 group by a.address_type;
 
--- address_type_oth
-
-select address_type_oth as address_type_oth_value,
-   case
-       when address_type_oth = -7 then 'Not Applicable'
-       else address_type_oth
-   end as address_type_oth_description,
-   count(*) n
-from address
-group by address_type_oth;
-
 
 -- ADDRESS_DESCRIPTION & ADDRESS_DESCRIPTION_OTH ------------------------------------
 
--- address_description
 
+-- address_description code list
+select *
+from xsd_enumeration_definition 
+where type_name = 'residence_type_cl1'
+order by value;
+
+
+-- address_description frequency
+    -- address_description (-6 = Unknown, -5 = Other, -4 = Missing in Error)
+    -- address_description_oth (-7 = Not Applicable)
 select a.address_description as address_description_value,
    d.label as address_description_description,
+    address_description_oth, 
    count(a.id) as n
 from address a left outer join
    xsd_enumeration_definition d on a.address_description = d.value
 where type_name = 'residence_type_cl1'
 group by a.address_description;
 
--- address_description_oth
-
-select address_description_oth as address_description_oth_value,
-   case
-       when address_description_oth = -7 then 'Not Applicable'
-       else address_description_oth
-   end as address_description_oth_description,
-   count(*) n
-from address
-group by address_description_oth;
-
 
 -- ADDRESS_1, ADDRESS_2, UNIT, CITY, STATE, ZIP, ZIP4 -------------------------------
 
--- address_1
-
+-- address_1 frequency
 select address_1,
    case
        when address_1 = -1 then 'Refused'
        when address_1 = -2 then "Don't Know"
        when address_1 = -3 then 'Legitimate Skip'
        else ''
-   end as comment,
+   end as note,
    count(*) n
 from address
 group by address_1
 order by count(*) desc;
 
--- address_2
+-- address_1 is REFUSED, DON'T KNOW, LEGITMATE SKIP
+select address_1,
+   case
+       when address_1 = -1 then 'Refused'
+       when address_1 = -2 then "Don't Know"
+       when address_1 = -3 then 'Legitimate Skip'
+       else ''
+   end as note,
+   count(*) n
+from address
+where address_1 in (-1, -2, -3)
+group by address_1
+order by count(*) desc;
 
--- ISSUE: what is address_2 = -7 & 8
+
+-- address_2 frequency
 select address_2,
    case
        when address_2 = -1 then 'Refused'
@@ -1648,9 +1754,10 @@ select address_2,
 from address
 group by address_2
 order by count(*) desc;
+-- DATA ISSUE (reported): what does an address_2 of -7 (n=3584) and 8 (n=1) mean?
 
--- unit
 
+-- unit frequency
 select unit,
    case
        when unit = -1 then 'Refused'
@@ -1661,97 +1768,61 @@ select unit,
    count(*) n
 from address
 group by unit
-order by count(*) desc;
+order by unit;
+-- DATA ISSUE (reported): what does a unit of -3 (n=164) and -2 (n=1)
 
 
--- negative values
--- ISSUE: what is -2 and -3?
+-- city frequency
+select city, count(*) n
+from address
+group by city
+order by city;
+-- DATA ISSUE (reported): what does city of -2 (n=11), -3 (n=5) and -7 (n=12)
 
+
+-- state code list (-6 = Unknown, -4 = Missing in Error)
 select *
-from
-   (
-       select unit,
-           case
-               when unit = -1 then 'Refused'
-               when unit = -6 then "Unknown"
-               when unit = -7 then 'Not Applicable'
-               else ''
-           end as comment,
-           count(*) n
-       from address
-       group by unit
-   ) a
-where unit < 0;
+from xsd_enumeration_definition 
+where type_name = 'state_cl1'
+order by value;
 
--- city
 
-select city, count(*) n
-from address
-group by city
-order by count(*) desc;
-
--- ISSUE: what is -2, -3, -7
-
-select city, count(*) n
-from address
-where city < 0
-group by city
-order by count(*) desc;
-
-select city, count(*) n
-from address
-where city REGEXP '[[:digit:]]+'
-group by city
-order by count(*) desc;
-
--- state
-
+-- state frequency (-6 = Unknown, -4 = Missing in Error)
 select a.state as state_value,
    d.label as state_description,
    count(a.id) as n
 from address a left outer join
    xsd_enumeration_definition d on a.state = d.value
 where type_name = 'state_cl1'
-group by a.state;
+group by a.state
+order by a.state;
 
--- ZIP
 
+-- zip
 select zip, count(*) n
 from address
 group by zip
-order by count(*) desc;
+order by zip;
+-- DATA ISSUE: what is a zip of -1 (n=8), -2 (n=115), and -3 (n=7)
 
--- odd zip
-select zip, count(*) n
-from address
-where char_length(zip) < 5
-group by zip
-order by count(*) desc;
 
--- ZIP4
-
+-- zip4
 select zip4, count(*) n
 from address
 group by zip4
-order by count(*) desc;
-
--- odd zip4
-select zip, count(*) n
-from address
-where char_length(zip) < 4
-group by zip
-order by count(*) desc;
+order by zip4;
+-- DATA ISSUE: wht is a zip4 of -1 (n=33), -2 (n=31), -3 (n=2) and -7 (n=457)
 
 
 -- ADDRESS_COMMENT --------------------------------------------------------------------------
-
 select address_comment, count(*) n
 from address
 group by address_comment
 order by count(*) desc;
+-- DATA ISSUE: what is an address_comment of -3 (n=2) mean?
+
 
 -- TRANSACTION TYPE -------------------------------------------------------------------------
-
 select transaction_type, count(*) n
 from address
 group by transaction_type;
@@ -1763,6 +1834,7 @@ group by transaction_type;
 
 show columns from email;
 select count(*) n from email;
+select * from email;
 
 
 -- PSU_ID ---------------------------------------------------------------------------
@@ -1781,120 +1853,153 @@ where type_name = 'psu_cl1'
 group by e.psu_id;
 
 
--- psu_id  is not correct
-select * from email where psu_id != 20000048;
+-- EMAIL_ID -----------------------------------------------------------------------
+
+
+-- email_id is not unique 
+select *
+from
+    (
+        select email_id, count(*) n 
+        from email 
+        group by email_id 
+        order by email_id
+    ) e
+where e.n > 1;
 
 
 -- PERSON_ID ------------------------------------------------------------------------
 
-select person_id, count(*) n from email group by person_id order by count(*) desc;
 
-
--- EMAIL_ID -----------------------------------------------------------------------
-
-select email_id, count(*) n from email group by email_id order by count(*) desc;
-
--- ISSUE: why is email address not unique
-select email, count(*) n from email group by email order by count(*) desc;
+-- person_id frequency
+select person_id, count(*) n 
+from email 
+group by person_id 
+order by count(*) desc;
 
 
 -- INSTITUTE_ID ---------------------------------------------------------------------
 
-select institute_id, count(*) n from email group by institute_id order by count(*) desc;
+
+-- institute_id frequency
+select institute_id, count(*) n 
+from email 
+group by institute_id 
+order by count(*) desc;
+
 
 -- PROVIDER_ID ---------------------------------------------------------------------
 
--- ISSUE: no provider code list provded
-select provider_id, count(*) n from email group by provider_id order by count(*) desc;
+
+-- provider_id frequency
+select provider_id, count(*) n 
+from email 
+group by provider_id 
+order by count(*) desc;
 
 
 -- EMAIL_RANK & EMAIL_RANK_OTH ------------------------------------------------------
 
--- email_rank
 
+-- email_rank code list (-5 = Other, -4 = Missing in Error)
+select * 
+from xsd_enumeration_definition 
+where type_name = 'communication_rank_cl1'
+order by value;
+
+
+-- email_rank combine list frequency
+    -- email_rank (-5 = Other, -4 = Missing in Error)
+    -- email_rank_oth (-7 = Not Applicable)
 select e.email_rank as email_rank_value,
    d.label as email_rank_description,
+    email_rank_oth,
    count(e.id) as n
 from email e left outer join
    xsd_enumeration_definition d on e.email_rank = d.value
 where type_name = 'communication_rank_cl1'
 group by e.email_rank;
 
--- email_rank_oth
-
-select email_rank_oth as email_rank_oth_value,
-   case
-       when email_rank_oth = -7 then 'Not Applicable'
-       else email_rank_oth
-   end as email_rank_oth_description,
-   count(*) n
-from email
-group by email_rank_oth;
-
 
 -- EMAIL_INFO_SOURCE & EMAIL_INFO_SOURCE_OTH ----------------------------------------
 
--- email_info_source
 
+-- email_info_source code list (-5 = Other, -4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'information_source_cl1'
+order by value;
+
+
+-- email_info_source combine list frequency
+    -- email_rank (-5 = Other, -4 = Missing in Error)
+    -- email_rank_oth (-7 = Not Applicable)
 select e.email_info_source as email_info_source_value,
    d.label as email_info_source_description,
+    email_info_source_oth, 
    count(e.id) as n
 from email e left outer join
    xsd_enumeration_definition d on e.email_info_source = d.value
 where type_name = 'information_source_cl1'
 group by e.email_info_source;
 
--- email_info_source_oth
-
-select email_info_source_oth as email_info_source_oth_value,
-   case
-       when email_info_source_oth = -7 then 'Not Applicable'
-       else email_info_source_oth
-   end as email_info_source_oth_description,
-   count(*) n
-from email
-group by email_info_source_oth;
-
 
 -- EMAIL_INFO_DATE & EMAIL_INFO_UPDATE ----------------------------------------------
 
--- email_info_date
 
+-- email_info_date
 select email_info_date, count(*) n
 from email
 group by email_info_date
-order by count(*) desc;
+order by email_info_date;
+
+
+-- odd email_info_date
+select email_info_date, count(*) n
+from email
+where email_info_date regexp '^9' or email_info_date regexp '-9+'
+group by email_info_date
+order by email_info_date;
+-- DATA ISSUE: what is does email_info_date of 92 mean?
+
 
 -- email_info_update
-
 select email_info_update, count(*) n
 from email
 group by email_info_update
-order by count(*) desc;
+order by email_info_update;
+
+
+-- odd email_info_update
+select email_info_update, count(*) n
+from email
+where email_info_update regexp '^9' or email_info_update regexp '-9+'
+group by email_info_update
+order by email_info_update;
+-- DATA ISSUE: what is does email_info_update of 97 mean?
 
 
 -- EMAIL_TYPE & EMAIL_TYPE_OTH --------------------------------------------------
 
--- email_type
 
+-- email_type code list (-6 = Unknown, -5 = Other, - = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'email_type_cl1'
+order by value;
+
+
+-- email_type frequency
+    -- email_type (-6 = Unknown, -5 = Other, - = Missing in Error)
+    -- email_type_oth (-7 = Not Applicable)
 select e.email_type as email_type_value,
    d.label as email_type_description,
+    email_type_oth, 
    count(e.id) as n
 from email e left outer join
    xsd_enumeration_definition d on e.email_type = d.value
 where type_name = 'email_type_cl1'
 group by e.email_type;
-
--- email_type_oth
-
-select email_type_oth as email_type_oth_value,
-   case
-       when email_type_oth = -7 then 'Not Applicable'
-       else email_type_oth
-   end as email_type_oth_description,
-   count(*) n
-from email
-group by email_type_oth;
 
 
 -- EMAIL_SHARE ----------------------------------------------------------------------
@@ -1910,6 +2015,14 @@ group by e.email_share;
 
 -- EMAIL_ACTIVE ---------------------------------------------------------------------
 
+
+-- email_active code list (-4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl2'
+order by value;
+
+-- email_active frequency
 select e.email_active as email_active_value,
    d.label as email_active_description,
    count(e.id) as n
@@ -1919,32 +2032,27 @@ where type_name = 'confirm_type_cl2'
 group by e.email_active;
 
 
--- EMAIL_COMMENT --------------------------------------------------------------------
+-- TODO: does email_active correlate with email_rank, particulary for someone who has several different email addresses.
 
-select email_comment as email_comment_value,
-   case
-       when email_comment = -7 then 'Not Applicable'
-       else email_comment
-   end as email_comment_description,
-   count(*) n
+
+-- EMAIL_COMMENT --------------------------------------------------------------------
+select email_comment, count(*) n
 from email
 group by email_comment;
-
--- ISSUE: what is the difference between -7 versus NA?
-select email_comment, count(*) n from email group by email_comment;
+-- DATA ISSUE (reported): what does a comment of -7 mean, and how does that differ from NA?
 
 
 -- EMAIL_START_DATE & EMAIL_END_DATE ------------------------------------------------
 
--- email_start_date
 
+-- email_start_date (6 = Unknown)
 select email_start_date, count(*) n
 from email
 group by email_start_date
 order by count(*) desc;
 
--- email_end_date
 
+-- email_end_date (6 = Unknown)
 select email_end_date, count(*) n
 from email
 group by email_end_date
@@ -1980,10 +2088,6 @@ from telephone t left outer join
    xsd_enumeration_definition d on t.psu_id = d.value
 where type_name = 'psu_cl1'
 group by t.psu_id;
-
-
--- psu_id  is not correct
-select * from telephone where psu_id != 20000048;
 
 
 -- PERSON_ID ------------------------------------------------------------------------
@@ -2343,7 +2447,7 @@ where (orig_due_date REGEXP '^9' or orig_due_date REGEXP '-9+')
 	and (orig_due_date not like '%96%' and orig_due_date not like '%91%')
 group by orig_due_date
 order by orig_due_date;
--- DATA ISSUE: what is a orig_due_date that has 92, 97?
+-- DATA ISSUE (reported): what does orig_due_date containing 92 and 97 mean?
 
 
 -- DUE_DATE_2 -----------------------------------------------------------------------
@@ -2370,7 +2474,7 @@ from ppg_details
 where (due_date_2 REGEXP '^9' or due_date_2 REGEXP '-9+') and (due_date_2 not like '%96%')
 group by due_date_2
 order by due_date_2;
--- DATA ISSUE: what is a due_date_2 that has 97?
+-- DATA ISSUE (reported): what does a due_date_2 of 97 mean?
 
 
 -- DUE_DATE_3 -----------------------------------------------------------------------
@@ -2397,7 +2501,7 @@ from ppg_details
 where (due_date_3 REGEXP '^9' or due_date_2 REGEXP '-9+') and (due_date_2 not like '%96%')
 group by due_date_3
 order by due_date_3;
--- DATA ISSUE: what is a due_date_3 that has 97?
+-- DATA ISSUE (reported): what does a due_date_3 of 97 mean?
 
 
 -- TRANSACTION TYPE -----------------------------------------------------------------
@@ -2440,7 +2544,7 @@ select ppg_history_id, count(*) n
 from ppg_status_history
 group by ppg_history_id 
 order by count(*) desc;
--- DATA ISSUE: the value of ppg_history_id comprise of p_id + ? + ppg_status_date.  What is the middle data?
+-- DATA ISSUE (reported): the value of ppg_history_id comprise of p_id + ? + ppg_status_date.  What is the middle data?
 
 
 -- ppg_history_id is not unique
@@ -2623,7 +2727,8 @@ select contact_id, count(*) n
 from link_contact 
 group by contact_id 
 order by count(*) desc;
--- DATA ISSUE: what is the contact_id convention because some are 7-digits long while others are digits followed by a date and time?
+-- DATA ISSUE (reported): what is the contact_id convention because some are 7-digits long 
+-- while others are digits followed by a date and time?
 
 -- select *
 -- from link_contact 
@@ -2655,7 +2760,6 @@ select event_id, count(*) n
 from link_contact 
 group by event_id
 order by count(*) desc;
--- ISSUE: 173 null event_id. Shouldn't there be at least one event_id, per conact_id?
 
 
 -- INSTRUMENT_ID --------------------------------------------------------------------
@@ -2698,7 +2802,7 @@ select person_id, count(*) n
 from link_contact 
 group by person_id 
 order by count(*) desc;
--- DATA ISSUE: 164,132 with person_id of -7
+-- DATA ISSUE (reported): 164,132 with person_id of -7
 
 
 -- PRIVIDER_ID ----------------------------------------------------------------------
@@ -2749,7 +2853,7 @@ select contact_id, count(*) n
 from contact 
 group by contact_id 
 order by contact_id;
--- ISSUE: contact_id of -3 and -7
+-- DATA ISSUE (reported): contact_id of -3 and -7
 -- gms: nice!! I missed this one. It would also be nice to know what these different schemes meant, 
     -- e.g., those that start with a '1' versus other number schemes. I do not that if there is a number that starts with '6' 
     -- and ends with '0,' then that is a household contact.
@@ -2787,7 +2891,7 @@ from contact x left outer join
    xsd_enumeration_definition d on x.contact_type = d.value
 where type_name = 'contact_type_cl1'
 group by x.contact_type;
--- ISSUE: "Missing in Error" (n=2)
+-- DATA ISSUE: "Missing in Error" (n=2)
 
 
 -- contact_type_oth
@@ -3047,15 +3151,13 @@ where type_name = 'psu_cl1'
 group by x.psu_id;
 
 
--- psu_id is not correct
-select * from event where psu_id != 20000048;
-
-
 -- EVENT_ID -------------------------------------------------------------
 
 
 -- event_id frequency
-select event_id, count(*) n from event group by event_id;
+select event_id, count(*) n 
+from event 
+group by event_id;
 
 
 -- event_id is not unique
@@ -3077,7 +3179,7 @@ select participant_id, count(*) n
 from event 
 group by participant_id
 order by count(*) desc;
--- ISSUE: is it possible to have an event_id with no participant_id (n=27242)?
+-- DATA ISSUE: is it possible to have an event_id with no participant_id (n=27,242)?
 
 
 -- EVENT_TYPE & EVENT_TYPE_OTH ------------------------------------------------
@@ -3113,6 +3215,9 @@ from event
 group by event_repeat_key;
 
 
+-- TODO: what event_type have event_repeat_key?
+
+
 -- EVENT_DISP & EVENT_DISP_CAT ------------------------------------------------
 
 
@@ -3120,8 +3225,10 @@ group by event_repeat_key;
 select event_disp, count(*) n 
 from event 
 group by event_disp
-order by count(*) desc;
--- DATA ISSUE: where is the event_disp code?
+order by event_disp;
+
+
+-- TODO: list event_type by event_disp
 
 
 -- event_disp_cat code list (-4 = Missing in Error)
@@ -3142,6 +3249,9 @@ group by x.event_disp_cat
 order by x.event_disp_cat;
 
 
+-- TODO: list event_disp_cat, by event_type, by event_disp
+
+
 -- EVENT_START_DATE & EVENT_START_TIME ----------------------------------------
 
 
@@ -3153,10 +3263,11 @@ order by event_start_date;
 
 
 -- odd event_start_date
-select *
+select event_start_date, count(*) n
 from event
-where (event_start_date REGEXP '^9' or event_start_date REGEXP '-9+');
--- DATA ISSUE: what does event_start_date of 96 and 92 mean?
+where (event_start_date REGEXP '^9' or event_start_date REGEXP '-9+')
+group by event_start_date;
+-- DATA ISSUE (reported): what does event_start_date of 96 and 92 mean?
 
 
 -- event_start_time frequency
@@ -3171,10 +3282,10 @@ select event_start_time, count(*) n
 from event
 where (event_start_time REGEXP '^9' or event_start_time REGEXP ':9+')
 group by event_start_time;
--- DATA ISSUE: what does event_start_time of 96 mean?
+-- DATA ISSUE (reported): what does event_start_time of 96 mean?
 
 
--- either event_start_date or event_start_time is null
+-- event_start_date or event_start_time is null
 select id, event_start_date, event_start_time
 from event
 where event_start_date is null 
@@ -3191,28 +3302,31 @@ select event_end_date, count(*)
 from event
 group by event_end_date
 order by event_end_date;
--- DATA ISSUE: what does event_end_date of 96 (n=44) and 97 (n=23,164) mean?
 
 
 -- odd event_end_date
-select *
+select event_end_date, count(*)
 from event
-where (event_end_date REGEXP '^9' or event_end_date REGEXP '-9+');
+where (event_end_date REGEXP '^9' or event_end_date REGEXP '-9+')
+group by event_end_date
+order by event_end_date;
+-- DATA ISSUE (reported): what does event_end_date of 92 (n=2), 96 (n=44), and 97 (n=23,164) mean?
 
 
--- event_end_date frequency
+-- event_end_time frequency
 select event_end_time, count(*)
 from event
 group by event_end_time
 order by event_end_time;
--- DATA ISSUE: what does event_end_time of 96 (n=172) and 97 (n=23,167) mean?
--- DATA ISSUE: there's an event_end_time of 00:22. Does that make sense?
+-- DATA ISSUE (reported): there's an event_end_time of 00:22. Does that make sense?
+
 
 -- odd event_end_time
 select event_end_time, count(*) n
 from event
 where (event_end_time REGEXP '^9' or event_end_time REGEXP ':9+')
 group by event_end_time;
+-- DATA ISSUE (reported): what does event_end_time of 96:96 (n=172) and 97:97 (n=23,167) mean?
 
 
 -- either event_end_date or event_end_time is null
@@ -3226,8 +3340,15 @@ where event_end_date is null
 
 -- EVENT_BREAKOFF -------------------------------------------------------------
 
-select event_breakoff, count(*) n from event group by event_breakoff;
 
+-- event_breakoff code list (-6 = Unknown, -4 = Missing in Error, -1 = Refused)
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl1'
+order by value;
+
+
+-- event_breakoff frequency
 select x.event_breakoff as event_breakoff_value,
    d.label as event_breakoff_description,
    count(x.id) as n
@@ -3237,33 +3358,52 @@ where type_name = 'confirm_type_cl1'
 group by x.event_breakoff;
 
 
+-- TODO: which event_type had event_breakoff
+
+
 -- EVENT_INCENTIVE_TYPE, EVENT_INCENT_CASH & EVENT_INCENT_NONCASH -------------
 
 
--- event_incentive_type
+-- event_incentive_type code list (-4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'incentive_type_cl1'
+order by value;
 
+
+-- event_incentive_type frequency
 select x.event_incentive_type as event_incentive_type_value,
    d.label as event_incentive_type_description,
    count(x.id) as n
 from event x left outer join
    xsd_enumeration_definition d on x.event_incentive_type = d.value
 where type_name = 'incentive_type_cl1'
-group by x.event_incentive_type;
+group by x.event_incentive_type
+order by x.event_incentive_type;
 
 
--- event_incent_cash
+-- event_incent_cash frequency
+select event_incent_cash, count(*) n 
+from event 
+group by event_incent_cash;
 
-select event_incent_cash, count(*) n from event group by event_incent_cash;
+
+-- event_incent_noncash frequency
+select if(event_incent_noncash = -7, 'Not Applicable', event_incent_noncash) event_incent_noncash, count(*) n 
+from event 
+group by event_incent_noncash;
 
 
--- event_incent_noncash
-select event_incent_noncash, count(*) n from event group by event_incent_noncash;
--- ISSUE: what is code = -7
+-- TODO: does event_incentive_type, event_incent_cash, and event_incent_noncash correlate?
 
 
 -- EVENT_COMMENT --------------------------------------------------------------
 
-select event_comment, count(*) n from event group by event_comment;
+
+-- event_comment frequency
+select event_comment, count(*) n 
+from event 
+group by event_comment;
 
 
 -- TRANSITION_TYPE ------------------------------------------------------------
@@ -4089,6 +4229,7 @@ select count(*) n from non_interview_rpt_vacant;
 
 show columns from incident;
 select count(*) n from incident;
+select * from incident;
 
 -- NOTE: no data
 
@@ -4100,6 +4241,7 @@ select count(*) n from incident;
 
 show columns from incident_media;
 select count(*) n from incident_media;
+select * from incident_media;
 
 -- NOTE: no data
 
@@ -4110,6 +4252,7 @@ select count(*) n from incident_media;
 
 show columns from incident_unanticipated;
 select count(*) n from incident_unanticipated;
+select * from incident_unanticipated;
 
 -- NOTE: no data
 
@@ -4367,7 +4510,7 @@ select consent_language_oth,
 	count(*) n
 from participant_consent
 group by consent_language_oth;
--- ISSUE: what does consent_language of -3 mean?
+-- DATA ISSUE (reported): what does consent_language of -3 mean?
 
 
 -- PERSON_WHO_CONSENTED_ID & WHO_CONSENTED ------------------------------------------
@@ -4415,7 +4558,7 @@ select person_wthdrw_consent_id, count(*) n
 from participant_consent
 group by person_wthdrw_consent_id
 order by count(*) desc;
--- ISSUE: what is person_wthdrw_consent_id of -7
+-- DATA ISSUE (reported): what is person_wthdrw_consent_id of -7
 
 
 -- person_wthdrw_consent_id is null
@@ -4467,7 +4610,7 @@ select consent_comments, count(*) n
 from participant_consent
 group by consent_comments
 order by count(*) desc;
--- ISSUE: what is consent_comment = -3
+-- DATA ISSUE (reported): what is consent_comment = -3
 
 
 -- CONTACT_ID -----------------------------------------------------------------------
@@ -4725,7 +4868,7 @@ select tsu_id from outreach where tsu_id is null;
 -- SSU_ID ---------------------------------------------------------------------------
 
 select ssu_id, count(*) n from outreach group by ssu_id order by count(*);
--- ISSUE: why is there ssu_id = -7 (n=3)
+-- DATA ISSUE (reported): why is there ssu_id = -7 (n=3)
 
 select ssu_id from outreach where ssu_id is null;
 
@@ -4890,7 +5033,7 @@ select outreach_lang2, count(*)
 from outreach
 group by outreach_lang2;
 
--- ISSUE: why are all outreach_lang2 null, when outreach_lang1 suggust some outreach was language specific?
+-- DATA ISSUE (reported): why are all outreach_lang2 null, when outreach_lang1 suggust some outreach was language specific?
 
 
 -- outreach_lang_oth
@@ -4940,7 +5083,7 @@ select outreach_race2, count(*)
 from outreach
 group by outreach_race2;
 
--- ISSUE: outreach_race2 is null, but outreach_race1 suggust some outreach was specific to a race
+-- DATA ISSUE (reported): outreach_race2 is null, but outreach_race1 suggust some outreach was specific to a race
 
 
 -- outreach_lang_oth
@@ -5661,7 +5804,7 @@ select staff_yob, count(*) n
 from staff 
 group by staff_yob
 order by staff_yob desc;
--- MDES ISSUE: what does a year of that 9666 (n=29) mean?
+-- MDES ISSUE (reported): what does a year of that 9666 (n=29) mean?
 
 
 -- STAFF_AGE_RANGE ------------------------------------------------------------------
@@ -5683,7 +5826,7 @@ from staff x left outer join
 where type_name = 'age_range_cl1'
 group by x.staff_age_range
 order by d.value;
--- DATA ISSUE: is 'Missing in Error' staff_age_range (n=25) acceptable?
+-- DATA ISSUE (reported): is 'Missing in Error' staff_age_range (n=25) acceptable?
 
 
 -- STAFF_GENDER ---------------------------------------------------------------------
@@ -5704,7 +5847,7 @@ from staff x left outer join
    xsd_enumeration_definition d on x.staff_gender = d.value
 where type_name = 'gender_cl1'
 group by x.staff_gender;
--- DATA ISSUE: is 'Missing in Error" staff_gender (n=25) acceptable?
+-- DATA ISSUE (reported): is 'Missing in Error" staff_gender (n=25) acceptable?
 
 
 -- STAFF_RACE & STAFF_RACE_OTH ------------------------------------------------------
@@ -5715,7 +5858,7 @@ select *
 from xsd_enumeration_definition 
 where type_name = 'race_cl1'
 order by value;
--- DATA ISSUE: what is the difference between UNKNOWN and MISSING IN ERROR staff_race?  
+-- DATA ISSUE (reported): what is the difference between UNKNOWN and MISSING IN ERROR staff_race?  
 
 
 -- staff_race combined list (staff_race + staff_race_oth)
@@ -5774,7 +5917,7 @@ select *
 from xsd_enumeration_definition 
 where type_name = 'ethnicity_cl1'
 order by value;
--- MDES ISSUE: what is the difference between staff_ethnicity UNKNOWN and MISSING IN ERROR 
+-- MDES ISSUE (reported): what is the difference between staff_ethnicity UNKNOWN and MISSING IN ERROR 
 
 
 -- staff_ethnicity frequency
@@ -5946,7 +6089,7 @@ from staff_cert_training x left outer join
    xsd_enumeration_definition d on x.staff_bgcheck_lvl = d.value
 where type_name = 'background_chck_lvl_cl1'
 group by x.staff_bgcheck_lvl;
--- DATA ISSUE: is staff_bgcheck_lvl of MISSING IN ERROR (n=506) appropriate?
+-- DATA ISSUE (reported): is staff_bgcheck_lvl of MISSING IN ERROR (n=506) acceptable?
 
 
 -- cert_train_type that do have staff_bgcheck_lvl
@@ -5966,7 +6109,7 @@ from
 	) b left outer join
 	xsd_enumeration_definition d on b.cert_train_type_value = d.value
 where d.type_name = 'certificate_type_cl1';
--- DATA ISSUE: is it possible that a cert_train_type can have multiple staff_bgcheck_lvl?
+-- DATA ISSUE (reported): is it possible that a cert_train_type can have multiple staff_bgcheck_lvl?
 
 
 -- CERT_TYPE_FREQUENCY --------------------------------------------------------------
@@ -5994,7 +6137,7 @@ select cert_type_exp_date, count(*) n
 from staff_cert_training
 group by cert_type_exp_date
 order by cert_type_exp_date desc;
--- DATA ISSUE: what does a cert_type_exp_date of '9777-97-97' mean?
+-- DATA ISSUE (reported): what does a cert_type_exp_date of '9777-97-97' mean?
 
 
 -- CERT_COMMENT ---------------------------------------------------------------------
@@ -6147,7 +6290,7 @@ select weekly_exp_id, count(*) n
 from staff_weekly_expense
 group by weekly_exp_id
 order by weekly_exp_id desc;
--- DATA ISSUE: weekly_exp_id does not follow the same convention. 
+-- DATA ISSUE (reported): weekly_exp_id does not follow the same convention. 
 	-- There seems to be two convention types: 20000048_995 and 20000048_NCS3LS13_2010-10-17, 
 	-- the later being the psu + staff_id + week_start_date
 
@@ -6215,7 +6358,7 @@ select staff_hours, count(*) n
 from staff_weekly_expense
 group by staff_hours
 order by staff_hours desc;
--- DATA ISSUE: is it possibe to have zero staff_hours here (n=12)?
+-- DATA ISSUE (reported): is it possibe to have zero staff_hours here (n=12)?
 
 -- STAFF_EXPENSES -------------------------------------------------------------------
 
@@ -6225,7 +6368,7 @@ select staff_expenses, count(*) n
 from staff_weekly_expense
 group by staff_expenses
 order by staff_expenses desc;
--- DATA ISSUE: is it possible to have zero staff_expenses (n=6796)?
+-- DATA ISSUE (reported): is it possible to have zero staff_expenses (n=6796)?
 
 
 -- STAFF_MILES ----------------------------------------------------------------------
@@ -6244,7 +6387,7 @@ select weekly_expenses_comment, count(*) n
 from staff_weekly_expense
 group by weekly_expenses_comment
 order by weekly_expenses_comment desc;
--- DATA ISSUE: what does weekly_expenses_comment of -7 mean?
+-- DATA ISSUE (reported): what does weekly_expenses_comment of -7 mean?
 
 
 -- TRANSACTION_TYPE -----------------------------------------------------------------
@@ -6267,8 +6410,8 @@ select * from staff_exp_data_cllctn_tasks;
 
 -- STAFF_EXP_DATA_COLL_TASK_ID ------------------------------------------------------
 
--- DATA ISSUE: how is the staff (staff_id) linked data in this table?  
--- DATA ISSUE: what is the makeup of the staff_exp_data_coll_task_id (psu_id + staff_id + what date?)?
+-- DATA ISSUE (reported): how is the staff (staff_id) linked data in this table?  
+-- DATA ISSUE (reported): what is the makeup of the staff_exp_data_coll_task_id (psu_id + staff_id + what date?)?
 
 
 -- staff_exp_data_coll_task_id frequency
@@ -6276,7 +6419,7 @@ select staff_exp_data_coll_task_id, count(*) n
 from staff_exp_data_cllctn_tasks
 group by staff_exp_data_coll_task_id
 order by staff_exp_data_coll_task_id desc;
--- DATA ISSUE: what is the makeup of the staff_weekly_expense_id because it does not seem consistent (e.g., 20000048_RCSU90_2011-09-11, 20000048_1020)
+-- ?? DATA ISSUE: what is the makeup of the staff_weekly_expense_id because it does not seem consistent (e.g., 20000048_RCSU90_2011-09-11, 20000048_1020)
 
 
 -- staff_exp_data_coll_task_id is not unique
@@ -6299,7 +6442,7 @@ select staff_weekly_expense_id, count(*) n
 from staff_exp_data_cllctn_tasks
 group by staff_weekly_expense_id
 order by staff_weekly_expense_id desc;
--- DATA ISSUE: what is the makeup of the staff_weekly_expense_id because it does not seem consistent (e.g., 20000048_RCSU90_2011-09-11, 20000048_1020)
+-- ?? DATA ISSUE: what is the makeup of the staff_weekly_expense_id because it does not seem consistent (e.g., 20000048_RCSU90_2011-09-11, 20000048_1020)
 
 
 -- staff_exp_data_coll_task_id compared to staff_weekly_expense_id
@@ -6308,7 +6451,7 @@ from staff_exp_data_cllctn_tasks
 where staff_exp_data_coll_task_id = staff_weekly_expense_id
 group by staff_exp_data_coll_task_id, staff_weekly_expense_id
 order by count(*) desc;
--- DATA ISSUE: why is select staff_exp_data_coll_task_id the same as the staff_weekly_expense_id?
+-- DATA ISSUE (reported): why is select staff_exp_data_coll_task_id the same as the staff_weekly_expense_id?
 
 
 -- DATA_COLL_TASK_TYPE & DATA_COLL_TASK_TYPE_OTH ------------------------------------
@@ -6333,8 +6476,8 @@ from staff_exp_data_cllctn_tasks x left outer join
 where d.type_name = 'study_data_cllctn_tsk_type_cl1'
 group by x.data_coll_task_type, data_coll_task_type_oth
 order by x.data_coll_task_type;
--- DATA ISSUE: what is the difference between data_coll_task_type_oth 'Administrative task' versus 'Administrative tasks', and 'Trainimg' and 'Training'
--- MDES ISSUE: what does data_coll_task_type_oth = -4 mean?
+-- DATA ISSUE (reported): what is the difference between data_coll_task_type_oth 'Administrative task' versus 'Administrative tasks', and 'Trainimg' and 'Training'
+-- MDES ISSUE (reported): what does data_coll_task_type_oth = -4 mean?
 
 
 -- data_coll_task_type view
@@ -6370,7 +6513,7 @@ select data_coll_tasks_hrs, count(*) n
 from staff_exp_data_cllctn_tasks
 group by data_coll_tasks_hrs
 order by data_coll_tasks_hrs;
--- DATA ISSUE: what data_coll_tasks_hrs = -4 mean?
+-- DATA ISSUE (reported): what data_coll_tasks_hrs = -4 mean?
 
 
 -- which staff_exp_data_coll_task_id does not have reported data_coll_tasks_hrs?
@@ -6385,7 +6528,7 @@ select data_coll_task_cases, count(*) n
 from staff_exp_data_cllctn_tasks
 group by data_coll_task_cases
 order by data_coll_task_cases desc;
--- DATA ISSUE: what does data_coll_task_cases = -4 mean?
+-- DATA ISSUE (reported): what does data_coll_task_cases = -4 mean?
 
 
 -- DATA_COLL_TRANSMIT ---------------------------------------------------------------
@@ -6394,7 +6537,7 @@ select data_coll_transmit, count(*) n
 from staff_exp_data_cllctn_tasks
 group by data_coll_transmit
 order by data_coll_transmit desc;
--- DATA ISSUE: what does data_coll_transmit = -7 mean?
+-- DATA ISSUE (reported): what does data_coll_transmit = -7 mean?
 
 
 -- DATA_COLL_TASK_COMMENT -----------------------------------------------------------
@@ -6403,7 +6546,7 @@ select data_coll_task_comment, count(*) n
 from staff_exp_data_cllctn_tasks
 group by data_coll_task_comment
 order by data_coll_task_comment desc;
--- DATA ISSUE: what does data_coll_task_comment = -7 mean?
+-- DATA ISSUE (reported): what does data_coll_task_comment = -7 mean?
 
 
 -- TRANSACTION_TYPE -----------------------------------------------------------------
@@ -6454,7 +6597,7 @@ select staff_weekly_expense_id, count(*) n
 from staff_exp_mngmnt_tasks
 group by staff_weekly_expense_id
 order by staff_weekly_expense_id desc;
--- DATA ISSUE: staff_weekly_expense_id does not consistently follow the same convention
+-- DATA ISSUE (reported): staff_weekly_expense_id does not consistently follow the same convention
 
 
 -- MGMT_TASK_TYPE & MGMT_TASK_TYPE_OTH ----------------------------------------------
@@ -6479,7 +6622,7 @@ from staff_exp_mngmnt_tasks x left outer join
 where d.type_name = 'study_mngmnt_tsk_type_cl1'
 group by x.mgmt_task_type, mgmt_task_type_oth
 order by count(*) desc;
--- DATA ISSUE: what is mgmt_task_type_oth of -4 (n=44)?
+-- DATA ISSUE (reported): what is mgmt_task_type_oth of -4 (n=44)?
 
 
 -- mgmt_task_type view
@@ -6523,7 +6666,7 @@ select mgmt_task_comment, count(*) n
 from staff_exp_mngmnt_tasks
 group by mgmt_task_comment
 order by mgmt_task_comment desc;
--- DATA ISSUE: what does a mgmt_task_comment of -7 mean?
+-- DATA ISSUE (reported): what does a mgmt_task_comment of -7 mean?
 
 
 -- TRANSACTION_TYPE -----------------------------------------------------------------
