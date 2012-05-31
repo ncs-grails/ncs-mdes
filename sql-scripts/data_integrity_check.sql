@@ -3684,6 +3684,7 @@ group by transaction_type;
 
 show columns from non_interview_rpt;
 select count(*) n from non_interview_rpt;
+select * from non_interview_rpt;
 
 
 -- PSU_ID ---------------------------------------------------------------------------
@@ -3703,38 +3704,31 @@ where type_name = 'psu_cl1'
 group by x.psu_id;
 
 
--- psu_id is not correct
-select * from non_interview_rpt where psu_id != 20000048;
-
-
 -- NIR_ID ---------------------------------------------------------------------------
 
 
--- frequency
-select nir_id, count(*) n from non_interview_rpt group by nir_id;
-select nir_id, count(*) n from non_interview_rpt group by nir_id limit 40;
-
-
--- multiple nir_ids
-
+-- nir_id is not unique
 select *
 from
-	(
-		select nir_id, count(*) n 
-		from non_interview_rpt 
-		group by nir_id
-	) r
-where r.n > 1;
+    (
+        select nir_id, count(*) n 
+        from non_interview_rpt 
+        group by nir_id
+    ) nir
+where nir.n > 1;
 
 
 -- CONTACT_ID -----------------------------------------------------------------------
 
+
 -- contact_id frequency
-select contact_id, count(*) n from non_interview_rpt group by contact_id;
+select contact_id, count(*) n 
+from non_interview_rpt 
+group by contact_id
+order by count(*) desc;
 
 
--- multiple contact_ids
-
+-- contact_id is not unique
 select *
 from
 	(
@@ -3749,14 +3743,19 @@ where r.n > 1;
 
 
 -- nir frequency
-select nir, count(*) n from non_interview_rpt group by nir order by count(*) desc;
--- TODO: nir by contact_id
+select nir, count(*) n 
+from non_interview_rpt 
+group by nir 
+order by count(*) desc;
 
 
 -- DU_ID ----------------------------------------------------------------------------
 
 -- du_id frequency
-select du_id, count(*) n from non_interview_rpt group by du_id order by count(*) desc;
+select du_id, count(*) n 
+from non_interview_rpt 
+group by du_id 
+order by count(*) desc;
 -- ISSUE: why are there 173 null du_id?
 
 
@@ -3764,7 +3763,10 @@ select du_id, count(*) n from non_interview_rpt group by du_id order by count(*)
 
 
 -- person_id frequency
-select person_id, count(*) n from non_interview_rpt group by person_id order by count(*) desc;
+select person_id, count(*) n 
+from non_interview_rpt 
+group by person_id 
+order by count(*) desc;
 -- ISSUE: why are there 150,778 missing person_ids
 -- gms: these are contacts with households... the person_id should be irrelevant
 
@@ -3772,17 +3774,19 @@ select person_id, count(*) n from non_interview_rpt group by person_id order by 
 -- NIR_VAC_INFO & NIR_VAC_INFO_OTH --------------------------------------------------
 
 
--- nir_vac_info code list
+-- nir_vac_info code list (-7 = Not Applicable, -5 = Other, -4 = Missing in Error)
 select *
 from xsd_enumeration_definition 
 where type_name = 'du_vacancy_info_source_cl1'
 order by value;
 
 
--- nir_vac_info frequency
-
+-- nir_vac_info combine list frequency
+    -- nir_vac_info (-7 = Not Applicable, -5 = Other, -4 = Missing in Error)
+    -- nir_vac_info_oth (-7 = Not Applicable)
 select x.nir_vac_info as nir_vac_info_value,
    d.label as nir_vac_info_description,
+    nir_vac_info_oth,
    count(x.id) as n
 from non_interview_rpt x left outer join
    xsd_enumeration_definition d on x.nir_vac_info = d.value
@@ -3790,38 +3794,25 @@ where type_name = 'du_vacancy_info_source_cl1'
 group by x.nir_vac_info;
 
 
--- nir_vac_info_oth frequency
-
-select nir_vac_info_oth, count(*) n from non_interview_rpt group by nir_vac_info_oth order by count(*) desc;
-
-
 -- NIR_NOACCESS & NIR_NOACCESS_OTH --------------------------------------------------
 
 
--- nir_noaccess code list
-
+-- nir_noaccess code list (-7 = Not Applicable, -5 = Other, -4 = Missing in Error)
 select *
 from xsd_enumeration_definition 
 where type_name = 'no_access_descr_cl1'
 order by value;
 
 
--- nir_noaccess frequency
-
+-- nir_noaccess combine list frequency
 select x.nir_noaccess as nir_noaccess_value,
-   d.label as nir_noaccess_description,
-   count(*) as n
+    d.label as nir_noaccess_description,
+    nir_noaccess_oth,
+    count(*) as n
 from non_interview_rpt x left outer join
    xsd_enumeration_definition d on x.nir_noaccess = d.value
 where type_name = 'no_access_descr_cl1'
 group by x.nir_noaccess;
-
-
--- nir_noaccess_oth
-
-select nir_noaccess_oth, count(*) n
-from non_interview_rpt 
-group by nir_noaccess_oth;
 
 
 -- NIR_ACCESS_ATTEMPT & NIR_ACCESS_ATTEMPT_OTH --------------------------------------
