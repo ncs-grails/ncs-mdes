@@ -4916,6 +4916,7 @@ select count(*) n from participant_rvis;
 
 show columns from outreach;
 select count(*) n from outreach;
+select * from outreach;
 
 
 -- PSU_ID ---------------------------------------------------------------------------
@@ -5011,12 +5012,16 @@ order by value;
     -- outreach_target_oth (-7 = Not Applicable)
 select x.outreach_target as outreach_target_value,
     d.label as outreach_target_description,
-    -- outreach_target_oth,
+    outreach_target_oth,
     count(*) as n
 from outreach x left outer join
    xsd_enumeration_definition d on x.outreach_target = d.value
 where d.type_name = 'outreach_target_cl1'
 group by x.outreach_target, outreach_target_oth;
+
+-- select outreach_target, outreach_target_oth, count(*) as n
+-- from outreach 
+-- group by outreach_target, outreach_target_oth;
 
 
 -- OUTREACH_MODE & OUTREACH_MODE_OTH ------------------------------------------------
@@ -5029,15 +5034,18 @@ where type_name = 'outreach_mode_cl1'
 order by value;
 
 
--- outreach_mode frequency
+-- outreach_mode combine list frequency
+	-- outreach_mode  (-5 = Other, -4 = Missing in Error)
+  -- outreach_mode_oth (-7 = Not Applicable)
 select x.outreach_mode as outreach_mode_value,
     d.label as outreach_mode_description,
-    x.outreach_mode_oth,
+    trim(x.outreach_mode_oth) as outreach_mode_oth,
     count(*) as n
 from outreach x left outer join
    xsd_enumeration_definition d on x.outreach_mode = d.value
 where d.type_name = 'outreach_mode_cl1'
 group by x.outreach_mode, x.outreach_mode_oth;
+-- DATA ISSUE: is it possible to have outreach_mode of Missing in Error (n=327)?
 
 
 -- OUTREACH_TYPE & OUTREACH_TYPE_OTH ------------------------------------------------
@@ -5050,10 +5058,12 @@ where type_name = 'outreach_type_cl1'
 order by value;
 
 
--- outreach_type frequency
+-- outreach_type combine list frequency
+	-- outreach_type (-5 = Other, -4 = Missing in Error)
+  -- outreach_type_oth (-7 = Not Applicable)
 select x.outreach_type as outreach_type_value,
     d.label as outreach_type_description,
-    x.outreach_mode_oth,
+    trim(outreach_mode_oth) as outreach_mode_oth,
     count(*) as n
 from outreach x left outer join
    xsd_enumeration_definition d on x.outreach_type = d.value
@@ -5079,6 +5089,7 @@ from outreach x left outer join
    xsd_enumeration_definition d on x.outreach_tailored = d.value
 where d.type_name = 'confirm_type_cl2'
 group by x.outreach_tailored;
+-- DATA ISSUE: if outreach_tailored = Yes (n=63), then why is outreach_target and outreach_target_oth both null?
 
 
 -- OUTREACH_LANG1, OUTREACH_LANG2, OUTREACH_LANG_OTH --------------------------------
@@ -5109,24 +5120,10 @@ order by value;
 
 
 -- outreach_lang2 frequency (-6 = Unknown, -5 = Other, -4 = Missing in Error, -1 = Refused)
-select x.outreach_lang2 as outreach_lang2_value,
-   d.label as outreach_lang2_description,
-   count(*) as n
-from outreach x left outer join
-   xsd_enumeration_definition d on x.outreach_lang2 = d.value
-where d.type_name = 'language_cl2'
-group by x.outreach_lang2;
-
-select outreach_lang2, count(*)
-from outreach
-group by outreach_lang2;
-
-
--- outreach_lang_oth frequency
-select outreach_lang_oth, count(*) n 
+select outreach_lang2, outreach_lang_oth, count(*) n 
 from outreach 
-group by outreach_lang_oth 
-order by outreach_lang_oth ;
+group by outreach_lang2, outreach_lang_oth 
+order by outreach_lang2, outreach_lang_oth ;
 
 
 -- data in outreach_lang1, outreach_lang2, and outreach_lang_oth corrobarate
@@ -5164,14 +5161,14 @@ from
     ) a
 group by a.is_lanaguage_specific_value, a.is_lanaguage_specific_description, a.language_value, a.language_description, a.language_oth;
 -- DATA ISSUE (reported): Of the 36 outreach_event_id in which outreach_lang1 = 1 (yes)
-    -- their outreach_lang2 = null, and 
-    -- their outreach_lang_oth = -7 (Not Applicable)
+    -- 36 indicates outreach_lang2 = null, and 
+    -- 25 indicates outreach_lang_oth = -7 (Not Applicable)
 
 
 -- OUTREACH_RACE1, OUTREACH_RACE2, OUTREACH_RACE_OTH --------------------------------
 
 
--- outreach_race1 code list
+-- outreach_race1 code list (-4 = Missing in Error, -3 = Legitimate Skip)
 select *
 from xsd_enumeration_definition 
 where type_name = 'confirm_type_cl6'
@@ -5188,7 +5185,7 @@ where d.type_name = 'confirm_type_cl6'
 group by x.outreach_race1;
 
 
--- outreach_race2 code list
+-- outreach_race2 code list (-7 = Not Applicable, -5 = Other, -4 = Missing in Error)
 select *
 from xsd_enumeration_definition 
 where type_name = 'race_cl3'
@@ -5208,7 +5205,7 @@ select outreach_race2, count(*)
 from outreach
 group by outreach_race2;
 
--- DATA ISSUE (reported): outreach_race2 is null, but outreach_race1 suggust some outreach was specific to a race
+-- DATA ISSUE (reported): outreach_race2 is null, but outreach_race1 (n=23) suggust some outreach was specific to a race
 
 
 -- outreach_lang_oth
@@ -5221,14 +5218,14 @@ order by outreach_race_oth ;
 -- OUTREACH_CULTURE1, OUTREACH_CULTURE2, OUTREACH_CULTURE_OTH -----------------------
 
 
--- outreach_culture1 code list
+-- outreach_culture1 code list (-4 = Missing in Error, -3 = Legitimate Skip)
 select *
 from xsd_enumeration_definition 
 where type_name = 'confirm_type_cl6'
 order by value;
 
 
--- outreach_culture1 frequency
+-- outreach_culture1 frequency  (-4 = Missing in Error, -3 = Legitimate Skip)
 select x.outreach_culture1 as outreach_culture1_value,
    d.label as outreach_culture1_description,
    count(*) as n
@@ -5236,16 +5233,17 @@ from outreach x left outer join
    xsd_enumeration_definition d on x.outreach_culture1 = d.value
 where d.type_name = 'confirm_type_cl6'
 group by x.outreach_culture1;
+-- DATA ISSUE: outreach_culture1 of 'Missing in Error" seems high (n = 327)
 
 
--- outreach_culture2 code list
+-- outreach_culture2 code list (-7 = Not Applicable, -5 = Other, -4 = Missing in Error)
 select *
 from xsd_enumeration_definition 
 where type_name = 'culture_cl1'
 order by value;
 
 
--- outreach_culture2 frequency
+-- outreach_culture2 frequency (-7 = Not Applicable, -5 = Other, -4 = Missing in Error)
 select x.outreach_culture2 as outreach_culture2_value,
    d.label as outreach_culture2_description,
    count(*) as n
@@ -5254,84 +5252,127 @@ from outreach x left outer join
 where d.type_name = 'culture_cl1'
 group by x.outreach_culture2;
 
-select outreach_culture2, count(*)
-from outreach
-group by outreach_culture2;
 
-
--- outreach_culture_oth
+-- outreach_culture_oth frequency
 select outreach_culture_oth, count(*) n 
 from outreach 
 group by outreach_culture_oth 
 order by outreach_culture_oth;
 
 
+-- outreach_culture1, outreach_culture2, and outreach_culture_oth corroberate
+select a.outreach_is_cultural_specific_value, 
+	a.outreach_is_cultural_specific_description,
+	a.outreach_culture_value, 
+	a.outreach_culture_description,
+	a.outreach_culture_oth, 
+	count(a.outreach_event_id) n
+from
+	(
+		select o.outreach_event_id, 
+			i.outreach_is_cultural_specific_value, 
+			i.outreach_is_cultural_specific_description,
+			c.outreach_culture_value, 
+			c.outreach_culture_description,
+			o.outreach_culture_oth
+		from outreach o left outer join
+			(
+				select x.outreach_event_id, 
+					x.outreach_culture1 as outreach_is_cultural_specific_value,
+					d.label as outreach_is_cultural_specific_description
+				from outreach x left outer join
+					xsd_enumeration_definition d on x.outreach_culture1 = d.value
+				where d.type_name = 'confirm_type_cl6'
+			) i on o.outreach_event_id = i.outreach_event_id left outer join
+			(
+				select outreach_event_id, 
+					x.outreach_culture2 as outreach_culture_value,
+					d.label as outreach_culture_description
+				from outreach x left outer join
+					xsd_enumeration_definition d on x.outreach_culture2 = d.value
+				where d.type_name = 'culture_cl1'
+			) c on o.outreach_event_id = c.outreach_event_id
+	) a
+group by a.outreach_is_cultural_specific_value, 
+	a.outreach_is_cultural_specific_description,
+	a.outreach_culture_value, 
+	a.outreach_culture_description,
+	a.outreach_culture_oth;
+-- DATA ISSUE: of 45 outreach_event_id, in which outreach_culture1 = No, 1 outreach_event_id indicates outreach_culture2 of 1.
+
+
 -- OUTREACH_QUANTITY ----------------------------------------------------------------
 
+
+-- outreach_quantity frequency
 select outreach_quantity, count(*) n 
 from outreach 
 group by outreach_quantity 
 order by outreach_quantity;
+-- MDES ISSUE: what is an outreach_quantity of -4 (n=2)
+
+
+-- TODO: outreach_quantity by outreach_mode & outreach_mode_oth) and outreach_type (& outreach_type_oth)
 
 
 -- OUTREACH_COST --------------------------------------------------------------------
 
+
+-- outreach_cost frequency
 select outreach_cost, count(*) n 
 from outreach 
 group by outreach_cost 
 order by outreach_cost;
 
 
+-- TODO: outreach_cost by outreach_quantity, outreach_mode & outreach_mode_oth) and outreach_type (& outreach_type_oth)
+
+
 -- OUTREACH_STAFFING ----------------------------------------------------------------
 
+
+-- outreach_staffing frequency
 select outreach_staffing, count(*) n 
 from outreach 
 group by outreach_staffing 
 order by outreach_staffing;
 
 
--- OUTREACH_INCIDENT ----------------------------------------------------------------
+-- TODO: outreach_staffing, outreach_cost, outreach_quantity, outreach_mode & outreach_mode_oth) and outreach_type (& outreach_type_oth)
 
--- outreach_incident code list
+
+-- OUTREACH_INCIDENT & INCIDENT_ID --------------------------------------------------
+
+
+-- outreach_incident code list (-4 = Missing in Error)
 select *
 from xsd_enumeration_definition 
 where type_name = 'confirm_type_cl2'
 order by value;
 
 
--- outreach_incident frequency
+-- outreach_incident frequency (-4 = Missing in Error)
 select x.outreach_incident as outreach_incident_value,
-   d.label as outreach_incident_description,
-   count(*) as n
+	d.label as outreach_incident_description,
+	incident_id, 
+	count(*) as n
 from outreach x left outer join
    xsd_enumeration_definition d on x.outreach_incident = d.value
 where d.type_name = 'confirm_type_cl2'
 group by x.outreach_incident;
 
-select outreach_incident, count(*)
-from outreach
-group by outreach_incident;
-
-
--- INCIDENT_ID ----------------------------------------------------------------------
-
-select incident_id, count(*) n 
-from outreach 
-group by incident_id 
-order by incident_id;
-
 
 -- OUTREACH_EVAL_RESULT -------------------------------------------------------------
 
 
--- outreach_eval_result code list
+-- outreach_eval_result code list (-4 = Missing in Error)
 select *
 from xsd_enumeration_definition 
 where type_name = 'success_level_cl1'
 order by value;
 
 
--- outreach_eval_result frequency
+-- outreach_eval_result frequency (-4 = Missing in Error)
 select x.outreach_eval_result as outreach_eval_result,
    d.label as eval_result_description,
    count(*) as n
@@ -5339,10 +5380,6 @@ from outreach x left outer join
    xsd_enumeration_definition d on x.outreach_eval_result = d.value
 where d.type_name = 'success_level_cl1'
 group by x.outreach_eval_result;
-
-select outreach_eval_result, count(*)
-from outreach
-group by outreach_eval_result;
 
 
 -- TRANSACTION_TYPE -----------------------------------------------------------------
@@ -5359,11 +5396,15 @@ group by transaction_type;
 
 show columns from outreach_eval;
 select count(*) n from outreach_eval;
+select * from outreach_eval;
+
 
 -- PSU_ID ---------------------------------------------------------------------------
 -- TODO (LOW-PRIORITY): get frequency
 
+
 -- OUTREACH_EVENT_EVAL_ID -----------------------------------------------------------
+
 
 -- outreach_event_eval_id frequency
 select outreach_event_eval_id, count(*) n 
@@ -5371,7 +5412,8 @@ from outreach_eval
 group by outreach_event_eval_id 
 order by outreach_event_eval_id;
 
--- outreach_event_eval_id is unique?
+
+-- outreach_event_eval_id is not unique?
 select *
 from
 	(
@@ -5381,6 +5423,7 @@ from
 		order by outreach_event_eval_id
 	) o
 where o.n > 1;
+
 
 -- outreach_event_eval_id is null
 select outreach_event_eval_id
@@ -5397,7 +5440,7 @@ from outreach_eval
 group by outreach_event_id 
 order by outreach_event_id;
 
--- outreach_event_id is unique?
+-- outreach_event_id is not unique?
 select *
 from
 	(
@@ -5417,28 +5460,23 @@ where outreach_event_id is null;
 -- OUTREACH_EVAL & OUTREACH_EVAL_OTH ------------------------------------------------
 
 
--- outreach_eval code list
+-- outreach_eval code list (-5 = Other, -4 = Missing in Error)
 select *
 from xsd_enumeration_definition 
 where type_name = 'outreach_eval_cl1'
 order by value;
 
 
--- outreach_eval frequency
+-- outreach_eval frequency (-5 = Other, -4 = Missing in Error)
 select x.outreach_eval as outreach_eval,
    d.label as outreach_eval_description,
+   x.outreach_eval_oth, 
    count(*) as n
 from outreach_eval  x left outer join
    xsd_enumeration_definition d on x.outreach_eval = d.value
 where d.type_name = 'outreach_eval_cl1'
-group by x.outreach_eval;
-
-
--- outreach_eval_oth frequency
-select outreach_eval_oth, count(*) n 
-from outreach_eval 
-group by outreach_eval_oth 
-order by outreach_eval_oth;
+group by x.outreach_eval, x.outreach_eval_oth;
+-- DATA ISSUE: outreach_eval of 'Missing in Error' (n=386) seems high?
 
 
 -- TRANSACTION_TYPE -----------------------------------------------------------------
@@ -5452,6 +5490,7 @@ order by outreach_eval_oth;
 
 show columns from outreach_lang2;
 select count(*) n from outreach_lang2;
+select * from outreach_lang2;
 
 -- PSU_ID ---------------------------------------------------------------------------
 -- TODO (LOW-PRIORITY): get frequency
