@@ -138,7 +138,7 @@ order by p_type_value;
 -- STATUS_INFO_SOURCE & STATUS_INFO_SOURCE_OTH --------------------------------------
 
 
--- status_info_source code list
+-- status_info_source code list (-5 = Other, -4 = Missing in Error)
 select *
 from xsd_enumeration_definition 
 where type_name = 'information_source_cl4'
@@ -146,51 +146,16 @@ order by value;
 
 
 -- status_info_source frequency
+    -- status_info_source (-5 = Other, -4 = Missing in Error)
+    -- status_info_source_oth (-7 = Not Applicable)
 select p.status_info_source as status_info_source_value,
    d.label as status_info_source_description,
+    p.status_info_source_oth, 
    count(p.id) as n
 from participant p left outer join
    xsd_enumeration_definition d on p.status_info_source = d.value
 where d.type_name = 'information_source_cl4'
-group by p.status_info_source;
-
-
--- status_info_source_oth frequency
-select status_info_source_oth as status_info_source_oth_value,
-   case 
-        when status_info_source_oth = -7 then 'Not Applicable' 
-        else status_info_source_oth 
-    end as status_info_source_oth_description,
-    count(*) n
-from participant
-group by status_info_source_oth;
-
-
--- status_info_source comprehensive list (status_info_source + status_info_source_oth)
-select status_info_source_value, status_info_source_description, count(* ) n
-from
-	(
-		select 
-			case 
-				when status_info_source < 0 then status_info_source_oth
-				else convert(status_info_source, char(2))
-			end as status_info_source_value,
-			case 
-				when status_info_source < 0 then 
-					(
-						case 
-							when status_info_source_oth = -7 then 'Not Applicable'
-							else status_info_source_oth
-						end
-					)
-				else d.label 
-			end as status_info_source_description
-		from participant p left outer join
-		   xsd_enumeration_definition d on p.status_info_source = d.value
-		where d.type_name = 'information_source_cl4'
-		order by d.value
-	) p
-group by status_info_source_value, status_info_source_description;
+group by p.status_info_source, p.status_info_source_oth;
 
 
 -- TODO: participant with a negative status (status_info_source + status_info_source_oth) 
@@ -199,32 +164,24 @@ group by status_info_source_value, status_info_source_description;
 -- STATUS_INFO_MODE & STATUS_INFO_MODE_OTH -------------------------------------------
 
 
--- status_info_mode code list
+-- status_info_mode code list  (-5 = Other, -4 = Missing in Error)
 select *
 from xsd_enumeration_definition 
 where type_name = 'contact_type_cl1'
 order by value;
 
 
--- status_info_mode frequency
+-- status_info_mode combined list frequency
+    -- status_info_mode (-5 = Other, -4 = Missing in Error)
+    -- status_info_mode_oth (-7 = Not Applicable)
 select p.status_info_mode as status_info_mode_value,
    d.label as status_info_mode_description,
-   count(p.id) as n
+   p.status_info_mode_oth, 
+    count(p.id) as n
 from participant p left outer join
    xsd_enumeration_definition d on p.status_info_mode = d.value
 where d.type_name = 'contact_type_cl1'
-group by p.status_info_mode;
-
-
--- status_info_mode_oth
-select status_info_mode_oth as status_info_mode_oth_value,
-   case
-       when status_info_mode_oth = -7 then 'Not Applicable'
-       else status_info_mode_oth
-   end as status_info_mode_oth_description,
-   count(*) n
-from participant
-group by status_info_mode_oth;
+group by p.status_info_mode, p.status_info_mode_oth;
 
 
 -- status_info_mode compreshensive list (status_info_mode + status_info_mode_oth)
@@ -264,7 +221,7 @@ group by status_info_mode_value, status_info_mode_description;
 select status_info_date, count(*) n 
 from participant 
 group by status_info_date 
-order by count(*) desc;
+order by status_info_date;
 
 
 -- which participant does not have a status_info_date?
@@ -273,10 +230,17 @@ from participant
 where status_info_date is null or status_info_date = '';
 
 
+-- status_info_date oddity
+select *
+from participant 
+where (status_info_date REGEXP '^9' or status_info_date REGEXP '-9+');
+-- MDES ISSUE: what is a status_info_date that contains '-92'?
+
+
 -- ENROLL_STATUS --------------------------------------------------------------------
 
 
--- enroll_status code list
+-- enroll_status code list (-4 = Missing in Error)
 select * 
 from xsd_enumeration_definition 
 where type_name = 'confirm_type_cl2'
@@ -301,46 +265,53 @@ select enroll_date, count(*) n
 from participant 
 group by enroll_date 
 order by count(*) desc;
+
+
+-- enroll_date oddity
+select enroll_date, count(*) n 
+from participant 
+where (enroll_date REGEXP '^9' or enroll_date REGEXP '-9+');
 -- DATA ISSUE (reported): 3485 with date of 9777-97-97
-
-
--- TODO: verify that all ENROLL_DATE a legitimate date
 
 
 -- participant with ENROLL_STATUS = yes (1), is missing ENROLL_DATE or has an invalid ENROLL_DATE
 select p_id, enroll_status, enroll_date 
 from participant 
-where enroll_status = 1 and (enroll_date is null or enroll_date = '' or enroll_date = '9777-97-97');
+where enroll_status = 1 
+    and (enroll_date is null or enroll_date = '' or enroll_date = '9777-97-97');
 
 
 -- participant with ENROLL_STATUS = no (2), but has an ENROLL_DATE
 select p_id, enroll_status, enroll_date
 from participant 
-where enroll_status = 2 and (not enroll_date is null or enroll_date != '');
+where enroll_status = 2 
+    and (not enroll_date is null or enroll_date != '');
 
 
 -- PID_ENTRY & PID_ENTRY_OTHER ------------------------------------------------------
 
 
--- pid_entry code list
+-- pid_entry code list (-5 = Other, -4 = Missing in Error)
 select *
 from xsd_enumeration_definition d 
 where type_name = 'study_entry_method_cl1'
 order by value;
 
 
--- pid_entry frequency
+-- pid_entry combined list frequency
+    -- pid_entry (-5 = Other, -4 = Missing in Error)
+    -- pid_entry_other (-7 = Not Applicable)
 select p.pid_entry as pid_entry_value,
    d.label as pid_entry_description,
+    p.pid_entry_other, 
    count(p.id) as n
 from participant p left outer join
    xsd_enumeration_definition d on p.pid_entry = d.value
 where d.type_name = 'study_entry_method_cl1'
-group by p.pid_entry;
+group by p.pid_entry, p.pid_entry_other;
 
 
--- pid_entry_other frequency
-
+-- pid_entry_other frequency (-7 = Not Applicable)
 select pid_entry_other as pid_entry_other_value,
    case
        when pid_entry_other = -7 then 'Not Applicable'
@@ -351,7 +322,7 @@ from participant
 group by pid_entry_other;
 
 
--- ANALYSIS: pid_entry compreshensive list (pid_entry + pid_entry_other)
+-- pid_entry compreshensive list (pid_entry + pid_entry_other)
 select pid_entry_value, pid_entry_description, count(* ) n
 from
 	(
@@ -453,11 +424,12 @@ group by transaction_type;
 
 show columns from link_person_participant;
 select count(*) n from link_person_participant;
+select * from link_person_participant;
 
 
 -- PSU_ID ---------------------------------------------------------------------------
 
--- count frequency
+-- psu_id frequency
 select l.psu_id as psu_id_value, d.label as psu_id_description, count(l.id) as n
 from link_person_participant l left outer join
    xsd_enumeration_definition d on l.psu_id = d.value
@@ -472,6 +444,7 @@ select person_pid_id, count(*) n
 from link_person_participant 
 group by person_pid_id;
 
+
 -- person_pid_id is not unique
 select *
 from 
@@ -481,6 +454,12 @@ from
         group by person_pid_id 
     ) l
 where l.n > 1;
+
+
+-- person_pid_id is null
+select *
+from link_person_participant 
+where person_pid_id is null or person_pid_id = '';
 
 
 -- P_ID -----------------------------------------------------------------------------
@@ -505,10 +484,9 @@ from
 where l.n > 1;
 
 -- p_id is null
-select p_id, count(*) n 
+select *
 from link_person_participant 
-where p_id is null
-group by p_id ;
+where p_id is null or p_id = '';
 
 
 -- PERSON_ID ------------------------------------------------------------------------
@@ -524,7 +502,7 @@ order by count(*) desc;
 -- person_id is null
 select person_id
 from link_person_participant 
-where person_id is null
+where person_id is null or person_id = ''
 order by person_id; 
 
 
@@ -542,58 +520,38 @@ where l.n > 1;
 -- RELATION & RELATION_OTH ----------------------------------------------------------
 
 
--- relation
+-- relation code list (-5 = Other, -4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'person_partcpnt_reltnshp_cl1'
+order by value;
+
+
+-- relation combined list frequency
+    -- relation (-5 = Other, -4 = Missing in Error)
+    -- relation_oth (-7 = Not Applicable)
 select l.relation as relation_value,
    d.label as relation_description,
+    l.relation_oth, 
    count(l.id) as n
 from link_person_participant l left outer join
    xsd_enumeration_definition d on l.relation = d.value
 where d.type_name = 'person_partcpnt_reltnshp_cl1'
-group by l.relation;
-
--- relation_oth
-select relation_oth as relation_oth_value,
-   case
-       when relation_oth = -7 then 'Not Applicable'
-       else relation_oth
-   end as relation_oth_description,
-   count(*) n
-from link_person_participant
-group by relation_oth;
-
-
--- relation compreshensive list (relation + relation_oth)
-select relation_value, relation_description, count(* ) n
-from
-	(
-		select 
-			case 
-				when relation < 0 then relation_oth
-				else convert(relation, char(2))
-			end as relation_value,
-			case 
-				when relation < 0 then 
-					(
-						case 
-							when relation_oth = -7 then 'Not Applicable'
-							else relation_oth
-						end
-					)
-				else d.label 
-			end as relation_description
-		from link_person_participant p left outer join
-		   xsd_enumeration_definition d on p.relation = d.value
-		where d.type_name = 'person_partcpnt_reltnshp_cl1'
-		order by d.value
-	) p
-group by relation_value, relation_description;
+group by l.relation, l.relation_oth;
 -- DATA ISSUE (reported): 9 person to p_id relationship are 'Not Applicable'
 
 
 -- IS_ACTIVE ------------------------------------------------------------------------
 
 
--- is_active frequency
+-- is_active code list (-4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl2'
+order by value;
+
+
+-- is_active frequency (-4 = Missing in Error)
 select l.is_active as is_active_value,
    d.label as relation_description,
    count(l.id) as n
@@ -609,8 +567,8 @@ select l.is_active as is_active_value,
    count(l.id) as n
 from link_person_participant l left outer join
    xsd_enumeration_definition d on l.is_active = d.value
-where d.type_name = 'confirm_type_cl2' 
-	and l.is_active != 1 or l.is_active is null
+where (d.type_name = 'confirm_type_cl2')
+	and (l.is_active != 1 or l.is_active is null or l.is_active = '')
 group by l.is_active;
 
 
@@ -634,10 +592,6 @@ group by transaction_type;
 
 show columns from person;
 select count(*) n from person;
-
--- DATA ISSUE: according to Master Data Elements document, under the "Format Constraint" column, 
-    -- the FIRST_NAME, LAST_NAME, MIDDLE_NAME, & MIDDLE_NAME "is considred PII and should be left 
-    -- NULL or contain the following values: -7 (Not Applicable) which is not the case in the database.
 
 
 -- PSU_ID ---------------------------------------------------------------------------
@@ -672,17 +626,23 @@ from (
 ) p
 where p.n > 1;
 
+-- person_id is null
+select person_id, count(*) 
+from person 
+where person_id is null or person_id = '';
+
 
 -- PREFIX ---------------------------------------------------------------------------
 
 
--- prefix code list
+-- prefix code list (-7 = Not Applicable, -4 = Missing in Error)
 select * 
 from xsd_enumeration_definition 
-where type_name = 'name_prefix_cl1';
+where type_name = 'name_prefix_cl1'
+order by value;
 
 
--- prefix frequency
+-- prefix frequency (-7 = Not Applicable, -4 = Missing in Error)
 select p.prefix as prefix_value, 
 	d.label as prefix_description, 
 	count(p.id) as n
@@ -718,7 +678,7 @@ where first_name is null or first_name = '';
 -- if first_name is null, what is person's middle and lastname
 select first_name, middle_name, last_name, count(*) n
 from person 
-where first_name is null
+where first_name is null or first_name = ''
 group by middle_name, last_name;
 -- DATA ISSUE: of 390 null first names, most do not have a middle or last name
 
@@ -753,7 +713,7 @@ group by last_name;
 -- last name is null
 select person_id, last_name, first_name, middle_name 
 from person 
-where last_name is null;
+where last_name is null or last_name = '';
 -- DATA ISSUE (reported): 3 last names that are null
 
 
@@ -769,28 +729,21 @@ group by p.last_name;
 
 
 -- MIDDLE NAME ----------------------------------------------------------------------
--- (-7 means 'not applicable')
 
 
--- middle_name frequency
+-- middle_name frequency (-7 = 'not applicable')
 select middle_name, count(*) n 
 from person 
 group by middle_name;
 
 
--- middle name is null
+-- middle name is null (-7 = 'not applicable')
 select count(*) n 
 from person 
-where middle_name is null;
+where middle_name is null or middle_name = '';
 
 
--- middle name is null (detailed list)
-select person_id, middle_name 
-from person 
-where middle_name is null;
-
-
--- middle names that have odd non-alpha characters (excludes single quote, hyphen, space, period)
+-- middle names that have odd non-alpha characters (excludes single quote, hyphen, space, period) (-7 = 'not applicable')
 select p.middle_name, count(*) n
 from
    (
@@ -803,9 +756,9 @@ group by p.middle_name;
 
 
 -- MAIDEN NAME ----------------------------------------------------------------------
--- (-7 means 'not applicable')
 
--- maiden_name frequency 
+
+-- maiden_name frequency (-7 = 'not applicable')
 select 
     case 
         when maiden_name = -7 then 'not applicable' 
@@ -815,16 +768,23 @@ from person
 group by maiden_name;
 
 
--- maiden_name is null
+-- maiden_name is null (-7 = 'not applicable')
 select maiden_name, count(*) n 
 from person 
-where maiden_name is null;
+where maiden_name is null or maiden_name = '';
 
 
 -- SUFFIX ---------------------------------------------------------------------------
 
 
--- suffix frequency 
+-- suffix code list (-7 = Not Applicable, -4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'name_suffix_cl1'
+order by value;
+
+
+-- suffix frequency (-7 = Not Applicable, -4 = Missing in Error)
 select suffix as suffix_value,
 	d.label as suffix_description, 
    	count(*) n
@@ -848,6 +808,13 @@ group by title;
 -- SEX ------------------------------------------------------------------------------
 
 
+-- sex code list (-6 = Unknown, -4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'gender_cl1'
+order by value;
+
+
 -- sex frequency
 select p.sex as sex_value, 
     d.label as sex_description, 
@@ -858,7 +825,7 @@ where d.type_name = 'gender_cl1'
 group by p.sex, d.label;
 
 
--- participant has UNKNOWN gender
+-- participant p_type whose gender is UNKNOWN 
 select a.p_type_value, a.p_type_description, count(*) n
 from
     (
@@ -875,12 +842,16 @@ from
         where p.sex = -6
     ) a
 group by a.p_type_value, a.p_type_description;
+-- DATA ISSUE: comparing participant.p_type with person.sex, is it possible that gender is UNKNOWN for:
+    -- 'Pregnant eligible women' (n=24)
+    -- 'High-Trier-eligible for Pre_pregnancy Visit' (n=3)
+    -- 'Age-eligible woman, ineligible for pre-pregnancy visit - being followed' (n=3)
 
 
 -- AGE ------------------------------------------------------------------------------
 
 
--- age frequency
+-- age frequency (-6 = Unknown, -4 = Missing in Error, -1 = Refused)
 select a.age, 
     case
         when a.age = -6 then 'Unknown'
@@ -895,43 +866,46 @@ from
         from person 
         group by age
     ) a
-;
+order by a.age;
 
 
--- participant has 0 (zero) age
-select a.p_type_value, a.p_type_description, count(*) n
+-- p_type of participant who has 0 (zero) age
+select a.p_type_value, a.p_type_description, a.p_type_oth, count(*) n
 from
     (
         select p.person_id, 
             par.p_id, 
             par.p_type as p_type_value, 
-            d.label as p_type_description, p.age
+            d.label as p_type_description, 
+            par.p_type_oth,
+            p.age
+        from person p inner join
+            link_person_participant l on p.person_id = l.person_id inner join
+            participant par on l.p_id = par.p_id left outer join
+            xsd_enumeration_definition d on par.p_type = d.value
+        where d.type_name = 'participant_type_cl1' 
+            and p.age = 0
+    ) a
+group by a.p_type_value, a.p_type_description, a.p_type_oth;
+
+
+-- p_type of participant who REFUSED age 
+select a.p_type_value, a.p_type_description, a.p_type_oth, count(*) n
+from
+    (
+        select p.person_id, 
+            par.p_id, 
+            par.p_type as p_type_value, 
+            d.label as p_type_description, 
+            par.p_type_oth, 
+            p.age
         from person p inner join
             link_person_participant l on p.person_id = l.person_id inner join
             participant par on l.p_id = par.p_id left outer join
             xsd_enumeration_definition d on par.p_type = d.value
         where d.type_name = 'participant_type_cl1' and p.age = -1
     ) a
-where a.age = 0
-group by a.p_type_value, a.p_type_description;
-
-
--- participant that REFUSED age 
-select a.p_type_value, a.p_type_description, count(*) n
-from
-    (
-        select p.person_id, 
-            par.p_id, 
-            par.p_type as p_type_value, 
-            d.label as p_type_description, p.age
-        from person p inner join
-            link_person_participant l on p.person_id = l.person_id inner join
-            participant par on l.p_id = par.p_id left outer join
-            xsd_enumeration_definition d on par.p_type = d.value
-        where d.type_name = 'participant_type_cl1' and p.age = -1
-    ) a
-where a.age = -1
-group by a.p_type_value, a.p_type_description;
+group by a.p_type_value, a.p_type_description, a.p_type_oth;
 -- DATA ISSUE: the following participant p_type refused age
     -- Other
     -- Missing in Error
@@ -939,46 +913,48 @@ group by a.p_type_value, a.p_type_description;
     -- High_Trier - eligible for Pre-Pregnancy Visit
 
 
--- participant has UNKNOWN age 
-select a.p_type_value, a.p_type_description, count(*) n
+-- p_type of participant whose age is UNKNOWN 
+select a.p_type_value, a.p_type_description, a.p_type_oth, count(*) n
 from
     (
         select p.person_id, 
             par.p_id, 
             par.p_type as p_type_value, 
-            d.label as p_type_description, p.age
+            d.label as p_type_description, 
+            par.p_type_oth,
+            p.age
         from person p inner join
             link_person_participant l on p.person_id = l.person_id inner join
             participant par on l.p_id = par.p_id left outer join
             xsd_enumeration_definition d on par.p_type = d.value
-        where d.type_name = 'participant_type_cl1' and p.age = -1
+        where d.type_name = 'participant_type_cl1' and p.age = -6
     ) a
-where a.age = -6
-group by a.p_type_value, a.p_type_description;
+group by a.p_type_value, a.p_type_description, a.p_type_oth;
 
 
--- participant has MISSING IN ERROR age
-select a.p_type_value, a.p_type_description, count(*) n
+-- p_type of participant whose age is MISSING IN ERROR 
+select a.p_type_value, a.p_type_description, a.p_type_oth, count(*) n
 from
     (
         select p.person_id, 
             par.p_id, 
             par.p_type as p_type_value, 
-            d.label as p_type_description, p.age
+            d.label as p_type_description, 
+            par.p_type_oth,
+            p.age
         from person p inner join
             link_person_participant l on p.person_id = l.person_id inner join
             participant par on l.p_id = par.p_id left outer join
             xsd_enumeration_definition d on par.p_type = d.value
-        where d.type_name = 'participant_type_cl1' and p.age = -1
+        where d.type_name = 'participant_type_cl1' and p.age = -4
     ) a
-where a.age = -4
-group by a.p_type_value, a.p_type_description;
+group by a.p_type_value, a.p_type_description, a.p_type_oth;
 
 
 -- AGE RANGE ------------------------------------------------------------------------
 
 
--- age_range code list
+-- age_range code list (-6 = Unknow, -4 = Missing in Error, -1 = Refused)
 select * 
 from xsd_enumeration_definition 
 where type_name = 'age_range_cl1'
@@ -986,7 +962,9 @@ order by value;
 
 
 -- age_range frequency
-select p.age_range as age_range_value, d.label as age_range_description, p.n
+select p.age_range as age_range_value, 
+    d.label as age_range_description, 
+    p.n
 from
    (
        select age_range, count(*) n
@@ -1010,22 +988,17 @@ from person
 group by person_dob;
 
 
--- TODO: which participants have an UNKNOWN person_dob
-select *
-from person
-where person_dob like '%96%'
--- where person_dob REGEXP '96+'
-; 
-
 -- TODO: COMPARE AGE, AGE_RAGE AND PERSON_DOB ----------------------------------------
 
 
 -- DECEASED -------------------------------------------------------------------------
 
--- deceased code list
+
+-- deceased code list (-4 = Missing in Error)
 select *
 from xsd_enumeration_definition
-where type_name = 'confirm_type_cl2';
+where type_name = 'confirm_type_cl2'
+order by value;
 
 
 -- deceased frequency
@@ -1042,20 +1015,20 @@ from
 where d.type_name = 'confirm_type_cl2';
 
 
--- TODO: of those decesed and UNKNOWN deceased, which are participants.
+-- TODO: of those deceased and UNKNOWN deceased, how many are participants.
 
 
 -- ETHNIC GROUP ---------------------------------------------------------------------
 
 
--- ethnic_group code list
+-- ethnic_group code list (-6 = Unknown, -4 = Missing in Error, -1 = Refused)
 select * 
 from xsd_enumeration_definition 
 where type_name = 'ethnicity_cl1'
 order by value;
 
 
--- ethnic_group frequency
+-- ethnic_group frequency (-6 = Unknown, -4 = Missing in Error, -1 = Refused)
 select p.ethnic_group as ethnic_group_value,
    d.label as ethnic_group_description,
    count(p.id) as n
@@ -1066,36 +1039,33 @@ group by p.ethnic_group;
 -- DATA ISSUE (reported): is 66% (6270/9515) UNKNOWN acceptable for ethnic group
 
 
--- PERSON_LANG ----------------------------------------------------------------------
+-- PERSON_LANG & PERSON_LANG_OTH ----------------------------------------------------
 
+
+-- person_lang code list (-6 = Unknown, -5 = Other, -4 = Missing in Error, -1 = Refused)
+select *
+from xsd_enumeration_definition 
+where type_name = 'language_cl2'
+order by value;
+
+-- person_lang frequency 
+    -- person_lang (-6 = Unknown, -5 = Other, -4 = Missing in Error, -1 = Refused)
+    -- person_lang_oth (-7 = Not Applicable)
 select p.person_lang as person_lang_value,
    d.label as person_lang_description,
+    p.person_lang_oth, 
    count(p.id) as n
 from person p left outer join
    xsd_enumeration_definition d on p.person_lang = d.value
 where d.type_name = 'language_cl2'
-group by p.person_lang;
-
-
--- PERSON_LANG_OTH ------------------------------------------------------------------
-
-select case 
-        when person_lang_oth = -7 then 'NOT APPLICABLE'
-        else person_lang_oth 
-    end as person_lang_oth_value, 
-    count(*)
-from person
-group by person_lang_oth;
+group by p.person_lang, p.person_lang_oth;
 -- DATA ISSUE (reported): what is person_lang_oth = -2
-
-
--- TODO: PERSON_LANG & PERSON_LANG_OTH comparison -----------------------------------
 
 
 -- MARISTAT & MARISTAT_OTH ----------------------------------------------------------
 
 
--- maristat code list
+-- maristat code list (-6 = Unknown, -5 = Other, -4 = Missing in Error, -1 = Refused)
 select *
 from xsd_enumeration_definition 
 where type_name = 'marital_status_cl1'
@@ -1103,33 +1073,23 @@ order by value;
 
 
 -- maristat frequency
+    -- maristat (-6 = Unknown, -5 = Other, -4 = Missing in Error, -1 = Refused)
+    -- maristat_oth (-7 = Not Applicable)
 select p.maristat as maristat_value,
    d.label as maristat_description,
+    p.maristat_oth, 
    count(p.id) as n
 from person p left outer join
    xsd_enumeration_definition d on p.maristat = d.value
 where type_name = 'marital_status_cl1'
-group by p.maristat
+group by p.maristat, maristat_oth
 order by p.maristat;
-
-
--- maristat_oth frequency
-select maristat_oth as maristat_oth_value,
-    case 
-        when maristat_oth = -7 then 'Not Applicable' 
-        else maristat_oth end as maristat_oth_description,
-    count(*) n
-from person
-group by maristat_oth;
-
-
--- TODO: what is maristat + maristat_oth of participants
 
 
 -- PREF_CONTACT & PREF_CONTACT_OTH --------------------------------------------------
 
 
--- pref_contact code list
+-- pref_contact code list (-5 = Other, -4 = Missing in Error)
 select *
 from xsd_enumeration_definition 
 where type_name = 'contact_type_cl1'
@@ -1137,37 +1097,29 @@ order by value;
 
 
 -- pref_contact frequency
+    -- pref_contact (-5 = Other, -4 = Missing in Error)
+    -- pref_contact_oth (-7 = Not Applicable)
 select p.pref_contact as pref_contact_value,
    d.label as pref_contact_description,
+    p.pref_contact_oth,
    count(p.id) as n
 from person p left outer join
    xsd_enumeration_definition d on p.pref_contact = d.value
 where d.type_name = 'contact_type_cl1'
-group by p.pref_contact;
-
-
--- pref_contact_oth frequency
-select pref_contact_oth as pref_contact_oth_value,
-    case 
-        when pref_contact_oth = -7 then 'Not Applicable' 
-        else pref_contact_oth 
-    end as pref_contact_oth_description,
-    count(*) n
-from person
-group by pref_contact_oth;
+group by p.pref_contact, p.pref_contact_oth;
 
 
 -- PLAN_MOVE, MOVE_INFO, NEW_ADDRESS_ID, WHEN_MOVE ----------------------------------
 
 
--- plan_move code list 
+-- plan_move code list (-6 = Unknown, -4 = Missing in Error, -1 = Refused)
 select *
 from xsd_enumeration_definition 
 where type_name = 'confirm_type_cl1'
 order by value;
 
 
--- plan_move frequncy
+-- plan_move frequncy (-6 = Unknown, -4 = Missing in Error, -1 = Refused)
 select p.plan_move as plan_move_value,
    d.label as plan_move_description,
    count(p.id) as n
@@ -1177,14 +1129,14 @@ where d.type_name = 'confirm_type_cl1'
 group by p.plan_move;
 
 
--- move_info code list
+-- move_info code list (-7 = Not Applicable, -4 = Missing in Error)
 select *
 from xsd_enumeration_definition 
 where type_name = 'moving_plan_cl1'
 order by value;
 
 
--- move_info frequncy
+-- move_info frequncy (-7 = Not Applicable, -4 = Missing in Error)
 select p.move_info as move_info_value,
    d.label as move_info_description,
    count(p.id) as n
@@ -1194,14 +1146,21 @@ where d.type_name = 'moving_plan_cl1'
 group by p.move_info;
 
 
--- new_address_id
+-- new_address_id frequency
 select new_address_id, count(*) n
 from person
 group by new_address_id;
+-- MDES ISSUE: what is a new_address_id of -3 (n=3512) and -7 (n=5975)
 
 
+-- when_move code list (-7 = Not Applicable, -6 = Unknown, -4 = Missing in Error, -1 = Refused)
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl4'
+order by value;
 
--- when_move
+
+-- when_move frequency (-7 = Not Applicable, -6 = Unknown, -4 = Missing in Error, -1 = Refused)
 select p.when_move as when_move_value,
    d.label as when_move_description,
    count(p.id) as n
@@ -1210,18 +1169,33 @@ from person p left outer join
 where d.type_name = 'confirm_type_cl4'
 group by p.when_move;
 
--- date_move
+
+-- date_move (-7 = Not Applicable, -6 = Unknown, -1 = Refused)
 select date_move, count(*) n
 from person
-group by date_move;
+group by date_move
+order by date_move;
 
 
--- TODO: plan_move, move_info, new_address_id, when_move & date_move
+-- date_move oddity (-7 = Not Applicable, -6 = Unknown, -1 = Refused)
+select date_move, count(*) n
+from person
+where (date_move REGEXP '^9' or date_move REGEXP '-9+');
+
+
+-- TODO: does plan_move, move_info, new_address_id, when_move & date_move corroberate?
 
 
 -- P_TRACING, P_INFO_SOURCE, P_INFO_SOURCE_OTH, P_INFO_DATE, P_INFO_UPDATE ----------
 
--- p_tracing
+-- p_tracing code list (-4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl2'
+order by value;
+
+
+-- p_tracing frequency
 select p.p_tracing as p_tracing_value,
    d.label as p_tracing_description,
    count(p.id) as n
@@ -1230,38 +1204,63 @@ from person p left outer join
 where d.type_name = 'confirm_type_cl2'
 group by p.p_tracing;
 
--- p_info_source
+
+-- p_info_source code list (-5 = Other, -4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'information_source_cl4'
+order by value;
+
+
+-- p_info_source combined list frequency
+    -- p_info_source (-5 = Other, -4 = Missing in Error)
+    -- p_info_source_oth (-7 = Not Applicable)
 select p.p_info_source as p_p_info_source_value,
-   d.label as p_info_source_description,
-   count(p.id) as n
+    d.label as p_info_source_description,
+    p.p_info_source_oth, 
+    count(p.id) as n
 from person p left outer join
    xsd_enumeration_definition d on p.p_info_source = d.value
 where d.type_name = 'information_source_cl4'
-group by p.p_info_source;
+group by p.p_info_source, p.p_info_source_oth;
 
--- p_info_source_oth
-select p_info_source_oth as p_info_source_oth_value,
-   case when p_info_source_oth = -7 then 'Not Applicable' else p_info_source_oth end as p_info_source_oth_description,
-   count(*) n
-from person
-group by p_info_source_oth;
 
--- p_info_date
-select p_info_date as p_info_date_value,
-   count(*) n
+-- p_info_date frequency
+select p_info_date as p_info_date_value, count(*) n
 from person
-group by p_info_date;
+where (p_info_date REGEXP '^9' or p_info_date REGEXP '-9+')
+order by p_info_date;
 
--- p_info_update
-select p_info_update as p_info_update_value,
-   count(*) n
+
+-- p_info_date oddity
+select p_info_date, count(*) n
 from person
-group by p_info_update;
+where (p_info_date REGEXP '^9' or p_info_date REGEXP '-9+')
+group by p_info_date
+order by p_info_date;
+-- MDES ISSUE: what is p_info_date of 9777-97-97 mean?
+
+
+-- p_info_update frequency
+select p_info_update as p_info_update_value, count(*) n
+from person
+group by p_info_update
+order by p_info_update;
+
+
+-- p_info_update oddity
+select p_info_update as p_info_update_value, count(*) n
+from person
+where (p_info_update REGEXP '^9' or p_info_update REGEXP '-9+')
+order by p_info_update;
+-- MDES ISSUE: what is p_info_update of 9777-97-97 mean?
+
 
 -- person_comment
 select person_comment, count(*) n
 from person
 group by person_comment;
+
 
 -- transaction_type
 select transaction_type, count(*) n
@@ -1275,6 +1274,7 @@ group by transaction_type;
 
 show columns from person_race;
 select count(*) n from person_race;
+select * from person_race;
 
 
 -- PSU_ID ---------------------------------------------------------------------------
@@ -1284,47 +1284,76 @@ from person_race
 group by psu_id
 order by count(*) desc;
 
--- psu_id  is not correct
-select * from
-person_race
-where psu_id != 20000048;
+
+-- PERSON_RACE_ID -------------------------------------------------------------------
+
+
+-- person_race_id is not unique
+select *
+from
+    (
+        select person_race_id, count(*) n
+        from person_race
+        group by person_race_id
+        order by count(*) desc
+    ) pr
+where pr.n > 1;
+
 
 -- PERSON_ID ------------------------------------------------------------------------
 
-select person_id, count(*)
+
+-- person_id frequency
+select person_id, count(*) n
 from person_race
 group by person_id
 order by count(*) desc;
 
+select *
+from person_race
+where person_id = '60289801';
+
+
+-- person_id is not unique
+select *
+from
+    (
+        select person_id, count(*) n
+        from person_race
+        group by person_id
+        order by count(*) desc
+    ) pr
+where pr.n > 1;
+
 
 -- RACE & RACE_OTH ------------------------------------------------------------------
 
--- race
+-- race code list (-6 = Unknown, -5 = Other, -4 = Missing in Error, -1 = Refused)
+select *
+from xsd_enumeration_definition 
+where type_name = 'race_cl1'
+order by value;
 
+
+-- race frequency
+    -- race (-6 = Unknown, -5 = Other, -4 = Missing in Error, -1 = Refused)
+    -- race_oth (-7 = Not Applicable)
 select r.race as race_value,
-   d.label as race_description,
-   count(r.id) as n
+    d.label as race_description,
+    r.race_oth, 
+    count(r.id) as n
 from person_race r left outer join
    xsd_enumeration_definition d on r.race = d.value
 where d.type_name = 'race_cl1'
-group by r.race;
+group by r.race, r.race_oth;
 
--- race_oth
-
-select race_oth as race_oth_value,
-   case
-       when race_oth = -7 then 'Not Applicable'
-       else race_oth
-   end as race_oth_description,
-   count(*) n
-from person_race
-group by race_oth;
 
 -- TRANSACTION TYPE -----------------------------------------------------------------
 
 select transaction_type, count(*) n
 from person_race
 group by transaction_type;
+
 
 
 /*************************************************************************************
@@ -2072,6 +2101,7 @@ group by transaction_type;
 
 show columns from telephone;
 select count(*) n from telephone;
+select * from telephone;
 
 
 -- PSU_ID ---------------------------------------------------------------------------
@@ -2090,150 +2120,191 @@ where d.type_name = 'psu_cl1'
 group by t.psu_id;
 
 
--- PERSON_ID ------------------------------------------------------------------------
-
-select person_id, count(*) n from telephone group by person_id order by count(*) desc;
-
-
 -- PHONE_ID -----------------------------------------------------------------------
 
-select phone_id, count(*) n from telephone group by phone_id order by count(*) desc;
+
+-- phone_id frequency
+select phone_id, count(*) n 
+from telephone 
+group by phone_id 
+order by count(*) desc;
+
+
+-- phone_id is not unique
+select *
+from
+    (
+        select phone_id, count(*) n 
+        from telephone 
+        group by phone_id     
+    ) t
+where t.n > 1;
+
+
+-- PERSON_ID ------------------------------------------------------------------------
+
+
+-- person_id frequency
+select person_id, count(*) n 
+from telephone 
+group by person_id 
+order by count(*) desc;
 
 
 -- INSTITUTE_ID ---------------------------------------------------------------------
 
--- ISSUE: no institute code list provded
-select institute_id, count(*) n from telephone group by institute_id order by count(*) desc;
+
+-- institute_id frequency
+select institute_id, count(*) n 
+from telephone 
+group by institute_id 
+order by count(*) desc;
 
 
 -- PROVIDER_ID ---------------------------------------------------------------------
 
--- ISSUE: no provider code list provded
-select provider_id, count(*) n from telephone group by provider_id order by count(*) desc;
+
+-- provider_id frequency
+select provider_id, count(*) n 
+from telephone 
+group by provider_id 
+order by count(*) desc;
 
 
 -- PHONE_INFO_SOURCE & PHONE_INFO_SOURCE_OTH ---------------------------------------
 
--- phone_info_source
 
+-- phone_info_source code list (-5 = Other, -4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'information_source_cl1'
+order by value;
+
+
+-- phone_info_source combine list frequency
+    -- phone_info_source (-5 = Other, -4 = Missing in Error)
+    -- phone_info_source_oth (-7 = Not Applicable)
 select t.phone_info_source as phone_info_source_value,
-   d.label as phone_info_source_description,
-   count(t.id) as n
+    d.label as phone_info_source_description,
+    t.phone_info_source_oth, 
+    count(t.id) as n
 from telephone t left outer join
    xsd_enumeration_definition d on t.phone_info_source = d.value
 where d.type_name = 'information_source_cl1'
-group by t.phone_info_source;
-
-
--- phone_info_source_oth
-
-select phone_info_source_oth as phone_info_source_oth_value,
-   case
-       when phone_info_source_oth = -7 then 'Not Applicable'
-       else phone_info_source_oth
-   end as phone_info_source_oth_description,
-   count(*) n
-from telephone
-group by phone_info_source_oth;
+group by t.phone_info_source, t.phone_info_source_oth;
 
 
 -- PHONE_INFO_DATE & PHONE_INFO_UPDATE ----------------------------------------------
 
--- phone_info_date
 
+-- phone_info_date frequency
 select phone_info_date, count(*) n
 from telephone
 group by phone_info_date
-order by count(*) desc;
+order by phone_info_date;
 
--- phone_info_update
 
+-- phone_info_date oddity
+select phone_info_date, count(*) n
+from telephone
+where (phone_info_date REGEXP '^9' or phone_info_date REGEXP '-9+');
+-- MDES ISSUE: what is a phone_info_date of 9222-92-92?
+
+
+-- phone_info_update frequency
 select phone_info_update, count(*) n
 from telephone
 group by phone_info_update
-order by count(*) desc;
+order by phone_info_update;
+
+
+-- phone_info_update oddity
+select phone_info_update, count(*) n
+from telephone
+where (phone_info_update REGEXP '^9' or phone_info_update REGEXP '-9+');
+-- MDES ISSUE: what is a phone_info_update of 9777-97-97?
 
 
 -- PHONE_NBR & PHONE_EXT ------------------------------------------------------------
 
--- phone_nbr
 
+-- phone_nbr frequency
 select phone_nbr, count(*) n
 from telephone
 group by phone_nbr
 order by count(*) desc;
 
-select phone_nbr, count(*) n
+
+-- phone_nbr is null
+select *
 from telephone
-where phone_nbr < 0
-group by phone_nbr
-order by count(*) desc;
+where phone_nbr is null or phone_nbr = '';
 
 
--- phone_ext
-
+-- phone_ext frequency
 select phone_ext, count(*) n
 from telephone
 group by phone_ext
 order by count(*) desc;
 
-select phone_ext, count(*) n
-from telephone
-where phone_ext < 0
-group by phone_ext
-order by count(*) desc;
+
+-- PHONE_TYPE & PHONE_TYPE_OTH --------------------------------------------------
 
 
--- EMAIL_TYPE & EMAIL_TYPE_OTH --------------------------------------------------
+-- phone_type code list (-6 = Unknown, -5 = Other, -4 = Missing in Error, -1 = Refused)
+select *
+from xsd_enumeration_definition 
+where type_name = 'phone_type_cl1'
+order by value;
 
--- phone_type
 
+-- phone_type frequency
+    -- phone_type (-6 = Unknown, -5 = Other, -4 = Missing in Error, -1 = Refused)
+    -- phone_type_oth (-7 = Not Applicable)
 select t.phone_type as phone_type_value,
-   d.label as phone_type_description,
-   count(t.id) as n
+    d.label as phone_type_description,
+    t.phone_type_oth, 
+    count(t.id) as n
 from telephone t left outer join
-   xsd_enumeration_definition d on t.phone_type = d.value
+    xsd_enumeration_definition d on t.phone_type = d.value
 where d.type_name = 'phone_type_cl1'
-group by t.phone_type;
-
--- phone_type_oth
-
-select phone_type_oth as phone_type_oth_value,
-   case
-       when phone_type_oth = -7 then 'Not Applicable'
-       else phone_type_oth
-   end as phone_type_oth_description,
-   count(*) n
-from telephone
-group by phone_type_oth;
+group by t.phone_type, t.phone_type_oth;
 
 
 -- PHONE_RANK & PHONE_RANK_OTH --------------------------------------------------
 
--- phone_rank
 
+-- phone_rank code list (-5 = Other, -4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'communication_rank_cl1'
+order by value;
+
+
+-- phone_rank frequency
+    -- phone_rank (-5 = Other, -4 = Missing in Error)
+    -- phone_rank_oth (-7 = Not Applicable)
 select t.phone_rank as phone_rank_value,
    d.label as phone_rank_description,
+    t.phone_rank_oth, 
    count(t.id) as n
 from telephone t left outer join
    xsd_enumeration_definition d on t.phone_rank = d.value
 where d.type_name = 'communication_rank_cl1'
-group by t.phone_rank;
-
--- phone_rank_oth
-
-select phone_rank_oth as phone_rank_oth_value,
-   case
-       when phone_rank_oth = -7 then 'Not Applicable'
-       else phone_rank_oth
-   end as phone_rank_oth_description,
-   count(*) n
-from telephone
-group by phone_rank_oth;
+group by t.phone_rank, t.phone_rank_oth;
 
 
 -- PHONE_LANDLINE ---------------------------------------------------------------
 
+
+-- phone_landline code list (-6 = Unknown, -4 = Missing in Error, -1 = Refused)
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl1'
+order by value;
+
+
+-- phone_landline (-6 = Unknown, -4 = Missing in Error, -1 = Refused)
 select t.phone_landline as phone_landline_value,
    d.label as phone_landline_description,
    count(t.id) as n
@@ -2245,6 +2316,15 @@ group by t.phone_landline;
 
 -- PHONE_SHARE ------------------------------------------------------------------
 
+
+-- phone_share code list (-4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl2'
+order by value;
+
+
+-- phone_share code frequency
 select t.phone_share as phone_share_value,
    d.label as phone_share_description,
    count(t.id) as n
@@ -2254,10 +2334,17 @@ where d.type_name = 'confirm_type_cl2'
 group by t.phone_share;
 
 
--- CELL_PERMISSION & TEXT_PERMISSION --------------------------------------------
+-- CELL_PERMISSION --------------------------------------------------------------
 
--- cell_permission
 
+-- cell_permission code list (-4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl2'
+order by value;
+
+
+-- cell_permission frequency (-4 = Missing in Error)
 select t.cell_permission as cell_permission_value,
    d.label as cell_permission_description,
    count(t.id) as n
@@ -2267,8 +2354,17 @@ where d.type_name = 'confirm_type_cl2'
 group by t.cell_permission;
 
 
--- text_permission
+-- TEXT_PERMISSION --------------------------------------------------------------
 
+
+-- text_permission code list (-4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'confirm_type_cl2'
+order by value;
+
+
+-- text_permission frequency (-4 = Missing in Error)
 select t.text_permission as text_permission_value,
    d.label as text_permission_description,
    count(t.id) as n
@@ -2277,8 +2373,11 @@ from telephone t left outer join
 where d.type_name = 'confirm_type_cl2'
 group by t.text_permission;
 
+
 -- PHONE_COMMENT ----------------------------------------------------------------
 
+
+-- phone_comment frequency
 select phone_comment,
    count(*) as n
 from telephone 
@@ -2288,16 +2387,14 @@ group by phone_comment;
 -- PHONE_START_DATE & PHONE_START_DATE ------------------------------------------
 
 
--- phone_start_date
-
+-- phone_start_date (6 = Unknown, 4 = Missing in Error)
 select phone_start_date,
    count(*) as n
 from telephone 
 group by phone_start_date;
 
 
--- phone_end_date
-
+-- phone_end_date (6 = Unknown)
 select phone_end_date,
    count(*) as n
 from telephone 
@@ -2309,6 +2406,8 @@ group by phone_end_date;
 select transaction_type, count(*) n
 from telephone 
 group by transaction_type;
+
+
 
 /*************************************************************************************
  * table: ppg_details
@@ -2330,10 +2429,6 @@ from ppg_details p left outer join
    xsd_enumeration_definition d on p.psu_id = d.value
 where d.type_name = 'psu_cl1'
 group by p.psu_id;
-
-
--- psu_id is not correct
-select * from ppg_details where psu_id != 20000048;
 
 
 -- PPG_DETAILS_ID -------------------------------------------------------------------
@@ -2531,9 +2626,6 @@ from ppg_status_history p left outer join
    xsd_enumeration_definition d on p.psu_id = d.value
 where d.type_name = 'psu_cl1'
 group by p.psu_id;
-
--- psu_id  is not correct
-select * from ppg_status_history where psu_id != 20000048;
 
 
 -- PPG_HISTORY_ID -------------------------------------------------------------------
@@ -3289,7 +3381,7 @@ group by event_start_time;
 select id, event_start_date, event_start_time
 from event
 where event_start_date is null 
-	or event_start_date = ''
+    or event_start_date = ''
 	or event_start_time is null
 	or event_start_time = '';
 
@@ -3525,8 +3617,8 @@ select instrument_repeat_key, count(*) n from instrument group by instrument_rep
 -- missing ins_date_start or ins_start_time
 select id, ins_date_start, ins_start_time
 from instrument
-where ins_date_start is null
-	or ins_start_time is null;
+where ins_date_start is null or ins_date_start = ''
+	or ins_start_time is null or ins_start_time = '';
 
 
 -- INS_DATE_END & INS_END_TIME ------------------------------------------------------
@@ -3535,8 +3627,8 @@ where ins_date_start is null
 -- missing ins_date_end or ins_end_time
 select id, ins_date_end, ins_end_time
 from instrument
-where ins_date_end is null
-	or ins_end_time is null;
+where ins_date_end is null or ins_date_end = ''
+	or ins_end_time is null or ins_end_time = '';
 
 
 -- INS_BREAKOFF ---------------------------------------------------------------------
@@ -4259,6 +4351,7 @@ select * from incident_unanticipated;
 
 show columns from participant_auth;
 select count(*) n from participant_auth;
+select * from participant_auth;
 
 -- NOTE: no data yet
 
@@ -4381,7 +4474,7 @@ group by consent_expiration
 order by consent_expiration;
 
 
--- odd consent_expiration dates
+-- consent_expiration dates oddity
 select consent_expiration, count(*) n
 from participant_consent
 where consent_expiration REGEXP '^9' or consent_expiration REGEXP '-9+'
@@ -4639,6 +4732,7 @@ select contact_id, count(*) n
 from participant_consent
 group by contact_id
 order by count(*) desc;
+
 -- contact_id is null
 select contact_id, count(*) n
 from participant_consent
@@ -5428,7 +5522,7 @@ where o.n > 1;
 -- outreach_event_eval_id is null
 select outreach_event_eval_id
 from outreach_eval 
-where outreach_event_eval_id is null;
+where outreach_event_eval_id is null or outreach_event_eval_id = '';
 
 
 -- OUTREACH_EVENT_ID ----------------------------------------------------------------
@@ -5454,7 +5548,7 @@ where o.n > 1;
 -- outreach_event_id is null
 select outreach_event_id
 from outreach_eval 
-where outreach_event_id is null;
+where outreach_event_id is null or outreach_event_id = '';
 
 
 -- OUTREACH_EVAL & OUTREACH_EVAL_OTH ------------------------------------------------
@@ -5521,7 +5615,7 @@ where o.n > 1;
 -- outreach_lang2_id is null
 select outreach_lang2_id
 from outreach_lang2 
-where outreach_lang2_id is null;
+where outreach_lang2_id is null or outreach_lang2_id = '';
 
 
 -- OUTREACH_EVENT_ID ----------------------------------------------------------------
@@ -5549,20 +5643,20 @@ where o.n > 1;
 -- outreach_event_id is null
 select outreach_event_id
 from outreach_lang2 
-where outreach_event_id is null;
+where outreach_event_id is null or outreach_event_id = '';
 
 
 -- OUTREACH_LANG2 -------------------------------------------------------------------
 
 
--- outreach_lang2 code list
+-- outreach_lang2 code list (-6 = Unknown, -5 = Other, -4 = Missing in Error)
 select *
 from xsd_enumeration_definition 
 where type_name = 'language_cl2'
 order by value;
 
 
--- outreach_lang2 frequency
+-- outreach_lang2 frequency (-6 = Unknown, -5 = Other, -4 = Missing in Error)
 select x.outreach_lang2 as outreach_lang2,
    d.label as outreach_lang2_description,
    count(*) as n
@@ -5570,6 +5664,9 @@ from outreach_lang2 x left outer join
    xsd_enumeration_definition d on x.outreach_lang2 = d.value
 where d.type_name = 'language_cl2'
 group by x.outreach_lang2;
+
+
+-- TODO: does outreach_lang2.outreach_lang2 corroberate with outreach.lang1, - lang2, -lang_oth? 
 
 
 -- TRANSACTION_TYPE -----------------------------------------------------------------
@@ -5583,6 +5680,7 @@ group by x.outreach_lang2;
 
 show columns from outreach_race;
 select count(*) n from outreach_race;
+select * from outreach_race;
 
 
 -- PSU_ID ---------------------------------------------------------------------------
@@ -5591,15 +5689,20 @@ select count(*) n from outreach_race;
 
 -- OUTREACH_RACE_ID -----------------------------------------------------------------
 
+-- outreach_race_id frequency
 select outreach_race_id, count(*) n
 from outreach_race 
 group by outreach_race_id
 order by outreach_race_id desc;
 
+
+-- outreach_race_id is null
 select *
 from outreach_race 
-where outreach_race_id is null;
+where outreach_race_id is null or outreach_race_id = '';
 
+
+-- outreach_race_id is not unique
 select *
 from 
 	(
@@ -5612,15 +5715,21 @@ where o.n > 1;
 
 -- OUTREACH_EVENT_ID ----------------------------------------------------------------
 
+
+-- outreach_event_id frequency
 select outreach_event_id, count(*) n
 from outreach_race 
 group by outreach_event_id
 order by outreach_event_id desc;
 
+
+-- outreach_event_id is null
 select *
 from outreach_race 
-where outreach_event_id is null;
+where outreach_event_id is null or outreach_event_id = '';
 
+
+-- outreach_event_id is not unique
 select *
 from 
 	(
@@ -5634,33 +5743,27 @@ where o.n > 1;
 -- OUTREACH_RACE2 & OUTREACH_RACE_OTH -----------------------------------------------
 
 
--- outreach_race2 code list
+-- outreach_race2 code list (-7 = Not applicable, -5 = Other, -4 = Missing in Error)
 select *
 from xsd_enumeration_definition 
 where type_name = 'race_cl3'
 order by value;
 
 
--- outreach_race2 frequency
+-- outreach_race2 combine list frequency 
+    -- outreach_race2 (-7 = Not applicable, -5 = Other, -4 = Missing in Error)
+    -- outreach_race2_oth (-7 = Not applicable)
 select x.outreach_race2 as outreach_race2,
-   d.label as outreach_race2_description,
-   count(*) as n
+    d.label as outreach_race2_description,
+    x.outreach_race_oth, 
+    count(*) as n
 from outreach_race x left outer join
    xsd_enumeration_definition d on x.outreach_race2 = d.value
 where d.type_name = 'race_cl3'
-group by x.outreach_race2;
-
-select outreach_race2, count(*)
-from outreach_race
-group by outreach_race2;
+group by x.outreach_race2, x.outreach_race_oth;
 
 
--- OUTREACH_RACE_OTH ----------------------------------------------------------------
-
-select outreach_race_oth, count(*) n
-from outreach_race 
-group by outreach_race_oth
-order by outreach_race_oth desc;
+-- TODO: does outreach_race.outreach_race2 and -outreach_race_oth corroberate with outreach.outreach_race1 -race2, and race_oth?
 
 
 -- TRANSACTION_TYPE -----------------------------------------------------------------
@@ -5674,6 +5777,7 @@ order by outreach_race_oth desc;
 
 show columns from outreach_staff;
 select count(*) n from outreach_staff;
+select * from outreach_staff;
 
 -- PSU_ID ---------------------------------------------------------------------------
 -- TODO (LOW-PRIORITY): get frequency
@@ -5681,15 +5785,21 @@ select count(*) n from outreach_staff;
 
 -- OUTREACH_EVENT_STAFF_ID ----------------------------------------------------------
 
+
+-- outreach_event_staff_id frequency
 select outreach_event_staff_id, count(*) n
 from outreach_staff 
 group by outreach_event_staff_id
 order by outreach_event_staff_id desc;
 
+
+-- outreach_event_staff_id is null
 select *
 from outreach_staff 
-where outreach_event_staff_id is null;
+where outreach_event_staff_id is null or outreach_event_staff_id = '';
 
+
+-- outreach_event_staff_id is not unique
 select *
 from 
 	(
@@ -5709,7 +5819,7 @@ group by outreach_event_id;
 
 select *
 from outreach_staff 
-where outreach_event_id is null;
+where outreach_event_id is null or outreach_event_id = '';
 
 select *
 from 
@@ -5720,25 +5830,34 @@ from
 	) o
 where o.n > 1;
 
+select *
+from outreach_staff 
+where outreach_event_id = '20000048_1';
+
 
 -- STAFF_ID -------------------------------------------------------------------------
 
 
-select outreach_staff_id, count(*) n
+-- staff_id frequency
+select staff_id, count(*) n
 from outreach_staff 
-group by outreach_staff_id
-order by outreach_staff_id desc;
+group by staff_id
+order by staff_id desc;
 
+
+-- staff_id is null
 select *
 from outreach_staff 
-where outreach_staff_id is null;
+where staff_id is null or staff_id = '';
 
+
+-- staff_id is not unique
 select *
 from 
 	(
-		select outreach_staff_id, count(*) n
+		select staff_id, count(*) n
 		from outreach_staff 
-		group by outreach_staff_id
+		group by staff_id
 	) o
 where o.n > 1;
 
@@ -5761,15 +5880,21 @@ select count(*) n from outreach_target;
 
 -- OUTREACH_TARGET_ID ---------------------------------------------------------------
 
+
+-- outreach_target_id frequency
 select outreach_target_id, count(*) n
 from outreach_target 
 group by outreach_target_id
 order by count(*);
 
+
+-- outreach_target_id is null
 select *
 from outreach_target 
-where outreach_target_id is null;
+where outreach_target_id is null or outreach_target_id = '';
 
+
+-- outreach_target_id in not unique
 select *
 from 
 	(
@@ -5782,16 +5907,20 @@ where o.n > 1;
 
 -- OUTREACH_EVENT_ID ----------------------------------------------------------------
 
-
+-- outreach_event_id frequency
 select outreach_event_id, count(*) n
 from outreach_target 
 group by outreach_event_id
 order by count(*);
 
+
+-- outreach_event_id is null
 select *
 from outreach_target 
-where outreach_event_id is null;
+where outreach_event_id is null or outreach_event_id = '';
 
+
+-- outreach_event_id is not unique
 select *
 from 
 	(
@@ -5801,11 +5930,15 @@ from
 	) o
 where o.n > 1;
 
+select *
+from outreach_target 
+where outreach_event_id = '20000048_101';
+
 
 -- OUTREACH_TARGET_MS & OUTREACH_TARGET_MS_OTH --------------------------------------
 
 
--- outreach_target_ms code list
+-- outreach_target_ms code list (-5 = Other, -4 = Missing in Error)
 select *
 from xsd_enumeration_definition 
 where type_name = 'outreach_target_cl1'
@@ -5813,13 +5946,19 @@ order by value;
 
 
 -- outreach_race2 frequency
+    -- outreach_target_ms (-5 = Other, -4 = Missing in Error)
+    -- outreach_target_ms_oth (-7 = Not Applicable)
 select x.outreach_target_ms as outreach_target_ms,
-   d.label as outreach_target_ms_description,
-   count(*) as n
+    d.label as outreach_target_ms_description,
+    x.outreach_target_ms_oth, 
+    count(*) as n
 from outreach_target x left outer join
    xsd_enumeration_definition d on x.outreach_target_ms = d.value
 where d.type_name = 'outreach_target_cl1'
-group by x.outreach_target_ms;
+group by x.outreach_target_ms, x.outreach_target_ms_oth;
+
+
+-- TODO: does outreach_target.outreach_target (including outreach_target_oth) corroberate with outreach.target (including target_oth)
 
 
 -- TRANSACTION_TYPE -----------------------------------------------------------------
@@ -5851,6 +5990,7 @@ group by x.outreach_target_ms;
 
 show columns from staff;
 select count(*) n from staff;
+select * from staff;
 
 
 -- PSU_ID ---------------------------------------------------------------------------
@@ -6097,14 +6237,14 @@ group by x.staff_ethnicity;
 -- STAFF_EXP ------------------------------------------------------------------------
 
 
--- staff_exp code list
+-- staff_exp code list (-7 = Not Applicable, -4 = Missing in Error)
 select *
 from xsd_enumeration_definition 
 where type_name = 'experience_level_cl1'
 order by value;
 
 
--- staff_exp frequency
+-- staff_exp frequency (-7 = Not Applicable, -4 = Missing in Error)
 select x.staff_exp as staff_exp_value,
    d.label as staff_exp_description,
    count(*) as n
@@ -6838,3 +6978,237 @@ order by mgmt_task_comment desc;
  
 
 
+/*************************************************************************************
+ *
+ * 		INSTITUTION & PROVIDER 
+ *
+ * 		Institution: 
+ * 				institution (n=9)
+ * 				link_person_institute
+ * 				
+ * 		Provider: 
+ * 				provider
+ * 				provider_role
+ * 				link_person_provider
+ *
+ *************************************************************************************/
+
+
+
+
+/*************************************************************************************
+ * table: institution
+ *************************************************************************************/
+
+show columns from institution;
+select count(*) n from institution;
+select * from institution;
+
+
+-- PSU_ID ---------------------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
+
+
+-- INSTITUTUTE_ID -------------------------------------------------------------------
+
+
+-- institute_id is not unique
+select *
+from institution
+where institute_id is null or institute_id = '';
+
+
+-- INSTITUTUTE_NAME -----------------------------------------------------------------
+
+
+-- institute_name frequency
+select institute_name, count(*) n
+from institution
+group by institute_name;
+
+
+-- institute_name is null
+select *
+from institution
+where institute_name is null or institute_name = '';
+
+
+-- INSTITUTUTE_TYPE & INSTITUTUTE_TYPE_OTH ------------------------------------------
+
+
+-- institute_type code list (-5 = Other, -4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'organization_type_cl1'
+order by value;
+
+
+-- institute_type combined list frequency
+    -- institute_type (-5 = Other, -4 = Missing in Error)
+    -- institute_type_oth (-7 = Not Applicable)
+select x.institute_type as institute_type_value,
+   d.label as institute_type_description,
+   x.institute_type_oth,
+   count(*) as n
+from institution x left outer join
+   xsd_enumeration_definition d on x.institute_type = d.value
+where d.type_name = 'organization_type_cl1'
+group by x.institute_type, x.institute_type_oth
+order by x.institute_type;
+
+
+-- INSTITUTUTE_RELATION & INSTITUTUTE_RELATION_OTH ----------------------------------
+
+
+-- institute_relation code list (-5 = Other, -4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'person_orgnztn_function_cl1'
+order by value;
+
+
+-- institute_relation combined list frequency
+    -- institute_relation (-5 = Other, -4 = Missing in Error)
+    -- institute_relation_oth (-7 = Not Applicable)
+select x.institute_relation as institute_relation_value,
+   d.label as institute_relation_description,
+   x.institute_relation_oth,
+   count(*) as n
+from institution x left outer join
+   xsd_enumeration_definition d on x.institute_relation = d.value
+where d.type_name = 'organization_type_cl1'
+group by x.institute_relation, x.institute_relation_oth
+order by x.institute_relation;
+
+
+-- INSTITUTUTE_OWNER & INSTITUTUTE_OWNER_OTH ----------------------------------------
+
+
+-- institute_owner code list (-5 = Other, -4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'organization_ownership_cl1'
+order by value;
+
+
+-- institute_owner combined list frequency
+    -- institute_owner (-5 = Other, -4 = Missing in Error)
+    -- institute_owner_oth (-7 = Not Applicable)
+select x.institute_owner as institute_owner_value,
+   d.label as institute_owner_description,
+   x.institute_owner_oth,
+   count(*) as n
+from institution x left outer join
+   xsd_enumeration_definition d on x.institute_owner = d.value
+where d.type_name = 'organization_ownership_cl1'
+group by x.institute_owner, x.institute_owner_oth
+order by x.institute_owner;
+
+
+-- INSTITUTUTE_SIZE -----------------------------------------------------------------
+
+
+-- institute_size frequency
+select institute_id, institute_name, institute_size
+from institution;
+
+
+-- institute_size is null
+select *
+from institution
+where institute_size is null or institute_size = '';
+
+
+-- INSTITUTUTE_UNIT & INSTITUTUTE_UNIT_OTH ------------------------------------------
+
+
+-- institute_unit code list (-5 = Other, -4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'organization_size_unit_cl1'
+order by value;
+
+
+-- institute_unit combined list frequency
+    -- institute_unit (-5 = Other, -4 = Missing in Error)
+    -- institute_unit_oth (-7 = Not Applicable)
+select x.institute_unit as institute_unit_value,
+   d.label as institute_unit_description,
+   x.institute_unit_oth,
+   count(*) as n
+from institution x left outer join
+   xsd_enumeration_definition d on x.institute_unit = d.value
+where d.type_name = 'organization_size_unit_cl1'
+group by x.institute_type, x.institute_unit_oth
+order by x.institute_unit;
+
+
+-- INSTITUTUTE_INFO_SOURCE & INSTITUTUTE_INFO_SOURCE_OTH ----------------------------
+
+
+-- institute_info_source code list (-5 = Other, -4 = Missing in Error)
+select *
+from xsd_enumeration_definition 
+where type_name = 'information_source_cl2'
+order by value;
+
+
+-- institute_info_source combined list frequency
+    -- institute_info_source (-5 = Other, -4 = Missing in Error)
+    -- institute_info_source_oth (-7 = Not Applicable)
+select x.institute_info_source as institute_info_source_value,
+   d.label as institute_info_source_description,
+   x.institute_info_source_oth,
+   count(*) as n
+from institution x left outer join
+   xsd_enumeration_definition d on x.institute_info_source = d.value
+where d.type_name = 'information_source_cl2'
+group by x.institute_info_source, x.institute_info_source_oth
+order by x.institute_info_source;
+
+
+-- INSTITUTUTE_INFO_DATE ------------------------------------------------------------
+
+-- institute_info_date frequency
+select institute_info_date, count(*) n
+from institution
+group by institute_info_date
+order by institute_info_date;
+
+
+-- phone_info_date oddity
+select institute_info_date, count(*) n
+from institution
+where (institute_info_date REGEXP '^9' or institute_info_date REGEXP '-9+');
+
+
+-- INSTITUTUTE_INFO_UPDATE ----------------------------------------------------------
+
+
+-- institute_info_update frequency
+select institute_info_update, count(*) n
+from institution
+group by institute_info_update
+order by institute_info_update;
+
+
+-- institute_info_update oddity
+select institute_info_update, count(*) n
+from institution
+where (institute_info_update REGEXP '^9' or institute_info_update REGEXP '-9+');
+-- MDES ISSUE: what is a institute_info_update of 9666-96-96?
+
+
+-- INSTITUTUTE_COMMENT --------------------------------------------------------------
+
+
+-- institute_comment frquency
+select institute_comment, count(*) n
+from institution 
+group by institute_comment
+order by institute_comment desc;
+-- MDES ISSUE: what is institute_comment of -7 mean?
+
+
+-- TRANSACTION_TYPE -----------------------------------------------------------------
+-- TODO (LOW-PRIORITY): get frequency
