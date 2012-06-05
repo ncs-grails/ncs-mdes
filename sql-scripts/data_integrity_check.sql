@@ -1,15 +1,37 @@
 Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 
 /*************************************************************************************
  * TABLES IN DB
  *************************************************************************************/
 
--- number of  tables in db (n=268)
+-- number of  tables in db (n=274)
 select count(*) from information_schema.tables where table_schema = 'ncs_mdes_prod';
 
--- row count per table  in db
-select table_name, table_rows from information_schema.tables where table_schema = 'ncs_mdes_prod';
-select table_name, table_rows from information_schema.tables where table_schema = 'ncs_mdes_prod' order by table_rows desc;
+-- row count per table in db
+select p0.table_name, 
+    p0.table_rows as p0, 
+    p1.table_rows as p1, 
+    convert(p1.table_rows - p0.table_rows, SIGNED) as diff
+from
+    (
+        select table_name, 
+            table_rows
+        from information_schema.tables 
+        where table_schema = 'ncs_mdes_prod'
+    ) p0 inner join
+    (
+        select table_name, 
+            table_rows
+        from information_schema.tables 
+        where table_schema = 'ncs_mdes_6_04'
+    ) p1 on p0.table_name = p1.table_name
+;
+
+
+
+
 
 -- detail of table structure per table in db
 select * from information_schema.tables where table_schema = 'ncs_mdes_prod';
@@ -18,7 +40,7 @@ select * from information_schema.tables where table_schema = 'ncs_mdes_prod';
 show columns from xsd_enumeration_definition;
 select * from xsd_enumeration_definition;
 
--- DATA ISSUE: mysql does not have a built in IsDate function. May need to build one or is this part of the import process since it is using grails?
+-- ISSUE: mysql does not have a built in IsDate function. May need to build one or is this part of the import process since it is using grails?
 -- SUGGUESTIONS: 
     -- build views for comprehensives lists
     -- check links to other tables
@@ -124,9 +146,7 @@ select p_type_value, p_type_description, p_type_oth, count(*) n
 from pType
 group by p_type_value, p_type_oth
 order by p_type_value;
--- DATA ISSUE (reported): p_type of 
-    -- NOT APPLICABLE (CODE = -7) (n=37)
-    -- UNKNOWN (n=488)
+-- ISSUE (reported): p_type of NOT APPLICABLE (n=37) and UNKNOWN (n=488)
 
 
 -- TODO: does participant.p_type = 'NCS Child)'(6) match up with link_person_participant.relation = 'Child' (8)
@@ -234,7 +254,7 @@ where status_info_date is null or status_info_date = '';
 select *
 from participant 
 where (status_info_date REGEXP '^9' or status_info_date REGEXP '-9+');
--- MDES ISSUE: what is a status_info_date that contains '-92'?
+-- ISSUE (reported): what is a status_info_date that contains '-92' (n=1)?
 
 
 -- ENROLL_STATUS --------------------------------------------------------------------
@@ -271,7 +291,7 @@ order by count(*) desc;
 select enroll_date, count(*) n 
 from participant 
 where (enroll_date REGEXP '^9' or enroll_date REGEXP '-9+');
--- DATA ISSUE (reported): 3485 with date of 9777-97-97
+-- ISSUE (reported): what is enroll_date of 9777-97-97 (n=3485)?
 
 
 -- participant with ENROLL_STATUS = yes (1), is missing ENROLL_DATE or has an invalid ENROLL_DATE
@@ -347,7 +367,7 @@ from
 		order by d.value
 	) p
 group by pid_entry_value, pid_entry_description;
--- DATA ISSUE (reported): for 3778/3853 participants, their p_entry/p_entry_other is -7 (Not Applicable) 
+-- ISSUE (reported): for 3778/3853 participants, their p_entry/p_entry_other is -7 (Not Applicable) 
 
 
 -- PID_AGE_ELIG ---------------------------------------------------------------------
@@ -361,7 +381,7 @@ from participant p left outer join
 where d.type_name = 'age_eligible_cl2'
 group by p.pid_age_elig
 order by p.pid_age_elig;
--- DATA ISSUE: why do some participants pid_age_elig is 
+-- ISSUE: why do some participants pid_age_elig is 
 -- 'Not Applicable' (n=75), 
 -- 'Unknown' (n=16)
 -- 'Missing in Error' (n=15)
@@ -538,7 +558,7 @@ from link_person_participant l left outer join
    xsd_enumeration_definition d on l.relation = d.value
 where d.type_name = 'person_partcpnt_reltnshp_cl1'
 group by l.relation, l.relation_oth;
--- DATA ISSUE (reported): 9 person to p_id relationship are 'Not Applicable'
+-- ISSUE (reported): person to p_id relationship are 'Not Applicable' (n=9)
 
 
 -- IS_ACTIVE ------------------------------------------------------------------------
@@ -612,7 +632,7 @@ group by p.psu_id;
 select person_id, count(*) 
 from person 
 group by person_id;
--- DATA ISSUE (reported): 
+-- ISSUE (reported): 
 	-- odd person_ids (-3 and -7)
 	-- why are some ids numeric only (1958907), while others are alphanumeric with a date appended (C7312012-02-24)?
 
@@ -650,7 +670,7 @@ from person p left outer join
 	xsd_enumeration_definition d on p.prefix = d.value
 where d.type_name = 'name_prefix_cl1'
 group by prefix;
--- DATA ISSUE (reported): all prefixes are "NA"
+-- ISSUE (reported): all prefixes are "NA"
 
 
 -- FIRST_NAME -----------------------------------------------------------------------
@@ -661,7 +681,7 @@ select first_name, count(*) n
 from person 
 group by first_name 
 order by first_name;
--- DATA ISSUES (reported): firstnames that are
+-- ISSUES (reported): firstnames that are
 	-- null (n=3900)
 	-- '-3' (n=22)
 	-- '26' (n=1)
@@ -672,7 +692,7 @@ order by first_name;
 select first_name, count(*) n
 from person 
 where first_name is null or first_name = '';
--- DATA ISSUE (reported): 3900 rows with null first_name
+-- ISSUE (reported): 3900 rows with null first_name
 
 
 -- if first_name is null, what is person's middle and lastname
@@ -680,7 +700,7 @@ select first_name, middle_name, last_name, count(*) n
 from person 
 where first_name is null or first_name = ''
 group by middle_name, last_name;
--- DATA ISSUE: of 390 null first names, most do not have a middle or last name
+-- ISSUE: of 390 null first names, most do not have a middle or last name
 
 
 -- first name has odd non-alpha characters (excludes single quote, hyphen, space)
@@ -692,7 +712,7 @@ from
 		where first_name not REGEXP "^[A-Za-z\\'\\ \\-]+$" 
    ) p
 group by p.first_name;
--- DATA ISSUE (reported): first name has parenthesis, period, comma, slash, and number
+-- ISSUE (reported): first name has parenthesis, period, comma, slash, and number
 
 
 -- first name contains a period (suggesting person has middle name) yet person also has middle
@@ -714,7 +734,7 @@ group by last_name;
 select person_id, last_name, first_name, middle_name 
 from person 
 where last_name is null or last_name = '';
--- DATA ISSUE (reported): 3 last names that are null
+-- ISSUE (reported): 3 last names that are null
 
 
 -- odd last names (excludes single quote, space and hypen)
@@ -842,7 +862,7 @@ from
         where p.sex = -6
     ) a
 group by a.p_type_value, a.p_type_description;
--- DATA ISSUE: comparing participant.p_type with person.sex, is it possible that gender is UNKNOWN for:
+-- ISSUE (reported): comparing participant.p_type with person.sex, is it possible that gender is UNKNOWN for:
     -- 'Pregnant eligible women' (n=24)
     -- 'High-Trier-eligible for Pre_pregnancy Visit' (n=3)
     -- 'Age-eligible woman, ineligible for pre-pregnancy visit - being followed' (n=3)
@@ -906,7 +926,7 @@ from
         where d.type_name = 'participant_type_cl1' and p.age = -1
     ) a
 group by a.p_type_value, a.p_type_description, a.p_type_oth;
--- DATA ISSUE: the following participant p_type refused age
+-- ISSUE: the following participant p_type refused age
     -- Other
     -- Missing in Error
     -- Age-eligible women, ineligible for pre-pregnancy visit - being followed
@@ -1036,7 +1056,7 @@ from person p left outer join
    xsd_enumeration_definition d on p.ethnic_group = d.value
 where d.type_name = 'ethnicity_cl1'
 group by p.ethnic_group;
--- DATA ISSUE (reported): is 66% (6270/9515) UNKNOWN acceptable for ethnic group
+-- ISSUE (reported): is 66% (6270/9515) UNKNOWN acceptable for ethnic group
 
 
 -- PERSON_LANG & PERSON_LANG_OTH ----------------------------------------------------
@@ -1059,7 +1079,7 @@ from person p left outer join
    xsd_enumeration_definition d on p.person_lang = d.value
 where d.type_name = 'language_cl2'
 group by p.person_lang, p.person_lang_oth;
--- DATA ISSUE (reported): what is person_lang_oth = -2
+-- ISSUE (reported): what is person_lang_oth = -2
 
 
 -- MARISTAT & MARISTAT_OTH ----------------------------------------------------------
@@ -1150,7 +1170,7 @@ group by p.move_info;
 select new_address_id, count(*) n
 from person
 group by new_address_id;
--- MDES ISSUE: what is a new_address_id of -3 (n=3512) and -7 (n=5975)
+-- ISSUE (reported): what is a new_address_id of -3 (n=3512) and -7 (n=5975)
 
 
 -- when_move code list (-7 = Not Applicable, -6 = Unknown, -4 = Missing in Error, -1 = Refused)
@@ -1238,7 +1258,7 @@ from person
 where (p_info_date REGEXP '^9' or p_info_date REGEXP '-9+')
 group by p_info_date
 order by p_info_date;
--- MDES ISSUE: what is p_info_date of 9777-97-97 mean?
+-- ISSUE (reported): what is p_info_date of 9777-97-97 mean?
 
 
 -- p_info_update frequency
@@ -1253,7 +1273,7 @@ select p_info_update as p_info_update_value, count(*) n
 from person
 where (p_info_update REGEXP '^9' or p_info_update REGEXP '-9+')
 order by p_info_update;
--- MDES ISSUE: what is p_info_update of 9777-97-97 mean?
+-- ISSUE (reported): what is p_info_update of 9777-97-97 mean?
 
 
 -- person_comment
@@ -1531,7 +1551,7 @@ from
         order by count(*) desc
     ) a
 where a.n > 1;
--- DATA ISSUE: is it possible for an address_id not linked to a person_id (30,752 have a null person_id)
+-- ISSUE (reported): is it possible for an address_id not linked to a person_id (30,752 have a null person_id)?
 
 -- select * from address where person_id = '60695801';
 
@@ -1555,7 +1575,7 @@ select provider_id, count(*) n
 from address 
 group by provider_id 
 order by count(*) desc;
--- DATA ISSUE (reported): what does provider_id of -3 and -7?
+-- ISSUE (reported): what does provider_id of -3 and -7?
 
 
 -- TODO: link provider_id to external table
@@ -1567,7 +1587,7 @@ select du_id, count(*) n
 from address 
 group by du_id 
 order by count(*) desc;
--- MDES ISSUE: what does a du_id of -7 (n=3900) mean?
+-- ISSUE (reported): what does a du_id of -7 (n=3900) mean?
 
 
 -- TODO: link du_id to external table
@@ -1659,7 +1679,7 @@ from address
 where address_info_date regexp '^9' or address_info_date regexp '-9+'
 group by address_info_date
 order by address_info_date;
--- DATA ISSUE: what is an address_info_date of 92 (n=1) and 97 (n=2) mean?
+-- ISSUE (reported): what is an address_info_date of 92 (n=1) and 97 (n=2) mean?
 
 
 -- address_info_update frequency
@@ -1675,7 +1695,7 @@ from address
 where address_info_update regexp '^9' or address_info_update regexp '-9+'
 group by address_info_update
 order by address_info_update;
--- DATA ISSUE: what is an address_info_update of 92 and 97 mean?
+-- ISSUE (reported): what is an address_info_update of 92 and 97 mean?
 
 
 -- ADDRESS_START_DATE & ADDRESS_END_DATE --------------------------------------------
@@ -1783,7 +1803,7 @@ select address_2,
 from address
 group by address_2
 order by count(*) desc;
--- DATA ISSUE (reported): what does an address_2 of -7 (n=3584) and 8 (n=1) mean?
+-- ISSUE (reported): what does an address_2 of -7 (n=3584) and 8 (n=1) mean?
 
 
 -- unit frequency
@@ -1798,7 +1818,7 @@ select unit,
 from address
 group by unit
 order by unit;
--- DATA ISSUE (reported): what does a unit of -3 (n=164) and -2 (n=1)
+-- ISSUE (reported): what does a unit of -3 (n=164) and -2 (n=1)
 
 
 -- city frequency
@@ -1806,7 +1826,7 @@ select city, count(*) n
 from address
 group by city
 order by city;
--- DATA ISSUE (reported): what does city of -2 (n=11), -3 (n=5) and -7 (n=12)
+-- ISSUE (reported): what does city of -2 (n=11), -3 (n=5) and -7 (n=12)
 
 
 -- state code list (-6 = Unknown, -4 = Missing in Error)
@@ -1832,7 +1852,7 @@ select zip, count(*) n
 from address
 group by zip
 order by zip;
--- DATA ISSUE: what is a zip of -1 (n=8), -2 (n=115), and -3 (n=7)
+-- ISSUE (reported): what is a zip of -1 (n=8), -2 (n=115), and -3 (n=7)?
 
 
 -- zip4
@@ -1840,7 +1860,7 @@ select zip4, count(*) n
 from address
 group by zip4
 order by zip4;
--- DATA ISSUE: wht is a zip4 of -1 (n=33), -2 (n=31), -3 (n=2) and -7 (n=457)
+-- ISSUE (reported): what is a zip4 of -1 (n=33), -2 (n=31), -3 (n=2) and -7 (n=457)
 
 
 -- ADDRESS_COMMENT --------------------------------------------------------------------------
@@ -1848,7 +1868,7 @@ select address_comment, count(*) n
 from address
 group by address_comment
 order by count(*) desc;
--- DATA ISSUE: what is an address_comment of -3 (n=2) mean?
+-- ISSUE (reported): what is an address_comment of -3 (n=2) mean?
 
 
 -- TRANSACTION TYPE -------------------------------------------------------------------------
@@ -1989,7 +2009,7 @@ from email
 where email_info_date regexp '^9' or email_info_date regexp '-9+'
 group by email_info_date
 order by email_info_date;
--- DATA ISSUE: what is does email_info_date of 92 mean?
+-- ISSUE (reported): what is does email_info_date of 92 (n=2) mean?
 
 
 -- email_info_update
@@ -2005,7 +2025,7 @@ from email
 where email_info_update regexp '^9' or email_info_update regexp '-9+'
 group by email_info_update
 order by email_info_update;
--- DATA ISSUE: what is does email_info_update of 97 mean?
+-- ISSUE (reported): what is does email_info_update of 97 (n=2631) mean?
 
 
 -- EMAIL_TYPE & EMAIL_TYPE_OTH --------------------------------------------------
@@ -2068,7 +2088,7 @@ group by e.email_active;
 select email_comment, count(*) n
 from email
 group by email_comment;
--- DATA ISSUE (reported): what does a comment of -7 mean, and how does that differ from NA?
+-- ISSUE (reported): what does a comment of -7 mean, and how does that differ from NA?
 
 
 -- EMAIL_START_DATE & EMAIL_END_DATE ------------------------------------------------
@@ -2208,7 +2228,7 @@ order by phone_info_date;
 select phone_info_date, count(*) n
 from telephone
 where (phone_info_date REGEXP '^9' or phone_info_date REGEXP '-9+');
--- MDES ISSUE: what is a phone_info_date of 9222-92-92?
+-- ISSUE (reported): what is a phone_info_date of 9222-92-92?
 
 
 -- phone_info_update frequency
@@ -2222,7 +2242,7 @@ order by phone_info_update;
 select phone_info_update, count(*) n
 from telephone
 where (phone_info_update REGEXP '^9' or phone_info_update REGEXP '-9+');
--- MDES ISSUE: what is a phone_info_update of 9777-97-97?
+-- ISSUE (reported): what is a phone_info_update of 9777-97-97?
 
 
 -- PHONE_NBR & PHONE_EXT ------------------------------------------------------------
@@ -2542,7 +2562,7 @@ where (orig_due_date REGEXP '^9' or orig_due_date REGEXP '-9+')
 	and (orig_due_date not like '%96%' and orig_due_date not like '%91%')
 group by orig_due_date
 order by orig_due_date;
--- DATA ISSUE (reported): what does orig_due_date containing 92 and 97 mean?
+-- ISSUE (reported): what does orig_due_date containing 92 and 97 mean?
 
 
 -- DUE_DATE_2 -----------------------------------------------------------------------
@@ -2569,7 +2589,7 @@ from ppg_details
 where (due_date_2 REGEXP '^9' or due_date_2 REGEXP '-9+') and (due_date_2 not like '%96%')
 group by due_date_2
 order by due_date_2;
--- DATA ISSUE (reported): what does a due_date_2 of 97 mean?
+-- ISSUE (reported): what does a due_date_2 of 97 mean?
 
 
 -- DUE_DATE_3 -----------------------------------------------------------------------
@@ -2596,7 +2616,7 @@ from ppg_details
 where (due_date_3 REGEXP '^9' or due_date_2 REGEXP '-9+') and (due_date_2 not like '%96%')
 group by due_date_3
 order by due_date_3;
--- DATA ISSUE (reported): what does a due_date_3 of 97 mean?
+-- ISSUE (reported): what does a due_date_3 of 97 mean?
 
 
 -- TRANSACTION TYPE -----------------------------------------------------------------
@@ -2636,7 +2656,7 @@ select ppg_history_id, count(*) n
 from ppg_status_history
 group by ppg_history_id 
 order by count(*) desc;
--- DATA ISSUE (reported): the value of ppg_history_id comprise of p_id + ? + ppg_status_date.  What is the middle data?
+-- ISSUE (reported): the value of ppg_history_id comprise of p_id + ? + ppg_status_date.  What is the middle data?
 
 
 -- ppg_history_id is not unique
@@ -2819,7 +2839,7 @@ select contact_id, count(*) n
 from link_contact 
 group by contact_id 
 order by count(*) desc;
--- DATA ISSUE (reported): what is the contact_id convention because some are 7-digits long 
+-- ISSUE (reported): what is the contact_id convention because some are 7-digits long 
 -- while others are digits followed by a date and time?
 
 -- select *
@@ -2835,7 +2855,7 @@ select contact_link_id, count(*) n
 from link_contact 
 group by contact_link_id 
 order by contact_link_id desc;
--- DATA ISSUE: what does a contact_link_id link to?
+-- ISSUE: what does a contact_link_id link to?
 
 -- contact_id with no contact_link_id
 -- Note: for every contact_id there should be at least one link record (contact_link_id)
@@ -2894,7 +2914,7 @@ select person_id, count(*) n
 from link_contact 
 group by person_id 
 order by count(*) desc;
--- DATA ISSUE (reported): 164,132 with person_id of -7
+-- ISSUE (reported): 164,132 with person_id of -7
 
 
 -- PRIVIDER_ID ----------------------------------------------------------------------
@@ -2902,7 +2922,7 @@ select provider_id, count(*) n
 from link_contact 
 group by provider_id 
 order by count(*);
--- DATA ISSUE: provider_id is either: null OR -7.  Is that correct?
+-- ISSUE (reported): provider_id is either: null OR -7.  Is that correct?
 
 
 -- TRANSACTION_TYPE -----------------------------------------------------------------
@@ -2945,7 +2965,7 @@ select contact_id, count(*) n
 from contact 
 group by contact_id 
 order by contact_id;
--- DATA ISSUE (reported): contact_id of -3 and -7
+-- ISSUE (reported): contact_id of -3 and -7
 -- gms: nice!! I missed this one. It would also be nice to know what these different schemes meant, 
     -- e.g., those that start with a '1' versus other number schemes. I do not that if there is a number that starts with '6' 
     -- and ends with '0,' then that is a household contact.
@@ -2968,7 +2988,7 @@ select contact_disp, count(*) n
 from contact 
 group by contact_disp 
 order by contact_disp;
--- MDES ISSUE: where is "Value from Disposition Codes on Event Disp Codes worksheet of this document" (code list)
+-- ISSUE: where is "Value from Disposition Codes on Event Disp Codes worksheet of this document" (code list)
 
 
 -- CONTACT_TYPE & CONTACT_TYPE_OTH --------------------------------------------------
@@ -2983,7 +3003,7 @@ from contact x left outer join
    xsd_enumeration_definition d on x.contact_type = d.value
 where d.type_name = 'contact_type_cl1'
 group by x.contact_type;
--- DATA ISSUE: "Missing in Error" (n=2)
+-- ISSUE (reported): should any of the contact_type be "Missing in Error" (n=2)?
 
 
 -- contact_type_oth
@@ -2997,7 +3017,7 @@ count(*) n
 from contact 
 group by contact_type_oth 
 order by contact_type_oth;
--- ISSUE: contact_type_oth = -4 (n=153)
+-- ISSUE (reported): what is contact_type_oth of -4 (n=153)?
 
 
 -- CONTACT_DATE, CONTACT_START_TIME & CONTACT_END_TIME ------------------------------
@@ -3047,7 +3067,7 @@ from contact x left outer join
    xsd_enumeration_definition d on x.contact_lang = d.value
 where d.type_name = 'language_cl2'
 group by x.contact_lang;
--- ISSUE: "Missing in Error" (n=165,848)
+-- ISSUE: contact_lang of "Missing in Error" (n=165,848) seems large.
 
 
 -- contact_lang_oth
@@ -3163,7 +3183,7 @@ select contact_distance, count(*) n
 from contact 
 group by contact_distance 
 order by contact_distance;
--- ISSUE: what is value of -4.00 (n=171,014)
+-- ISSUE (reported): what is contact_distance of -4.00 (n=171,014) mean?
 
 
 -- WHO_CONTACTED & WHO_CONTACT_OTH --------------------------------------------------
@@ -3271,7 +3291,7 @@ select participant_id, count(*) n
 from event 
 group by participant_id
 order by count(*) desc;
--- DATA ISSUE: is it possible to have an event_id with no participant_id (n=27,242)?
+-- ISSUE (reported): is it possible to have an event_id with no participant_id (n=27,242)?
 
 
 -- EVENT_TYPE & EVENT_TYPE_OTH ------------------------------------------------
@@ -3359,7 +3379,7 @@ select event_start_date, count(*) n
 from event
 where (event_start_date REGEXP '^9' or event_start_date REGEXP '-9+')
 group by event_start_date;
--- DATA ISSUE (reported): what does event_start_date of 96 and 92 mean?
+-- ISSUE (reported): what does event_start_date of 96 and 92 mean?
 
 
 -- event_start_time frequency
@@ -3374,7 +3394,7 @@ select event_start_time, count(*) n
 from event
 where (event_start_time REGEXP '^9' or event_start_time REGEXP ':9+')
 group by event_start_time;
--- DATA ISSUE (reported): what does event_start_time of 96 mean?
+-- ISSUE (reported): what does event_start_time of 96 mean?
 
 
 -- event_start_date or event_start_time is null
@@ -3402,7 +3422,7 @@ from event
 where (event_end_date REGEXP '^9' or event_end_date REGEXP '-9+')
 group by event_end_date
 order by event_end_date;
--- DATA ISSUE (reported): what does event_end_date of 92 (n=2), 96 (n=44), and 97 (n=23,164) mean?
+-- ISSUE (reported): what does event_end_date of 92 (n=2), 96 (n=44), and 97 (n=23,164) mean?
 
 
 -- event_end_time frequency
@@ -3410,7 +3430,7 @@ select event_end_time, count(*)
 from event
 group by event_end_time
 order by event_end_time;
--- DATA ISSUE (reported): there's an event_end_time of 00:22. Does that make sense?
+-- ISSUE (reported): there's an event_end_time of 00:22. Does that make sense?
 
 
 -- odd event_end_time
@@ -3418,7 +3438,7 @@ select event_end_time, count(*) n
 from event
 where (event_end_time REGEXP '^9' or event_end_time REGEXP ':9+')
 group by event_end_time;
--- DATA ISSUE (reported): what does event_end_time of 96:96 (n=172) and 97:97 (n=23,167) mean?
+-- ISSUE (reported): what does event_end_time of 96:96 (n=172) and 97:97 (n=23,167) mean?
 
 
 -- either event_end_date or event_end_time is null
@@ -3848,7 +3868,7 @@ select du_id, count(*) n
 from non_interview_rpt 
 group by du_id 
 order by count(*) desc;
--- ISSUE: why are there 173 null du_id?
+-- ISSUE (reported): why are there 173 null du_id?
 
 
 -- PERSON_ID ------------------------------------------------------------------------
@@ -3930,7 +3950,7 @@ from non_interview_rpt x left outer join
    xsd_enumeration_definition d on x.nir_access_attempt = d.value
 where d.type_name = 'access_attempt_cl1'
 group by x.nir_access_attempt, x.nir_access_attempt_oth;
--- MDES ISSUE: what is a nir_access_attempt_oth of -7?  This is not mentioned in the Master Data Element MDES Spedification document.
+-- ISSUE (reported): what is a nir_access_attempt_oth of -7?  This is not mentioned in the Master Data Element Spedification document.
 
 
 -- TODO: does nir_noaccess and nir_noaccess_oth correlate with nir_access_attempt and nir_access_attempt_oth?
@@ -3957,7 +3977,7 @@ from non_interview_rpt x left outer join
    xsd_enumeration_definition d on x.nir_type_person = d.value
 where d.type_name = 'nir_reason_person_cl1'
 group by x.nir_type_person, x.nir_type_person_oth;
--- MDES ISSUE: what is a nir_type_person_oth of -7?
+-- ISSUE (reported): what is a nir_type_person_oth of -7?
 
 
 -- COG_INFORM_RELATION & COG_INFORM_RELATION_OTH ------------------------------------
@@ -3981,7 +4001,7 @@ from non_interview_rpt x left outer join
    xsd_enumeration_definition d on x.cog_inform_relation = d.value
 where d.type_name = 'nir_inform_relation_cl1'
 group by x.cog_inform_relation, x.cog_inform_relation_oth;
--- MDES ISSUE: what is a cog_inform_relation_oth of -7?
+-- ISSUE (reported): what is a cog_inform_relation_oth of -7?
 
 
 -- COG_DIS_DESC & PERM_DISABILITY ---------------------------------------------------
@@ -3991,7 +4011,7 @@ group by x.cog_inform_relation, x.cog_inform_relation_oth;
 select cog_dis_desc, count(*) n
 from non_interview_rpt 
 group by cog_dis_desc;
--- MDES ISSUE: what is a cog_dis_desc of -7?
+-- ISSUE (reported): what is a cog_dis_desc of -7?
 
 
 -- perm_disability code list (-7 = Not applicable, -6 = Unknown, -4 = Missing in Error)
@@ -4041,7 +4061,7 @@ group by x.deceased_inform_relation, x.deceased_inform_oth;
 select yod, count(*) n
 from non_interview_rpt 
 group by yod;
--- MDES ISSUE: what is a yod of 9777?
+-- ISSUE (reported): what is a yod of 9777?
 
 
 -- state_death frequency (-7 = Not Applicable, -6 = Unknown, -4 = Missing in Error)
@@ -4071,7 +4091,7 @@ from non_interview_rpt x left outer join
    xsd_enumeration_definition d on x.who_refused = d.value
 where d.type_name = 'nir_inform_relation_cl1'
 group by x.who_refused, x.who_refused_oth;
--- MDES ISSUE: what is a who_refused_oth of 9777?
+-- ISSUE (reported): what is a who_refused_oth of 9777?
 
 
 -- REFUSER_STRENGTH -----------------------------------------------------------------
@@ -4121,7 +4141,7 @@ group by x.ref_action;
 select lt_illness_desc, count(*) n
 from non_interview_rpt 
 group by lt_illness_desc;
--- MDES ISSUE: what is a lt_illness_desc of -7.
+-- ISSUE (reported): what is a lt_illness_desc of -7?
 
 
 -- PERM_LTR -------------------------------------------------------------------------
@@ -4165,7 +4185,7 @@ from non_interview_rpt x left outer join
    xsd_enumeration_definition d on x.reason_unavail = d.value
 where d.type_name = 'unavailable_reason_cl1'
 group by x.reason_unavail, x.reason_unavail_oth;
--- MDES ISSUE: what is a reason_unavail_oth of -7?
+-- ISSUE (reported): what is a reason_unavail_oth of -7?
 
 
 -- DATE_AVAILABLE -------------------------------------------------------------------
@@ -4175,7 +4195,7 @@ group by x.reason_unavail, x.reason_unavail_oth;
 select date_available, count(*) n
 from non_interview_rpt 
 group by date_available;
--- MDES ISSUE: what is a date_available of 9777-97-97?
+-- ISSUE (reported): what is a date_available of 9777-97-97?
 
 
 -- DATE_MOVED -----------------------------------------------------------------------
@@ -4185,7 +4205,7 @@ group by date_available;
 select date_moved, count(*) n
 from non_interview_rpt 
 group by date_moved;
--- MDES ISSUE: what is a date_moved of 9777-97-97?
+-- ISSUE (reported): what is a date_moved of 9777-97-97?
 
 
 -- MOVED_LENGTH_TIME ----------------------------------------------------------------
@@ -4195,7 +4215,7 @@ group by date_moved;
 select moved_length_time, count(*) n
 from non_interview_rpt 
 group by moved_length_time;
--- MDES ISSUE: is moved_length_time  of -7.00 a code, and if so, what does it mean?
+-- ISSUE: is moved_length_time  of -7.00 a code, and if so, what does it mean?
 
 
 -- MOVED_UNIT -----------------------------------------------------------------------
@@ -4237,7 +4257,7 @@ from non_interview_rpt x left outer join
    xsd_enumeration_definition d on x.moved_inform_relation = d.value
 where d.type_name = 'moved_inform_relation_cl1'
 group by x.moved_inform_relation, x.moved_relation_oth;
--- MDES ISSUE: what is a moved_relation_oth of -7.
+-- ISSUE (reported): what is a moved_relation_oth of -7.
 
 
 -- NIR_OTH --------------------------------------------------------------------------
@@ -4247,7 +4267,7 @@ group by x.moved_inform_relation, x.moved_relation_oth;
 select nir_other, count(*) n
 from non_interview_rpt 
 group by nir_other;
--- MDES ISSUE: what is nir_other of -7?
+-- ISSUE (reported): what is nir_other of -7?
 
 
 -- TRANSACTION_TYPE -----------------------------------------------------------------
@@ -4430,7 +4450,7 @@ select *
 from xsd_enumeration_definition 
 where type_name = 'consent_type_cl3'
 order by value;
--- MDES ISSUE: there is no 'consent_type_cl3' enumeration.
+-- ISSUE (reported): there is no 'consent_type_cl3' enumeration for participant_consent.consent_form_type.
 
 
 -- consent_type frequency
@@ -4451,7 +4471,7 @@ select consent_version, count(*) n
 from participant_consent
 group by consent_version
 order by consent_version;
--- DATA ISSUE: is this version for consent_type or consent_form_type?
+-- ISSUE (reported): is consent_version frequency for consent_type or consent_form_type?
 
 
 -- consent_type, by consent_version frequency
@@ -4480,7 +4500,7 @@ from participant_consent
 where consent_expiration REGEXP '^9' or consent_expiration REGEXP '-9+'
 group by consent_expiration
 order by consent_expiration;
--- MDES ISSUE: what is a consent_expiration of 9666-96-96?
+-- ISSUE (reported): what is a consent_expiration of 9666-96-96?
 
 
 -- TODO: consent_type & consent_form_type, by version, by consent_expiration list
@@ -4583,7 +4603,7 @@ from participant_consent x left outer join
    xsd_enumeration_definition d on x.consent_withdraw_reason = d.value
 where d.type_name = 'consent_withdraw_reason_cl2'
 group by x.consent_withdraw_reason;
--- DATA ISSUE: why all are consent_withdraw_reason "Missing in Error" (-4), when the consent_withdraw_type for all are "Legitimate Skip" (-3)?
+-- ISSUE (reported): why all are consent_withdraw_reason "Missing in Error" (-4), when the consent_withdraw_type for all are "Legitimate Skip" (-3)?
 
 
 -- CONSENT_WITHDRAW_DATE ------------------------------------------------------------
@@ -4617,7 +4637,7 @@ from participant_consent x left outer join
    xsd_enumeration_definition d on x.consent_language = d.value
 where d.type_name = 'language_cl2'
 group by x.consent_language, x.consent_language_oth;
--- MDES ISSUE (reported): what is consent_language_oth of -3 (n = 50)
+-- ISSUE (reported): what is consent_language_oth of -3 (n = 50)
 
 
 -- PERSON_WHO_CONSENTED_ID & WHO_CONSENTED ------------------------------------------
@@ -4667,7 +4687,7 @@ select person_wthdrw_consent_id, count(*) n
 from participant_consent
 group by person_wthdrw_consent_id
 order by count(*) desc;
--- DATA ISSUE (reported): what is person_wthdrw_consent_id of -7
+-- ISSUE (reported): what is person_wthdrw_consent_id of -7
 
 
 -- person_wthdrw_consent_id is null
@@ -4721,7 +4741,7 @@ select consent_comments, count(*) n
 from participant_consent
 group by consent_comments
 order by count(*) desc;
--- DATA ISSUE (reported): what is consent_comment = -3
+-- ISSUE (reported): what is consent_comment = -3
 
 
 -- CONTACT_ID -----------------------------------------------------------------------
@@ -4750,7 +4770,7 @@ where d.type_name = 'confirm_type_cl2'
     and x.consent_given = 1
     and x.contact_id is null or x.contact_id = ''
 group by x.consent_given;
--- DATA ISSUE: is it possible that consent_given = 1 (Yes) yet contact_id is null?
+-- ISSUE (reported): is it possible that consent_given = 1 (Yes) yet contact_id is null?
 
 
 -- RECONSIDERATION_SCRIPT_USE -------------------------------------------------------
@@ -4964,7 +4984,7 @@ select vis_comments, count(*) n
 from participant_vis_consent 
 group by vis_comments 
 order by count(*);
--- MDES ISSUE: what is a vis_comments of -3 (n=186)
+-- ISSUE (reported): what is a vis_comments of -3 (n=186)
 
 
 -- CONTACT_ID -----------------------------------------------------------------------
@@ -5024,7 +5044,7 @@ select * from outreach;
 select tsu_id, count(*) n 
 from outreach group by tsu_id 
 order by count(*);
--- MDES ISSUE: what is a tsu_id of -7 (n=390)
+-- ISSUE (reported): what is a tsu_id of -7 (n=390)
 
 
 -- tsu_id is null
@@ -5041,7 +5061,7 @@ select ssu_id, count(*) n
 from outreach 
 group by ssu_id 
 order by count(*);
--- DATA ISSUE (reported): why is there ssu_id = -7 (n=3)
+-- ISSUE (reported): why is there ssu_id = -7 (n=3)
 
 
 -- TODO: compare ssu_id with health studies data (ncs_prod)
@@ -5082,7 +5102,7 @@ from outreach
 where (outreach_event_date REGEXP '^9' or outreach_event_date REGEXP '-9+') 
 group by outreach_event_date 
 order by outreach_event_date;
--- MDES ISSUE: what is outreach_event_date of 96?
+-- ISSUE (reported): what is outreach_event_date of 96?
 
 
 -- outreach_event_date is null
@@ -5139,7 +5159,7 @@ from outreach x left outer join
    xsd_enumeration_definition d on x.outreach_mode = d.value
 where d.type_name = 'outreach_mode_cl1'
 group by x.outreach_mode, x.outreach_mode_oth;
--- DATA ISSUE: is it possible to have outreach_mode of Missing in Error (n=327)?
+-- ISSUE (reported): is it possible to have outreach_mode of Missing in Error (n=327)?
 
 
 -- OUTREACH_TYPE & OUTREACH_TYPE_OTH ------------------------------------------------
@@ -5183,7 +5203,7 @@ from outreach x left outer join
    xsd_enumeration_definition d on x.outreach_tailored = d.value
 where d.type_name = 'confirm_type_cl2'
 group by x.outreach_tailored;
--- DATA ISSUE: if outreach_tailored = Yes (n=63), then why is outreach_target and outreach_target_oth both null?
+-- ISSUE (reported): if outreach_tailored = Yes (n=63), then why is outreach_target and outreach_target_oth both null?
 
 
 -- OUTREACH_LANG1, OUTREACH_LANG2, OUTREACH_LANG_OTH --------------------------------
@@ -5254,7 +5274,7 @@ from
             ) l on o.outreach_event_id = l.outreach_event_id
     ) a
 group by a.is_lanaguage_specific_value, a.is_lanaguage_specific_description, a.language_value, a.language_description, a.language_oth;
--- DATA ISSUE (reported): Of the 36 outreach_event_id in which outreach_lang1 = 1 (yes)
+-- ISSUE (reported): Of the 36 outreach_event_id in which outreach_lang1 = 1 (yes)
     -- 36 indicates outreach_lang2 = null, and 
     -- 25 indicates outreach_lang_oth = -7 (Not Applicable)
 
@@ -5299,7 +5319,7 @@ select outreach_race2, count(*)
 from outreach
 group by outreach_race2;
 
--- DATA ISSUE (reported): outreach_race2 is null, but outreach_race1 (n=23) suggust some outreach was specific to a race
+-- ISSUE (reported): outreach_race2 is null, but outreach_race1 (n=23) suggust some outreach was specific to a race
 
 
 -- outreach_lang_oth
@@ -5327,7 +5347,7 @@ from outreach x left outer join
    xsd_enumeration_definition d on x.outreach_culture1 = d.value
 where d.type_name = 'confirm_type_cl6'
 group by x.outreach_culture1;
--- DATA ISSUE: outreach_culture1 of 'Missing in Error" seems high (n = 327)
+-- ISSUE (reported): outreach_culture1 of 'Missing in Error" seems high (n = 327)
 
 
 -- outreach_culture2 code list (-7 = Not Applicable, -5 = Other, -4 = Missing in Error)
@@ -5392,7 +5412,7 @@ group by a.outreach_is_cultural_specific_value,
 	a.outreach_culture_value, 
 	a.outreach_culture_description,
 	a.outreach_culture_oth;
--- DATA ISSUE: of 45 outreach_event_id, in which outreach_culture1 = No, 1 outreach_event_id indicates outreach_culture2 of 1.
+-- ISSUE (reported): of 45 outreach_event_id, in which outreach_culture1 = No, 1 outreach_event_id indicates outreach_culture2 of 1.
 
 
 -- OUTREACH_QUANTITY ----------------------------------------------------------------
@@ -5403,7 +5423,7 @@ select outreach_quantity, count(*) n
 from outreach 
 group by outreach_quantity 
 order by outreach_quantity;
--- MDES ISSUE: what is an outreach_quantity of -4 (n=2)
+-- ISSUE (reported): what is an outreach_quantity of -4 (n=2)
 
 
 -- TODO: outreach_quantity by outreach_mode & outreach_mode_oth) and outreach_type (& outreach_type_oth)
@@ -5570,7 +5590,7 @@ from outreach_eval  x left outer join
    xsd_enumeration_definition d on x.outreach_eval = d.value
 where d.type_name = 'outreach_eval_cl1'
 group by x.outreach_eval, x.outreach_eval_oth;
--- DATA ISSUE: outreach_eval of 'Missing in Error' (n=386) seems high?
+-- ISSUE (reported): outreach_eval of 'Missing in Error' (n=386) seems high?
 
 
 -- TRANSACTION_TYPE -----------------------------------------------------------------
@@ -6108,7 +6128,7 @@ select staff_yob, count(*) n
 from staff 
 group by staff_yob
 order by staff_yob desc;
--- MDES ISSUE (reported): what does a year of that 9666 (n=29) mean?
+-- ISSUE (reported): what does a year of that 9666 (n=29) mean?
 
 
 -- STAFF_AGE_RANGE ------------------------------------------------------------------
@@ -6130,7 +6150,7 @@ from staff x left outer join
 where d.type_name = 'age_range_cl1'
 group by x.staff_age_range
 order by d.value;
--- DATA ISSUE (reported): is 'Missing in Error' staff_age_range (n=25) acceptable?
+-- ISSUE (reported): is 'Missing in Error' staff_age_range (n=25) acceptable?
 
 
 -- STAFF_GENDER ---------------------------------------------------------------------
@@ -6151,7 +6171,7 @@ from staff x left outer join
    xsd_enumeration_definition d on x.staff_gender = d.value
 where d.type_name = 'gender_cl1'
 group by x.staff_gender;
--- DATA ISSUE (reported): is 'Missing in Error" staff_gender (n=25) acceptable?
+-- ISSUE (reported): is 'Missing in Error" staff_gender (n=25) acceptable?
 
 
 -- STAFF_RACE & STAFF_RACE_OTH ------------------------------------------------------
@@ -6162,7 +6182,7 @@ select *
 from xsd_enumeration_definition 
 where type_name = 'race_cl1'
 order by value;
--- DATA ISSUE (reported): what is the difference between UNKNOWN and MISSING IN ERROR staff_race?  
+-- ISSUE (reported): what is the difference between UNKNOWN and MISSING IN ERROR staff_race?  
 
 
 -- staff_race combined list (staff_race + staff_race_oth)
@@ -6221,7 +6241,7 @@ select *
 from xsd_enumeration_definition 
 where type_name = 'ethnicity_cl1'
 order by value;
--- MDES ISSUE (reported): what is the difference between staff_ethnicity UNKNOWN and MISSING IN ERROR 
+-- ISSUE (reported): what is the difference between staff_ethnicity UNKNOWN and MISSING IN ERROR 
 
 
 -- staff_ethnicity frequency
@@ -6290,7 +6310,7 @@ select staff_cert_list_id, count(*) n
 from staff_cert_training
 group by staff_cert_list_id
 order by staff_cert_list_id desc;
--- DATA QUESTION: the prefixe of a staff_cert_list_id is the staff_id, what does the rest of the id represent.
+-- QUESTION: the prefixe of a staff_cert_list_id is the staff_id, what does the rest of the id represent.
 
 
 -- staff_cert_list_id is not unique
@@ -6393,7 +6413,7 @@ from staff_cert_training x left outer join
    xsd_enumeration_definition d on x.staff_bgcheck_lvl = d.value
 where d.type_name = 'background_chck_lvl_cl1'
 group by x.staff_bgcheck_lvl;
--- DATA ISSUE (reported): is staff_bgcheck_lvl of MISSING IN ERROR (n=506) acceptable?
+-- ISSUE (reported): is staff_bgcheck_lvl of MISSING IN ERROR (n=506) acceptable?
 
 
 -- cert_train_type that do have staff_bgcheck_lvl
@@ -6413,7 +6433,7 @@ from
 	) b left outer join
 	xsd_enumeration_definition d on b.cert_train_type_value = d.value
 where d.type_name = 'certificate_type_cl1';
--- DATA ISSUE (reported): is it possible that a cert_train_type can have multiple staff_bgcheck_lvl?
+-- ISSUE (reported): is it possible that a cert_train_type can have multiple staff_bgcheck_lvl?
 
 
 -- CERT_TYPE_FREQUENCY --------------------------------------------------------------
@@ -6441,7 +6461,7 @@ select cert_type_exp_date, count(*) n
 from staff_cert_training
 group by cert_type_exp_date
 order by cert_type_exp_date desc;
--- DATA ISSUE (reported): what does a cert_type_exp_date of '9777-97-97' mean?
+-- ISSUE (reported): what does a cert_type_exp_date of '9777-97-97' mean?
 
 
 -- CERT_COMMENT ---------------------------------------------------------------------
@@ -6594,7 +6614,7 @@ select weekly_exp_id, count(*) n
 from staff_weekly_expense
 group by weekly_exp_id
 order by weekly_exp_id desc;
--- DATA ISSUE (reported): weekly_exp_id does not follow the same convention. 
+-- ISSUE (reported): weekly_exp_id does not follow the same convention. 
 	-- There seems to be two convention types: 20000048_995 and 20000048_NCS3LS13_2010-10-17, 
 	-- the later being the psu + staff_id + week_start_date
 
@@ -6662,7 +6682,7 @@ select staff_hours, count(*) n
 from staff_weekly_expense
 group by staff_hours
 order by staff_hours desc;
--- DATA ISSUE (reported): is it possibe to have zero staff_hours here (n=12)?
+-- ISSUE (reported): is it possibe to have zero staff_hours here (n=12)?
 
 -- STAFF_EXPENSES -------------------------------------------------------------------
 
@@ -6672,7 +6692,7 @@ select staff_expenses, count(*) n
 from staff_weekly_expense
 group by staff_expenses
 order by staff_expenses desc;
--- DATA ISSUE (reported): is it possible to have zero staff_expenses (n=6796)?
+-- ISSUE (reported): is it possible to have zero staff_expenses (n=6796)?
 
 
 -- STAFF_MILES ----------------------------------------------------------------------
@@ -6691,7 +6711,7 @@ select weekly_expenses_comment, count(*) n
 from staff_weekly_expense
 group by weekly_expenses_comment
 order by weekly_expenses_comment desc;
--- DATA ISSUE (reported): what does weekly_expenses_comment of -7 mean?
+-- ISSUE (reported): what does weekly_expenses_comment of -7 mean?
 
 
 -- TRANSACTION_TYPE -----------------------------------------------------------------
@@ -6714,8 +6734,8 @@ select * from staff_exp_data_cllctn_tasks;
 
 -- STAFF_EXP_DATA_COLL_TASK_ID ------------------------------------------------------
 
--- DATA ISSUE (reported): how is the staff (staff_id) linked data in this table?  
--- DATA ISSUE (reported): what is the makeup of the staff_exp_data_coll_task_id (psu_id + staff_id + what date?)?
+-- ISSUE (reported): how is the staff (staff_id) linked data in this table?  
+-- ISSUE (reported): what is the makeup of the staff_exp_data_coll_task_id (psu_id + staff_id + what date?)?
 
 
 -- staff_exp_data_coll_task_id frequency
@@ -6723,7 +6743,7 @@ select staff_exp_data_coll_task_id, count(*) n
 from staff_exp_data_cllctn_tasks
 group by staff_exp_data_coll_task_id
 order by staff_exp_data_coll_task_id desc;
--- ?? DATA ISSUE: what is the makeup of the staff_weekly_expense_id because it does not seem consistent (e.g., 20000048_RCSU90_2011-09-11, 20000048_1020)
+-- ?? ISSUE: what is the makeup of the staff_weekly_expense_id because it does not seem consistent (e.g., 20000048_RCSU90_2011-09-11, 20000048_1020)
 
 
 -- staff_exp_data_coll_task_id is not unique
@@ -6746,7 +6766,7 @@ select staff_weekly_expense_id, count(*) n
 from staff_exp_data_cllctn_tasks
 group by staff_weekly_expense_id
 order by staff_weekly_expense_id desc;
--- ?? DATA ISSUE: what is the makeup of the staff_weekly_expense_id because it does not seem consistent (e.g., 20000048_RCSU90_2011-09-11, 20000048_1020)
+-- ?? ISSUE: what is the makeup of the staff_weekly_expense_id because it does not seem consistent (e.g., 20000048_RCSU90_2011-09-11, 20000048_1020)
 
 
 -- staff_exp_data_coll_task_id compared to staff_weekly_expense_id
@@ -6755,7 +6775,7 @@ from staff_exp_data_cllctn_tasks
 where staff_exp_data_coll_task_id = staff_weekly_expense_id
 group by staff_exp_data_coll_task_id, staff_weekly_expense_id
 order by count(*) desc;
--- DATA ISSUE (reported): why is select staff_exp_data_coll_task_id the same as the staff_weekly_expense_id?
+-- ISSUE (reported): why is select staff_exp_data_coll_task_id the same as the staff_weekly_expense_id?
 
 
 -- DATA_COLL_TASK_TYPE & DATA_COLL_TASK_TYPE_OTH ------------------------------------
@@ -6780,8 +6800,8 @@ from staff_exp_data_cllctn_tasks x left outer join
 where d.type_name = 'study_data_cllctn_tsk_type_cl1'
 group by x.data_coll_task_type, data_coll_task_type_oth
 order by x.data_coll_task_type;
--- DATA ISSUE (reported): what is the difference between data_coll_task_type_oth 'Administrative task' versus 'Administrative tasks', and 'Trainimg' and 'Training'
--- MDES ISSUE (reported): what does data_coll_task_type_oth = -4 mean?
+-- ISSUE (reported): what is the difference between data_coll_task_type_oth 'Administrative task' versus 'Administrative tasks', and 'Trainimg' and 'Training'
+-- ISSUE (reported): what does data_coll_task_type_oth = -4 mean?
 
 
 -- data_coll_task_type view
@@ -6817,7 +6837,7 @@ select data_coll_tasks_hrs, count(*) n
 from staff_exp_data_cllctn_tasks
 group by data_coll_tasks_hrs
 order by data_coll_tasks_hrs;
--- DATA ISSUE (reported): what data_coll_tasks_hrs = -4 mean?
+-- ISSUE (reported): what data_coll_tasks_hrs = -4 mean?
 
 
 -- which staff_exp_data_coll_task_id does not have reported data_coll_tasks_hrs?
@@ -6832,7 +6852,7 @@ select data_coll_task_cases, count(*) n
 from staff_exp_data_cllctn_tasks
 group by data_coll_task_cases
 order by data_coll_task_cases desc;
--- DATA ISSUE (reported): what does data_coll_task_cases = -4 mean?
+-- ISSUE (reported): what does data_coll_task_cases = -4 mean?
 
 
 -- DATA_COLL_TRANSMIT ---------------------------------------------------------------
@@ -6841,7 +6861,7 @@ select data_coll_transmit, count(*) n
 from staff_exp_data_cllctn_tasks
 group by data_coll_transmit
 order by data_coll_transmit desc;
--- DATA ISSUE (reported): what does data_coll_transmit = -7 mean?
+-- ISSUE (reported): what does data_coll_transmit = -7 mean?
 
 
 -- DATA_COLL_TASK_COMMENT -----------------------------------------------------------
@@ -6850,7 +6870,7 @@ select data_coll_task_comment, count(*) n
 from staff_exp_data_cllctn_tasks
 group by data_coll_task_comment
 order by data_coll_task_comment desc;
--- DATA ISSUE (reported): what does data_coll_task_comment = -7 mean?
+-- ISSUE (reported): what does data_coll_task_comment = -7 mean?
 
 
 -- TRANSACTION_TYPE -----------------------------------------------------------------
@@ -6879,7 +6899,7 @@ select staff_exp_mgmt_task_id, count(*) n
 from staff_exp_mngmnt_tasks
 group by staff_exp_mgmt_task_id
 order by staff_exp_mgmt_task_id desc;
--- DATA ISSUE: staff_exp_mgmt_task_id does not consistently follow the same convention
+-- ISSUE: staff_exp_mgmt_task_id does not consistently follow the same convention
 
 
 -- staff_exp_mgmt_task_id is not unique
@@ -6901,7 +6921,7 @@ select staff_weekly_expense_id, count(*) n
 from staff_exp_mngmnt_tasks
 group by staff_weekly_expense_id
 order by staff_weekly_expense_id desc;
--- DATA ISSUE (reported): staff_weekly_expense_id does not consistently follow the same convention
+-- ISSUE (reported): staff_weekly_expense_id does not consistently follow the same convention
 
 
 -- MGMT_TASK_TYPE & MGMT_TASK_TYPE_OTH ----------------------------------------------
@@ -6926,7 +6946,7 @@ from staff_exp_mngmnt_tasks x left outer join
 where d.type_name = 'study_mngmnt_tsk_type_cl1'
 group by x.mgmt_task_type, mgmt_task_type_oth
 order by count(*) desc;
--- DATA ISSUE (reported): what is mgmt_task_type_oth of -4 (n=44)?
+-- ISSUE (reported): what is mgmt_task_type_oth of -4 (n=44)?
 
 
 -- mgmt_task_type view
@@ -6970,7 +6990,7 @@ select mgmt_task_comment, count(*) n
 from staff_exp_mngmnt_tasks
 group by mgmt_task_comment
 order by mgmt_task_comment desc;
--- DATA ISSUE (reported): what does a mgmt_task_comment of -7 mean?
+-- ISSUE (reported): what does a mgmt_task_comment of -7 mean?
 
 
 -- TRANSACTION_TYPE -----------------------------------------------------------------
@@ -7196,7 +7216,7 @@ order by institute_info_update;
 select institute_info_update, count(*) n
 from institution
 where (institute_info_update REGEXP '^9' or institute_info_update REGEXP '-9+');
--- MDES ISSUE: what is a institute_info_update of 9666-96-96?
+-- ISSUE (reported): what is a institute_info_update of 9666-96-96?
 
 
 -- INSTITUTUTE_COMMENT --------------------------------------------------------------
@@ -7207,7 +7227,7 @@ select institute_comment, count(*) n
 from institution 
 group by institute_comment
 order by institute_comment desc;
--- MDES ISSUE: what is institute_comment of -7 mean?
+-- ISSUE (reported): what is institute_comment of -7 mean?
 
 
 -- TRANSACTION_TYPE -----------------------------------------------------------------
