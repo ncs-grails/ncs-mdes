@@ -6,43 +6,69 @@ Use ncs_mdes_6_04;
  * TABLES IN DB
  *************************************************************************************/
 
--- number of  tables in db (n=274)
+-- number of  tables in db (NOTE: not sure how reliable information_schema.tables  is right now)
 select count(*) from information_schema.tables where table_schema = 'ncs_mdes_prod';
+select count(*) from information_schema.tables where table_schema = 'ncs_mdes_6_04';
+-- ISSUE T1: number of tables went from 274 to 266 (NOTE: not sure how reliable information_schema.tables  is right now)? 
 
--- row count per table in db
-select p0.table_name, 
-    p0.table_rows as p0, 
-    p1.table_rows as p1, 
-    convert(p1.table_rows - p0.table_rows, SIGNED) as diff
+
+-- row count per table in db 
+select t0.table_name, 
+    t0.table_rows as t0, 
+    t1.table_rows as t1, 
+    convert(t1.table_rows - t0.table_rows, SIGNED) as diff
 from
     (
         select table_name, 
             table_rows
         from information_schema.tables 
         where table_schema = 'ncs_mdes_prod'
-    ) p0 inner join
+    ) t0 inner join
     (
         select table_name, 
             table_rows
         from information_schema.tables 
         where table_schema = 'ncs_mdes_6_04'
-    ) p1 on p0.table_name = p1.table_name
+    ) t1 on t0.table_name = t1.table_name
 ;
-
-
-
+-- ISSUE T1: 15 tables decrease in row counts, while 59 increased (NOTE: table_rows is not accurate for db ncs_mdes_6_04).
 
 
 -- detail of table structure per table in db
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
 select * from information_schema.tables where table_schema = 'ncs_mdes_prod';
 
 -- code list
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 show columns from xsd_enumeration_definition;
-select * from xsd_enumeration_definition;
+select count(*) n from xsd_enumeration_definition;
+
+-- compare code list between two periods
+select * 
+from
+    (
+        select * 
+        from ncs_mdes_prod.xsd_enumeration_definition
+    ) t0 left outer join
+    (
+        select * 
+        from ncs_mdes_6_04.xsd_enumeration_definition
+    ) t1 on t0.id = t1.id
+where t0.description != t1.description
+    or t0.global_value != t1.global_value
+    or t0.label != t1.label 
+    or t0.master_cl != t1.master_cl 
+    or t0.value != t1.value 
+    or t0.class != t1.class
+    or t0.type_name != t1.type_name 
+;
+
 
 -- ISSUE: mysql does not have a built in IsDate function. May need to build one or is this part of the import process since it is using grails?
 -- SUGGUESTIONS: 
-    -- build views for comprehensives lists
     -- check links to other tables
 
 /*************************************************************************************
@@ -72,8 +98,14 @@ select * from xsd_enumeration_definition;
  * table: participant
  *************************************************************************************/
 
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 show columns from participant;
-select count(*) n from participant;
+
+select count(*) n from participant; 
+-- ISSUE T1 (t0 = 3853, t1 = 3909, +56)
+
 select * from participant;
 
 
@@ -81,6 +113,9 @@ select * from participant;
 
 
 -- psu_id frequency
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p.psu_id as psu_id_value,
    d.label as psu_id_description,
    count(p.id) as n
@@ -94,6 +129,8 @@ group by p.psu_id;
 
 
 -- multiple p_ids? 
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
 select * 
 from 
 	( 
@@ -108,6 +145,9 @@ where p.n > 1;
 
 
 -- p_type code list (-5 = Other, -4 = Missing in Error) 
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select * 
 from xsd_enumeration_definition 
 where type_name = 'participant_type_cl1'
@@ -117,6 +157,9 @@ order by value;
 -- p_type combine list (p_type & p_type_oth) frequency
     -- p_type code (-5 = Other, -4 = Missing in Error)
     -- p_type_oth (-7 = 'Not Applicable')
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select x.p_type as p_type_value,
    d.label as p_type_description,
    p_type_oth,
@@ -126,27 +169,8 @@ from participant x left outer join
 where d.type_name = 'participant_type_cl1'
 group by x.p_type, p_type_oth
 order by x.p_type;
-
-
--- p_type view
-    -- p_type code (-5 = Other, -4 = Missing in Error)
-    -- p_type_oth (-7 = 'Not Applicable')
-alter view pType as
-select x.p_id,
-    if(x.p_type < 0 and x.p_type_oth != -7, x.p_type_oth, convert(x.p_type, char)) as p_type_value,
-    if(x.p_type < 0 and x.p_type_oth != -7, x.p_type_oth, d.label) as p_type_description,
-  p_type_oth
-from participant x left outer join
-    xsd_enumeration_definition d on x.p_type = d.value
-where d.type_name = 'participant_type_cl1';
-
-
--- p_type integrated list (p_type & p_type_oth) frequency
-select p_type_value, p_type_description, p_type_oth, count(*) n
-from pType
-group by p_type_value, p_type_oth
-order by p_type_value;
 -- ISSUE (reported): p_type of NOT APPLICABLE (n=37) and UNKNOWN (n=488)
+-- ISSUE T1: p_type of NOT APPLICABLE (n=37) and UNKNOWN (n=493)
 
 
 -- TODO: does participant.p_type = 'NCS Child)'(6) match up with link_person_participant.relation = 'Child' (8)
@@ -159,6 +183,9 @@ order by p_type_value;
 
 
 -- status_info_source code list (-5 = Other, -4 = Missing in Error)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select *
 from xsd_enumeration_definition 
 where type_name = 'information_source_cl4'
@@ -168,6 +195,9 @@ order by value;
 -- status_info_source frequency
     -- status_info_source (-5 = Other, -4 = Missing in Error)
     -- status_info_source_oth (-7 = Not Applicable)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p.status_info_source as status_info_source_value,
    d.label as status_info_source_description,
     p.status_info_source_oth, 
@@ -185,6 +215,8 @@ group by p.status_info_source, p.status_info_source_oth;
 
 
 -- status_info_mode code list  (-5 = Other, -4 = Missing in Error)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
 select *
 from xsd_enumeration_definition 
 where type_name = 'contact_type_cl1'
@@ -194,6 +226,8 @@ order by value;
 -- status_info_mode combined list frequency
     -- status_info_mode (-5 = Other, -4 = Missing in Error)
     -- status_info_mode_oth (-7 = Not Applicable)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
 select p.status_info_mode as status_info_mode_value,
    d.label as status_info_mode_description,
    p.status_info_mode_oth, 
@@ -204,33 +238,6 @@ where d.type_name = 'contact_type_cl1'
 group by p.status_info_mode, p.status_info_mode_oth;
 
 
--- status_info_mode compreshensive list (status_info_mode + status_info_mode_oth)
-select status_info_mode_value, status_info_mode_description, count(* ) n
-from
-	(
-		select 
-			case 
-				when status_info_mode < 0 then status_info_mode_oth
-				else convert(status_info_mode, char(2))
-			end as status_info_mode_value,
-			case 
-				when status_info_mode < 0 then 
-					(
-						case 
-							when status_info_mode_oth = -7 then 'Not Applicable'
-							else status_info_mode_oth
-						end
-					)
-				else d.label 
-			end as status_info_mode_description
-		from participant p left outer join
-		   xsd_enumeration_definition d on p.status_info_mode = d.value
-		where d.type_name = 'contact_type_cl1'
-		order by d.value
-	) p
-group by status_info_mode_value, status_info_mode_description;
-
-
 -- TODO: list any status_info_mode code that is negative in comprehensive list (status_info_mode + status_info_mode_oth)
 
 
@@ -238,6 +245,9 @@ group by status_info_mode_value, status_info_mode_description;
 
 
 -- status_info_date frequency
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select status_info_date, count(*) n 
 from participant 
 group by status_info_date 
@@ -245,22 +255,32 @@ order by status_info_date;
 
 
 -- which participant does not have a status_info_date?
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p_id
 from participant 
 where status_info_date is null or status_info_date = '';
 
 
 -- status_info_date oddity
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select *
 from participant 
 where (status_info_date REGEXP '^9' or status_info_date REGEXP '-9+');
 -- ISSUE (reported): what is a status_info_date that contains '-92' (n=1)?
+-- ISSUE T1: what is a status_info_date that contains '-92' (n=1)?
 
 
 -- ENROLL_STATUS --------------------------------------------------------------------
 
 
 -- enroll_status code list (-4 = Missing in Error)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select * 
 from xsd_enumeration_definition 
 where type_name = 'confirm_type_cl2'
@@ -268,6 +288,9 @@ order by value;
 
 
 -- enroll_status frequency
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p.enroll_status as enroll_status_value,
    d.label as enroll_status_description,
    count(p.id) as n
@@ -281,6 +304,9 @@ group by p.enroll_status;
 
 
 -- enroll_date frequency
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select enroll_date, count(*) n 
 from participant 
 group by enroll_date 
@@ -288,13 +314,20 @@ order by count(*) desc;
 
 
 -- enroll_date oddity
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select enroll_date, count(*) n 
 from participant 
 where (enroll_date REGEXP '^9' or enroll_date REGEXP '-9+');
 -- ISSUE (reported): what is enroll_date of 9777-97-97 (n=3485)?
+-- ISSUE T1: what is enroll_date of 9777-97-97 (n=3503)?
 
 
 -- participant with ENROLL_STATUS = yes (1), is missing ENROLL_DATE or has an invalid ENROLL_DATE
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p_id, enroll_status, enroll_date 
 from participant 
 where enroll_status = 1 
@@ -302,16 +335,23 @@ where enroll_status = 1
 
 
 -- participant with ENROLL_STATUS = no (2), but has an ENROLL_DATE
-select p_id, enroll_status, enroll_date
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
+select *
 from participant 
 where enroll_status = 2 
-    and (not enroll_date is null or enroll_date != '');
+    and (not enroll_date is null or enroll_date != '') 
+    and (enroll_date != '9777-97-97');
 
 
 -- PID_ENTRY & PID_ENTRY_OTHER ------------------------------------------------------
 
 
 -- pid_entry code list (-5 = Other, -4 = Missing in Error)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select *
 from xsd_enumeration_definition d 
 where type_name = 'study_entry_method_cl1'
@@ -321,6 +361,9 @@ order by value;
 -- pid_entry combined list frequency
     -- pid_entry (-5 = Other, -4 = Missing in Error)
     -- pid_entry_other (-7 = Not Applicable)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p.pid_entry as pid_entry_value,
    d.label as pid_entry_description,
     p.pid_entry_other, 
@@ -329,50 +372,16 @@ from participant p left outer join
    xsd_enumeration_definition d on p.pid_entry = d.value
 where d.type_name = 'study_entry_method_cl1'
 group by p.pid_entry, p.pid_entry_other;
-
-
--- pid_entry_other frequency (-7 = Not Applicable)
-select pid_entry_other as pid_entry_other_value,
-   case
-       when pid_entry_other = -7 then 'Not Applicable'
-       else pid_entry_other
-   end as pid_entry_other_description,
-   count(*) n
-from participant
-group by pid_entry_other;
-
-
--- pid_entry compreshensive list (pid_entry + pid_entry_other)
-select pid_entry_value, pid_entry_description, count(* ) n
-from
-	(
-		select 
-			case 
-				when pid_entry < 0 then pid_entry_other
-				else convert(pid_entry, char(2))
-			end as pid_entry_value,
-			case 
-				when pid_entry < 0 then 
-					(
-						case 
-							when pid_entry_other = -7 then 'Not Applicable'
-							else pid_entry_other
-						end
-					)
-				else d.label 
-			end as pid_entry_description
-		from participant p left outer join
-		   xsd_enumeration_definition d on p.pid_entry = d.value
-		where d.type_name = 'study_entry_method_cl1'
-		order by d.value
-	) p
-group by pid_entry_value, pid_entry_description;
--- ISSUE (reported): for 3778/3853 participants, their p_entry/p_entry_other is -7 (Not Applicable) 
+-- ISSUE (reported): for 3778/3853 participants, their p_entry is -4 (Missing in Error) and p_entry_other is -7 (Not Applicable) 
+-- ISSUE t1: looks like t0 issue is resolved
 
 
 -- PID_AGE_ELIG ---------------------------------------------------------------------
 
 -- pid_age_elig frequency
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p.pid_age_elig as pid_age_elig_value,
    d.label as pid_age_elig_description,
    count(p.id) as n
@@ -391,6 +400,9 @@ order by p.pid_age_elig;
 
 
 -- does participant's p_type corroborate with pid_age_elig (e.g., father would have pid_age_elig of "Not Applicable")
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p.p_type, p_type_description,
     p.pid_age_elig, d.label as pid_age_elig_description,
     p.n
@@ -418,12 +430,17 @@ order by p.p_type, p.pid_age_elig;
 
 
 -- pid_comment frequency
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select pid_comment, count(*) n
 from participant
 group by pid_comment;
 
 
 -- TRANSACTION TYPE -----------------------------------------------------------------
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
 
 select transaction_type as transaction_type_value,
     case 
@@ -442,14 +459,23 @@ group by transaction_type;
  * table; link_person_participant
  *************************************************************************************/
 
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 show columns from link_person_participant;
+
 select count(*) n from link_person_participant;
+-- ISSUE t1: (t0 = 4012, t1 = 4140, +128)
+
 select * from link_person_participant;
 
 
 -- PSU_ID ---------------------------------------------------------------------------
 
 -- psu_id frequency
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select l.psu_id as psu_id_value, d.label as psu_id_description, count(l.id) as n
 from link_person_participant l left outer join
    xsd_enumeration_definition d on l.psu_id = d.value
@@ -460,12 +486,18 @@ group by l.psu_id;
 -- PERSON_PID_ID --------------------------------------------------------------------
 
 -- person_pid_id frequency
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select person_pid_id, count(*) n
 from link_person_participant 
 group by person_pid_id;
 
 
 -- person_pid_id is not unique
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select *
 from 
     ( 
@@ -477,6 +509,9 @@ where l.n > 1;
 
 
 -- person_pid_id is null
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select *
 from link_person_participant 
 where person_pid_id is null or person_pid_id = '';
@@ -486,6 +521,9 @@ where person_pid_id is null or person_pid_id = '';
 
 
 -- p_id frequency
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p_id, count(*) n 
 from link_person_participant 
 group by p_id 
@@ -493,6 +531,9 @@ order by count(*) desc;
 
 
 -- p_id is not unique 
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select l.p_id, l.n
 from
     (
@@ -504,6 +545,9 @@ from
 where l.n > 1;
 
 -- p_id is null
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select *
 from link_person_participant 
 where p_id is null or p_id = '';
@@ -513,6 +557,9 @@ where p_id is null or p_id = '';
 
 
 -- person_id frequency
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select person_id, count(*) n
 from link_person_participant 
 group by person_id 
@@ -520,6 +567,9 @@ order by count(*) desc;
 
 
 -- person_id is null
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select person_id
 from link_person_participant 
 where person_id is null or person_id = ''
@@ -527,6 +577,9 @@ order by person_id;
 
 
 -- person_id is not unique
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select l.person_id, l.n
 from
     (
@@ -541,6 +594,9 @@ where l.n > 1;
 
 
 -- relation code list (-5 = Other, -4 = Missing in Error)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select *
 from xsd_enumeration_definition 
 where type_name = 'person_partcpnt_reltnshp_cl1'
@@ -550,6 +606,9 @@ order by value;
 -- relation combined list frequency
     -- relation (-5 = Other, -4 = Missing in Error)
     -- relation_oth (-7 = Not Applicable)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select l.relation as relation_value,
    d.label as relation_description,
     l.relation_oth, 
@@ -559,12 +618,16 @@ from link_person_participant l left outer join
 where d.type_name = 'person_partcpnt_reltnshp_cl1'
 group by l.relation, l.relation_oth;
 -- ISSUE (reported): person to p_id relationship are 'Not Applicable' (n=9)
+-- ISSUE t1: person to p_id relationship are 'Not Applicable' (n=9)
 
 
 -- IS_ACTIVE ------------------------------------------------------------------------
 
 
 -- is_active code list (-4 = Missing in Error)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select *
 from xsd_enumeration_definition 
 where type_name = 'confirm_type_cl2'
@@ -572,6 +635,9 @@ order by value;
 
 
 -- is_active frequency (-4 = Missing in Error)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select l.is_active as is_active_value,
    d.label as relation_description,
    count(l.id) as n
@@ -582,6 +648,9 @@ group by l.is_active;
 
 
 -- person_participant link is NOT ACTIVE or NULL
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select l.is_active as is_active_value,
    d.label as relation_description,
    count(l.id) as n
@@ -593,6 +662,8 @@ group by l.is_active;
 
 
 -- TRANSACTION TYPE -----------------------------------------------------------------
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
 
 select transaction_type as transaction_type_value,
     case 
@@ -610,14 +681,22 @@ group by transaction_type;
  * table: person
  *************************************************************************************/
 
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 show columns from person;
+
 select count(*) n from person;
+-- ISSUE t1: (t0 = 9515, t1 = 9579, +64)
 
 
 -- PSU_ID ---------------------------------------------------------------------------
 
 
 -- psu_id frequency
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p.psu_id as psu_id_value, d.label as psu_id_description, count(p.id) as n
 from person p left outer join
    xsd_enumeration_definition d on p.psu_id = d.value
@@ -629,6 +708,9 @@ group by p.psu_id;
 
 
 -- person_id frequency
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select person_id, count(*) 
 from person 
 group by person_id;
@@ -638,6 +720,9 @@ group by person_id;
 
 
 -- person_id is not unique
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select *
 from (
   select person_id, count(*) n
@@ -647,6 +732,9 @@ from (
 where p.n > 1;
 
 -- person_id is null
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select person_id, count(*) 
 from person 
 where person_id is null or person_id = '';
@@ -656,6 +744,9 @@ where person_id is null or person_id = '';
 
 
 -- prefix code list (-7 = Not Applicable, -4 = Missing in Error)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select * 
 from xsd_enumeration_definition 
 where type_name = 'name_prefix_cl1'
@@ -663,6 +754,9 @@ order by value;
 
 
 -- prefix frequency (-7 = Not Applicable, -4 = Missing in Error)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p.prefix as prefix_value, 
 	d.label as prefix_description, 
 	count(p.id) as n
@@ -677,6 +771,9 @@ group by prefix;
 -- ISSUE: should quality checks only focus on names of persons listed in participant table?
 
 -- first_name frequency
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select first_name, count(*) n 
 from person 
 group by first_name 
@@ -689,6 +786,9 @@ order by first_name;
 
 
 -- first_name is null
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select first_name, count(*) n
 from person 
 where first_name is null or first_name = '';
@@ -696,6 +796,9 @@ where first_name is null or first_name = '';
 
 
 -- if first_name is null, what is person's middle and lastname
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select first_name, middle_name, last_name, count(*) n
 from person 
 where first_name is null or first_name = ''
@@ -704,6 +807,9 @@ group by middle_name, last_name;
 
 
 -- first name has odd non-alpha characters (excludes single quote, hyphen, space)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p.first_name, count(*) n
 from
    (
@@ -716,6 +822,9 @@ group by p.first_name;
 
 
 -- first name contains a period (suggesting person has middle name) yet person also has middle
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select id, first_name,  middle_name
 from person
 where  first_name REGEXP '[.]' and middle_name != -7;
@@ -725,12 +834,18 @@ where  first_name REGEXP '[.]' and middle_name != -7;
 
 
 -- last_name frequency
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select last_name, count(*) n 
 from person 
 group by last_name;
 
 
 -- last name is null
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select person_id, last_name, first_name, middle_name 
 from person 
 where last_name is null or last_name = '';
@@ -738,6 +853,9 @@ where last_name is null or last_name = '';
 
 
 -- odd last names (excludes single quote, space and hypen)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p.last_name, count(*) n
 from
    (
@@ -752,18 +870,27 @@ group by p.last_name;
 
 
 -- middle_name frequency (-7 = 'not applicable')
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select middle_name, count(*) n 
 from person 
 group by middle_name;
 
 
 -- middle name is null (-7 = 'not applicable')
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select count(*) n 
 from person 
 where middle_name is null or middle_name = '';
 
 
 -- middle names that have odd non-alpha characters (excludes single quote, hyphen, space, period) (-7 = 'not applicable')
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p.middle_name, count(*) n
 from
    (
@@ -779,6 +906,9 @@ group by p.middle_name;
 
 
 -- maiden_name frequency (-7 = 'not applicable')
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select 
     case 
         when maiden_name = -7 then 'not applicable' 
@@ -789,6 +919,9 @@ group by maiden_name;
 
 
 -- maiden_name is null (-7 = 'not applicable')
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select maiden_name, count(*) n 
 from person 
 where maiden_name is null or maiden_name = '';
@@ -798,6 +931,9 @@ where maiden_name is null or maiden_name = '';
 
 
 -- suffix code list (-7 = Not Applicable, -4 = Missing in Error)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select *
 from xsd_enumeration_definition 
 where type_name = 'name_suffix_cl1'
@@ -805,6 +941,9 @@ order by value;
 
 
 -- suffix frequency (-7 = Not Applicable, -4 = Missing in Error)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select suffix as suffix_value,
 	d.label as suffix_description, 
    	count(*) n
@@ -818,6 +957,9 @@ group by suffix;
 
 
 -- title frequency
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select title as title_code,
 	case when title = -7 then 'Not Applicable' else title end as title_description,
 	count(*) n
@@ -829,6 +971,9 @@ group by title;
 
 
 -- sex code list (-6 = Unknown, -4 = Missing in Error)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select *
 from xsd_enumeration_definition 
 where type_name = 'gender_cl1'
@@ -836,6 +981,9 @@ order by value;
 
 
 -- sex frequency
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p.sex as sex_value, 
     d.label as sex_description, 
     count(*) n
@@ -846,6 +994,9 @@ group by p.sex, d.label;
 
 
 -- participant p_type whose gender is UNKNOWN 
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select a.p_type_value, a.p_type_description, count(*) n
 from
     (
@@ -872,6 +1023,9 @@ group by a.p_type_value, a.p_type_description;
 
 
 -- age frequency (-6 = Unknown, -4 = Missing in Error, -1 = Refused)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select a.age, 
     case
         when a.age = -6 then 'Unknown'
@@ -890,6 +1044,9 @@ order by a.age;
 
 
 -- p_type of participant who has 0 (zero) age
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select a.p_type_value, a.p_type_description, a.p_type_oth, count(*) n
 from
     (
@@ -910,6 +1067,9 @@ group by a.p_type_value, a.p_type_description, a.p_type_oth;
 
 
 -- p_type of participant who REFUSED age 
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select a.p_type_value, a.p_type_description, a.p_type_oth, count(*) n
 from
     (
@@ -934,6 +1094,9 @@ group by a.p_type_value, a.p_type_description, a.p_type_oth;
 
 
 -- p_type of participant whose age is UNKNOWN 
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select a.p_type_value, a.p_type_description, a.p_type_oth, count(*) n
 from
     (
@@ -953,6 +1116,9 @@ group by a.p_type_value, a.p_type_description, a.p_type_oth;
 
 
 -- p_type of participant whose age is MISSING IN ERROR 
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select a.p_type_value, a.p_type_description, a.p_type_oth, count(*) n
 from
     (
@@ -975,6 +1141,9 @@ group by a.p_type_value, a.p_type_description, a.p_type_oth;
 
 
 -- age_range code list (-6 = Unknow, -4 = Missing in Error, -1 = Refused)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select * 
 from xsd_enumeration_definition 
 where type_name = 'age_range_cl1'
@@ -982,6 +1151,9 @@ order by value;
 
 
 -- age_range frequency
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p.age_range as age_range_value, 
     d.label as age_range_description, 
     p.n
@@ -1003,6 +1175,9 @@ order by p.age_range ;
 -- PERSON_DOB -----------------------------------------------------------------------
 
 -- person_dob (-1 = Refused, -6 Unknown) frequency
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select person_dob, count(*) n
 from person
 group by person_dob;
@@ -1015,6 +1190,9 @@ group by person_dob;
 
 
 -- deceased code list (-4 = Missing in Error)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select *
 from xsd_enumeration_definition
 where type_name = 'confirm_type_cl2'
@@ -1022,6 +1200,9 @@ order by value;
 
 
 -- deceased frequency
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p.deceased as deceased_value, 
     d.label as deceased_description, 
     p.n
@@ -1042,6 +1223,9 @@ where d.type_name = 'confirm_type_cl2';
 
 
 -- ethnic_group code list (-6 = Unknown, -4 = Missing in Error, -1 = Refused)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select * 
 from xsd_enumeration_definition 
 where type_name = 'ethnicity_cl1'
@@ -1049,6 +1233,9 @@ order by value;
 
 
 -- ethnic_group frequency (-6 = Unknown, -4 = Missing in Error, -1 = Refused)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p.ethnic_group as ethnic_group_value,
    d.label as ethnic_group_description,
    count(p.id) as n
@@ -1063,6 +1250,9 @@ group by p.ethnic_group;
 
 
 -- person_lang code list (-6 = Unknown, -5 = Other, -4 = Missing in Error, -1 = Refused)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select *
 from xsd_enumeration_definition 
 where type_name = 'language_cl2'
@@ -1071,6 +1261,9 @@ order by value;
 -- person_lang frequency 
     -- person_lang (-6 = Unknown, -5 = Other, -4 = Missing in Error, -1 = Refused)
     -- person_lang_oth (-7 = Not Applicable)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p.person_lang as person_lang_value,
    d.label as person_lang_description,
     p.person_lang_oth, 
@@ -1086,6 +1279,9 @@ group by p.person_lang, p.person_lang_oth;
 
 
 -- maristat code list (-6 = Unknown, -5 = Other, -4 = Missing in Error, -1 = Refused)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select *
 from xsd_enumeration_definition 
 where type_name = 'marital_status_cl1'
@@ -1095,6 +1291,9 @@ order by value;
 -- maristat frequency
     -- maristat (-6 = Unknown, -5 = Other, -4 = Missing in Error, -1 = Refused)
     -- maristat_oth (-7 = Not Applicable)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p.maristat as maristat_value,
    d.label as maristat_description,
     p.maristat_oth, 
@@ -1110,6 +1309,9 @@ order by p.maristat;
 
 
 -- pref_contact code list (-5 = Other, -4 = Missing in Error)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select *
 from xsd_enumeration_definition 
 where type_name = 'contact_type_cl1'
@@ -1119,6 +1321,9 @@ order by value;
 -- pref_contact frequency
     -- pref_contact (-5 = Other, -4 = Missing in Error)
     -- pref_contact_oth (-7 = Not Applicable)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p.pref_contact as pref_contact_value,
    d.label as pref_contact_description,
     p.pref_contact_oth,
@@ -1133,6 +1338,9 @@ group by p.pref_contact, p.pref_contact_oth;
 
 
 -- plan_move code list (-6 = Unknown, -4 = Missing in Error, -1 = Refused)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select *
 from xsd_enumeration_definition 
 where type_name = 'confirm_type_cl1'
@@ -1140,6 +1348,9 @@ order by value;
 
 
 -- plan_move frequncy (-6 = Unknown, -4 = Missing in Error, -1 = Refused)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p.plan_move as plan_move_value,
    d.label as plan_move_description,
    count(p.id) as n
@@ -1150,6 +1361,9 @@ group by p.plan_move;
 
 
 -- move_info code list (-7 = Not Applicable, -4 = Missing in Error)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select *
 from xsd_enumeration_definition 
 where type_name = 'moving_plan_cl1'
@@ -1157,6 +1371,9 @@ order by value;
 
 
 -- move_info frequncy (-7 = Not Applicable, -4 = Missing in Error)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p.move_info as move_info_value,
    d.label as move_info_description,
    count(p.id) as n
@@ -1167,6 +1384,9 @@ group by p.move_info;
 
 
 -- new_address_id frequency
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select new_address_id, count(*) n
 from person
 group by new_address_id;
@@ -1174,6 +1394,9 @@ group by new_address_id;
 
 
 -- when_move code list (-7 = Not Applicable, -6 = Unknown, -4 = Missing in Error, -1 = Refused)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select *
 from xsd_enumeration_definition 
 where type_name = 'confirm_type_cl4'
@@ -1181,6 +1404,9 @@ order by value;
 
 
 -- when_move frequency (-7 = Not Applicable, -6 = Unknown, -4 = Missing in Error, -1 = Refused)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p.when_move as when_move_value,
    d.label as when_move_description,
    count(p.id) as n
@@ -1191,6 +1417,9 @@ group by p.when_move;
 
 
 -- date_move (-7 = Not Applicable, -6 = Unknown, -1 = Refused)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select date_move, count(*) n
 from person
 group by date_move
@@ -1198,6 +1427,9 @@ order by date_move;
 
 
 -- date_move oddity (-7 = Not Applicable, -6 = Unknown, -1 = Refused)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select date_move, count(*) n
 from person
 where (date_move REGEXP '^9' or date_move REGEXP '-9+');
@@ -1209,6 +1441,9 @@ where (date_move REGEXP '^9' or date_move REGEXP '-9+');
 -- P_TRACING, P_INFO_SOURCE, P_INFO_SOURCE_OTH, P_INFO_DATE, P_INFO_UPDATE ----------
 
 -- p_tracing code list (-4 = Missing in Error)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select *
 from xsd_enumeration_definition 
 where type_name = 'confirm_type_cl2'
@@ -1216,6 +1451,9 @@ order by value;
 
 
 -- p_tracing frequency
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p.p_tracing as p_tracing_value,
    d.label as p_tracing_description,
    count(p.id) as n
@@ -1226,6 +1464,9 @@ group by p.p_tracing;
 
 
 -- p_info_source code list (-5 = Other, -4 = Missing in Error)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select *
 from xsd_enumeration_definition 
 where type_name = 'information_source_cl4'
@@ -1235,6 +1476,9 @@ order by value;
 -- p_info_source combined list frequency
     -- p_info_source (-5 = Other, -4 = Missing in Error)
     -- p_info_source_oth (-7 = Not Applicable)
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p.p_info_source as p_p_info_source_value,
     d.label as p_info_source_description,
     p.p_info_source_oth, 
@@ -1246,6 +1490,9 @@ group by p.p_info_source, p.p_info_source_oth;
 
 
 -- p_info_date frequency
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p_info_date as p_info_date_value, count(*) n
 from person
 where (p_info_date REGEXP '^9' or p_info_date REGEXP '-9+')
@@ -1253,6 +1500,9 @@ order by p_info_date;
 
 
 -- p_info_date oddity
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p_info_date, count(*) n
 from person
 where (p_info_date REGEXP '^9' or p_info_date REGEXP '-9+')
@@ -1262,6 +1512,9 @@ order by p_info_date;
 
 
 -- p_info_update frequency
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p_info_update as p_info_update_value, count(*) n
 from person
 group by p_info_update
@@ -1269,6 +1522,9 @@ order by p_info_update;
 
 
 -- p_info_update oddity
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select p_info_update as p_info_update_value, count(*) n
 from person
 where (p_info_update REGEXP '^9' or p_info_update REGEXP '-9+')
@@ -1277,12 +1533,18 @@ order by p_info_update;
 
 
 -- person_comment
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select person_comment, count(*) n
 from person
 group by person_comment;
 
 
 -- transaction_type
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select transaction_type, count(*) n
 from person
 group by transaction_type;
@@ -1494,6 +1756,9 @@ group by transaction_type;
 /*************************************************************************************
  * table: address
  *************************************************************************************/
+
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
 
 show columns from address;
 select count(*) n from address;
@@ -2809,6 +3074,9 @@ group by transaction_type;
 /*************************************************************************************
  * table: link_contact
  *************************************************************************************/
+
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
  
 show columns from link_contact;
 select count(*) n from link_contact;
@@ -2935,6 +3203,10 @@ group by transaction_type;
 /*************************************************************************************
  * table: contact
  *************************************************************************************/
+select count(*) n from ncs_mdes_prod.contact;
+select count(*) n from ncs_mdes_6_04.contact;
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
 
 show columns from contact;
 select count(*) n from contact;
@@ -5697,6 +5969,8 @@ group by x.outreach_lang2;
 /*************************************************************************************
  * table: outreach_race 
  *************************************************************************************/
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
 
 show columns from outreach_race;
 select count(*) n from outreach_race;
