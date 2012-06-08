@@ -67,6 +67,19 @@ where t0.description != t1.description
 ;
 
 
+
+/*************************************************************************************
+ *
+ * 		CREATE INDEXES
+ *
+ *************************************************************************************/
+
+CREATE INDEX id_columnName) ON table(columnName);
+
+select * from ncs_mdes_prod.participant LIMIT 0,100;
+
+
+
 -- ISSUE: mysql does not have a built in IsDate function. May need to build one or is this part of the import process since it is using grails?
 -- SUGGUESTIONS: 
     -- check links to other tables
@@ -714,9 +727,9 @@ Use ncs_mdes_6_04;
 select person_id, count(*) 
 from person 
 group by person_id;
--- ISSUE (reported): 
-	-- odd person_ids (-3 and -7)
-	-- why are some ids numeric only (1958907), while others are alphanumeric with a date appended (C7312012-02-24)?
+-- ISSUE (reported): odd person_ids of -3 (n=1) and -7 (n=1). 
+    -- Why are some ids numeric only (1958907), while others are alphanumeric with a date appended (C7312012-02-24)?
+-- ISSUE t1: odd person_ids of -3 (n=1) and -7 (n=1). 
 
 
 -- person_id is not unique
@@ -764,7 +777,8 @@ from person p left outer join
 	xsd_enumeration_definition d on p.prefix = d.value
 where d.type_name = 'name_prefix_cl1'
 group by prefix;
--- ISSUE (reported): all prefixes are "NA"
+-- ISSUE (reported): all prefixes are "Not Applicable"
+-- ISSUE t1: all prefixes are "Not Applicable"
 
 
 -- FIRST_NAME -----------------------------------------------------------------------
@@ -778,21 +792,18 @@ select first_name, count(*) n
 from person 
 group by first_name 
 order by first_name;
--- ISSUES (reported): firstnames that are
-	-- null (n=3900)
-	-- '-3' (n=22)
-	-- '26' (n=1)
-	-- '30' (n=1)
+-- ISSUES (reported): firstnames that are null (n=3900), '-3' (n=22), '26' (n=1), '30' (n=1)
+-- ISSUES t1: firstnames that are null (n=3904), '-3' (n=31)
 
 
 -- first_name is null
 Use ncs_mdes_prod;
 Use ncs_mdes_6_04;
 
-select first_name, count(*) n
+select person_id, first_name, count(*) n
 from person 
-where first_name is null or first_name = '';
--- ISSUE (reported): 3900 rows with null first_name
+where first_name is null or first_name = ''
+group by person_id, first_name;
 
 
 -- if first_name is null, what is person's middle and lastname
@@ -803,7 +814,8 @@ select first_name, middle_name, last_name, count(*) n
 from person 
 where first_name is null or first_name = ''
 group by middle_name, last_name;
--- ISSUE: of 390 null first names, most do not have a middle or last name
+-- ISSUE: of 3900 null first names, most do not have a middle or last name (n=3899)
+-- ISSUE: of 3904 null first names, most do not have a middle or last name (n=3903)
 
 
 -- first name has odd non-alpha characters (excludes single quote, hyphen, space)
@@ -819,6 +831,7 @@ from
    ) p
 group by p.first_name;
 -- ISSUE (reported): first name has parenthesis, period, comma, slash, and number
+-- ISSUE t1 (reported): first name has parenthesis, period, comma, slash, and number
 
 
 -- first name contains a period (suggesting person has middle name) yet person also has middle
@@ -841,15 +854,15 @@ select last_name, count(*) n
 from person 
 group by last_name;
 
-
 -- last name is null
 Use ncs_mdes_prod;
 Use ncs_mdes_6_04;
 
-select person_id, last_name, first_name, middle_name 
+select count(*)
 from person 
 where last_name is null or last_name = '';
 -- ISSUE (reported): 3 last names that are null
+-- ISSUE t1 (reported): 365 last names that are null
 
 
 -- odd last names (excludes single quote, space and hypen)
@@ -864,6 +877,8 @@ from
 		where last_name not REGEXP "^[A-Za-z\\'\\ \\-]+$" 
    ) p
 group by p.last_name;
+-- ISSUE t0: last_name that is (24) = 1, (44) = 1, -3 = 66, -7 = 1050, '.' = 21, '?' = 1
+-- ISSUE t1: last_name that is -3=40, -7=488
 
 
 -- MIDDLE NAME ----------------------------------------------------------------------
@@ -899,7 +914,8 @@ from
 		where middle_name not REGEXP "^[A-Za-z\\'\\ \\-\\.]+$" and middle_name != -7
    ) p
 group by p.middle_name;
-
+-- ISSUE: middle_name is -2 = 2, -3 = 27
+-- ISSUE t1: middle_name is -2 = 2, -3 = 43
 
 
 -- MAIDEN NAME ----------------------------------------------------------------------
@@ -956,7 +972,7 @@ group by suffix;
 -- TITLE ----------------------------------------------------------------------------
 
 
--- title frequency
+-- title frequency (-7 = Not Applicable)
 Use ncs_mdes_prod;
 Use ncs_mdes_6_04;
 
@@ -992,7 +1008,7 @@ from person p left outer join
 where d.type_name = 'gender_cl1'
 group by p.sex, d.label;
 
-
+help;
 -- participant p_type whose gender is UNKNOWN 
 Use ncs_mdes_prod;
 Use ncs_mdes_6_04;
