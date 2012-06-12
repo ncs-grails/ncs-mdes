@@ -1,37 +1,35 @@
 Use ncs_mdes_prod;
 Use ncs_mdes_6_04;
 
+select * from three_mth_mother_race;
 
 /*************************************************************************************
  * TABLES IN DB
  *************************************************************************************/
 
--- number of  tables in db (NOTE: not sure how reliable information_schema.tables  is right now)
-select count(*) from information_schema.tables where table_schema = 'ncs_mdes_prod';
-select count(*) from information_schema.tables where table_schema = 'ncs_mdes_6_04';
--- ISSUE T1: number of tables went from 274 to 266 (NOTE: not sure how reliable information_schema.tables  is right now)? 
+
+-- number of  tables in db 
+select count(*) 
+from information_schema.tables 
+where table_schema = 'ncs_mdes_prod' 
+    and table_type = 'BASE TABLE' 
+    and table_name != 'table_row_count';
+
+select count(*) 
+from information_schema.tables 
+where table_schema = 'ncs_mdes_6_04' 
+    and table_type = 'BASE TABLE' 
+    and table_name != 'table_row_count';
 
 
 -- row count per table in db 
-select t0.table_name, 
-    t0.table_rows as t0, 
-    t1.table_rows as t1, 
-    convert(t1.table_rows - t0.table_rows, SIGNED) as diff
-from
-    (
-        select table_name, 
-            table_rows
-        from information_schema.tables 
-        where table_schema = 'ncs_mdes_prod'
-    ) t0 inner join
-    (
-        select table_name, 
-            table_rows
-        from information_schema.tables 
-        where table_schema = 'ncs_mdes_6_04'
-    ) t1 on t0.table_name = t1.table_name
-;
--- ISSUE T1: 15 tables decrease in row counts, while 59 increased (NOTE: table_rows is not accurate for db ncs_mdes_6_04).
+select table_name,
+    ncs_mdes_prod AS t0, 
+    ncs_mdes_6_04 AS t1, 
+    convert(ncs_mdes_6_04 - ncs_mdes_prod, SIGNED) as diff
+from ncs_mdes_prod.table_row_count
+where convert(ncs_mdes_6_04 - ncs_mdes_prod, SIGNED) < 0
+order by ncs_mdes_prod desc ;
 
 
 -- detail of table structure per table in db
@@ -74,15 +72,12 @@ where t0.description != t1.description
  *
  *************************************************************************************/
 
-CREATE INDEX id_columnName) ON table(columnName);
-
-select * from ncs_mdes_prod.participant LIMIT 0,100;
-
 
 
 -- ISSUE: mysql does not have a built in IsDate function. May need to build one or is this part of the import process since it is using grails?
 -- SUGGUESTIONS: 
     -- check links to other tables
+
 
 /*************************************************************************************
  *
@@ -111,11 +106,10 @@ select * from ncs_mdes_prod.participant LIMIT 0,100;
  * table: participant
  *************************************************************************************/
 
-Use ncs_mdes_prod;
-Use ncs_mdes_6_04;
-
 show columns from participant;
 
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
 select count(*) n from participant; 
 -- ISSUE T1 (t0 = 3853, t1 = 3909, +56)
 
@@ -478,7 +472,6 @@ Use ncs_mdes_6_04;
 show columns from link_person_participant;
 
 select count(*) n from link_person_participant;
--- ISSUE t1: (t0 = 4012, t1 = 4140, +128)
 
 select * from link_person_participant;
 
@@ -700,7 +693,6 @@ Use ncs_mdes_6_04;
 show columns from person;
 
 select count(*) n from person;
--- ISSUE t1: (t0 = 9515, t1 = 9579, +64)
 
 
 -- PSU_ID ---------------------------------------------------------------------------
@@ -813,9 +805,9 @@ Use ncs_mdes_6_04;
 select first_name, middle_name, last_name, count(*) n
 from person 
 where first_name is null or first_name = ''
-group by middle_name, last_name;
--- ISSUE: of 3900 null first names, most do not have a middle or last name (n=3899)
--- ISSUE: of 3904 null first names, most do not have a middle or last name (n=3903)
+group by first_name, middle_name, last_name;
+-- ISSUE: of 3900 null first names, most do not have a middle or last name (n=3896), some have not middle or last name (n=3)
+-- ISSUE: of 3904 null first names, most do not have a middle or last name (n=3898), some have not middle or last name (n=5)
 
 
 -- first name has odd non-alpha characters (excludes single quote, hyphen, space)
@@ -830,8 +822,8 @@ from
 		where first_name not REGEXP "^[A-Za-z\\'\\ \\-]+$" 
    ) p
 group by p.first_name;
--- ISSUE (reported): first name has parenthesis, period, comma, slash, and number
--- ISSUE t1 (reported): first name has parenthesis, period, comma, slash, and number
+-- ISSUE (reported): first name has parenthesis, period, comma, slash, and number (n=61)
+-- ISSUE t1 (reported): first name has parenthesis, period, comma, slash, and number (n=57)
 
 
 -- first name contains a period (suggesting person has middle name) yet person also has middle
@@ -862,7 +854,7 @@ select count(*)
 from person 
 where last_name is null or last_name = '';
 -- ISSUE (reported): 3 last names that are null
--- ISSUE t1 (reported): 365 last names that are null
+-- ISSUE t1: 365 last names that are null
 
 
 -- odd last names (excludes single quote, space and hypen)
@@ -877,8 +869,8 @@ from
 		where last_name not REGEXP "^[A-Za-z\\'\\ \\-]+$" 
    ) p
 group by p.last_name;
--- ISSUE t0: last_name that is (24) = 1, (44) = 1, -3 = 66, -7 = 1050, '.' = 21, '?' = 1
--- ISSUE t1: last_name that is -3=40, -7=488
+-- ISSUE t0: last_name that is (24) = 1, (44) = 1, -3 = 66, -7 = 1050, '.' = 21, '?' = 1, and more
+-- ISSUE t1: last_name that is -3=40, -7=488, and more
 
 
 -- MIDDLE NAME ----------------------------------------------------------------------
@@ -900,6 +892,7 @@ Use ncs_mdes_6_04;
 select count(*) n 
 from person 
 where middle_name is null or middle_name = '';
+-- ISSUE t1: number of null middle names increted from 148 to 8947.
 
 
 -- middle names that have odd non-alpha characters (excludes single quote, hyphen, space, period) (-7 = 'not applicable')
@@ -914,8 +907,8 @@ from
 		where middle_name not REGEXP "^[A-Za-z\\'\\ \\-\\.]+$" and middle_name != -7
    ) p
 group by p.middle_name;
--- ISSUE: middle_name is -2 = 2, -3 = 27
--- ISSUE t1: middle_name is -2 = 2, -3 = 43
+-- ISSUE: middle_name is -2=2, -3=27
+-- ISSUE t1: middle_name is -2=2, -3=43
 
 
 -- MAIDEN NAME ----------------------------------------------------------------------
@@ -1008,10 +1001,11 @@ from person p left outer join
 where d.type_name = 'gender_cl1'
 group by p.sex, d.label;
 
-help;
 -- participant p_type whose gender is UNKNOWN 
 Use ncs_mdes_prod;
 Use ncs_mdes_6_04;
+
+help;
 
 select a.p_type_value, a.p_type_description, count(*) n
 from
@@ -1777,7 +1771,11 @@ Use ncs_mdes_prod;
 Use ncs_mdes_6_04;
 
 show columns from address;
+
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
 select count(*) n from address;
+
 select * from address limit 0,100;
 
 
@@ -1802,8 +1800,10 @@ select * from address where psu_id != 20000048;
 
 -- ADDRESS_ID -----------------------------------------------------------------------
 
-
 -- address_id frequency
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
+
 select address_id, count(*) n 
 from address 
 group by address_id 
@@ -2163,7 +2163,11 @@ group by transaction_type;
  *************************************************************************************/
 
 show columns from email;
+
+Use ncs_mdes_prod;
+Use ncs_mdes_6_04;
 select count(*) n from email;
+
 select * from email;
 
 
